@@ -11,10 +11,10 @@ multidimensional arrays rather than individual floating point numbers.
 
 \section{Introduction to Issues with Working with GPUs}
 
-In the previous version of ACES, programmer had to deal with managing memory for
-GPU and marking regions well suited for execution on GPU. In ACES4, managing
-memory is done automatically by the runtime. This is implemented using version
-numbers for block data.
+In ACESIII, the previous version of ACES, programmer had to deal with managing
+memory for GPU and marking regions well suited for execution on GPU. In ACES4,
+managing memory is done automatically by the runtime. This is implemented using
+version numbers for block data.
 
 But still there is need for manual intervention needed to determine which
 portion of the SIAL code is well suited for execution on GPU. This is not a
@@ -23,7 +23,7 @@ size of the block and the previous and next instructions in the program. Judging
 based on size of block is itself difficult because of the type of GPU available
 at runtime. Larger blocks need more time to transfer between GPU and CPU, but at
 same time the difference in time taken to operate on blocks by GPU and CPU grows
-exponentially with the size of the block. And lastly same programs are used to
+exponentially with the size of the block. And lastly, same programs are used to
 calculate different results by supplying different data files. A portion of code
 which executed x times faster on GPU may in fact execute slower than CPU on
 smaller size of block.

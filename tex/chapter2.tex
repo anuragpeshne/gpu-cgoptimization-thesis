@@ -1,41 +1,39 @@
-\chapter{LITERATURE REVIEW} \label{lit}
+\chapter{RELATED WORKS} \label{lit}
 
-\section{Dolor Sit Amet}
+We discuss work done by others in directive based GPU programming models. And
+managing GPU streams.
 
- Many of the problems in theses and dissertations involve tables. The UF Graduate Counsel is very specific in the Table Requirements.There should be no vertical lines in tables and only three horizontal lines. No bold text, etc., see the web site for the complete list of requirements. One simple improvement can be incorporated by using tabularx instead of the tabular environment. This allows a table to be stretched the full text width easily, which avoids the centered or left aligned issue. \cite{garfinkle1991charged} Table \ref{first} is an examble of the tabularx code. Consectetur adipiscing elit. Fusce eget tempus lectus, non porttitor tellus. Aliquam molestie sed urna quis convallis. Aenean nibh eros, aliquam non eros in, tempus lacinia justo. In magna sapien, blandit a faucibus ac, scelerisque nec purus. 
- 
- \begin{table}[htbp]
-    \caption{A sample Table using tabularx}\label{first}
-    \begin{tabularx}{6.5in}{XXX}
-      \hline
-      First & Second & Third \\
-      \hline
-      12 & 45 & 26 \\
-      17 & 32 & 93 \\
-      text & 51 & can be there too. \\	
-      \epsfig{figure=images/cat.eps, scale=1} & 28 & Figures too - a cat. \\
-      \begin{turn}{0}\epsfig{figure=images/mouse.eps, scale=0.25}\end{turn} & 000 & and a mouse! \\
-      \hline
-    \end{tabularx}
-\end{table}
- 
- 
- Praesent fermentum felis nec massa interdum, vel dapibus mi luctus. Cras id fringilla mauris. Ut molestie eros mi, ut hendrerit nulla tempor et. Pellentesque tortor quam, mattis a scelerisque nec, euismod et odio. Mauris rhoncus metus sit amet risus mattis, eu mattis sem interdum.
+\section{GPU in High Performance Computing}
 
- \begin{table}[htbp]
-    \caption{A sample Table using standard tablular}\label{first}
-    \begin{tabular}{c c c}
-      \hline
-      First & Second & Third \\
-      \hline
-      12 & 45 & 26 \\
-      17 & 32 & 93 \\
-      text & 51 & can be there too. \\	
-      \epsfig{figure=images/cat.eps, scale=1} & 28 & Figures too - a cat. \\
-      \begin{turn}{0}\epsfig{figure=images/mouse.eps, scale=0.25}\end{turn} & 000 & and a mouse! \\
-      \hline
-    \end{tabular}
-\end{table}
+TODO: relavent?
+
+In Julia, there are wrappers around low level libraries. Programmer has to
+manually transfer data between CPU and GPU.
+
+\subsection{GPU in Computational Chemistry}
+
+There are implementations of coupled cluster methods in computational chemistry
+on GPUs reported. In these implementations, the algorithm was implemented on a
+GPU in a highly optimized form. These implementations have hardware specific
+optimizations, all of which may not be on the new hardware.
+
+\section{Directive Based GPU programming}
+
+TODO: OpenCL, and OpenACC
+
+\section{GPU in SIA}
+
+There has been work done previously to exploit GPU in Super Instruction
+Architecture \cite{jindal2014} by Jindal et al in ACESIII. This implementation
+required programmer to mark a block of code to be executed on GPU using
+directives \textbf{gpu_on} and \textbf{gpu_off} and manually manage memory
+transfer to and from GPU. Executing operations on small blocks on GPU can
+actually be slower than executing on CPU due to time lost in memory transfer and
+insignificant gain in speed. Thus it is better to execute blocks with 2 indices
+on CPU and block with 4 indices and up on GPU. SIAL programmer can take this
+call of which block is large enough so that benefit of executing it on GPU
+becomes significant.
+
 
 \subsection{Platea Dictumst}
 Donec convallis scelerisque ante, in sollicitudin orci laoreet eu. Nam arcu magna, semper vel lorem eu, venenatis ultrices est. Nam aliquet ut erat ac scelerisque. Maecenas ut molestie mi. Phasellus ipsum magna, sollicitudin eu ipsum quis, imperdiet cursus turpis. Etiam pretium enim a fermentum accumsan. Morbi vel vehicula enim.
