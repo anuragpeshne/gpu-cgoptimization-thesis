@@ -1,11 +1,49 @@
-\chapter{MATERIALS ANS METHODS} \label{materials}
+\chapter{SUPER INSTRUCTION ARCHITECTURE} \label{materials}
 
-\section{Consectetur Adipiscing Elit}
+This chapter introduces the Super Instruction Architecture (SIA), including the
+design of worker and server, SIAL program, parallel looping constructs and
+design of GPU implementation.
 
- Fusce eget tempus lectus, non porttitor tellus. Aliquam molestie sed urna quis convallis. Aenean nibh eros, aliquam non eros in, tempus lacinia justo. In magna sapien, blandit a faucibus ac, scelerisque nec purus. Praesent fermentum felis nec massa interdum, vel dapibus mi luctus. Cras id fringilla mauris. Ut molestie eros mi, ut hendrerit nulla tempor et. Pellentesque tortor quam, mattis a scelerisque nec, euismod et odio. Mauris rhoncus metus sit amet risus mattis, eu mattis sem interdum.
+\section{Overview of the ACES}
+ACES4 is a parallel application for chemical computation. It runs on a variety
+of architectures, but is especially geared towards enabling calculations on
+leadership class supercomputers. It can be deployed and scaled on multiple nodes
+in a high performance cluster using Message Passing Interface (MPI) for inter
+process communication. MPI processes or ranks in ACES4 are divided into servers
+and workers. While workers do the actual computation, servers facilitate data to
+workers.
 
-\subsection{This Is an Isolated Heading}
-Either promote this to a section heading, add another subsection heading, or delete this heading.
+The chemical computation done using ACES4 uses data of high dimension. A typical
+calculation in this domain takes as input the geometry of a molecular system and
+a choice of single particle orbitals as basis to expand the many-electron
+quantum-mechanical wave function. The complex algorithms which produce
+properties of the molecular system can easily require arrays of double precision
+floating point of size several hundred Gigabytes. Of these arrays, at least
+three need rapid access and are usually stored in RAM, the rest that are used
+less frequently can be stored on disk.
+
+\section{SIA}
+The Super Instruction Architecture is a parallel programming environment
+designed for computation dominated by tensor algebra with very large dense
+arrays. Since the arrays are too fit to into memory of a single processor, SIA
+introduces notion of blocks and super instructions. Each dimension of a array is
+broken into \textit{segments} which represent blocks of floating point numbers.
+The blocks are operated upon by super instructions which take a variable number
+of blocks and output a block as result.
+
+\subsection{Super Instruction Assembly Language}
+The SIA consists of a domain specific programming language, Super Instruction
+Assembly Language (SIAL) and its runtime system, the Super Instruction Processor
+(SIP). Computational chemist express their algorithms in SIAL, a simple parallel
+programming language with support for blocks, parallel looping construct and
+operator which operate directly on blocks.
+
+Thus SIAL helps chemists to focus on domain problem rather than worrying about
+execution details and lets high performance computing specialist fine tune the
+performance of ACES4. The SIAL programs compile to SIA byte code which is
+interpreted dynamically. SIA interpreter manages runtime issues such as parallel
+scheduling on processors, data communication, managing memory and even target of
+execution of the byte code.
 
 \section{Augue sapien mattis leo}
 Nec accumsan turpis quam at neque. Ut pellentesque velit sed placerat cursus. Integer congue urna non massa dictum, a pellentesque arcu accumsan. Nulla posuere, elit accumsan eleifend elementum, ipsum massa tristique metus, in ornare neque nisl sed odio. Nullam eget elementum nisi. Duis a consectetur erat, sit amet malesuada sapien. Aliquam nec sapien et leo sagittis porttitor at ut lacus. Vivamus vulputate elit vitae libero condimentum dictum. Nulla facilisi. Quisque non nibh et massa ullamcorper iaculis.
