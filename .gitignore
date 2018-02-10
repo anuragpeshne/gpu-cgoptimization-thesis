@@ -5,3 +5,5 @@
 *.sty
 *.dvi
 *.log
+*.el
+*.tmp
