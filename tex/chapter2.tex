@@ -24,9 +24,9 @@ TODO: OpenCL, and OpenACC
 \section{GPU in SIA}
 
 There has been work done previously to exploit GPU in Super Instruction
-Architecture \cite{jindal2014} by Jindal et al in ACESIII. This implementation
+Architecture \cite{jindal2016gpusial} by Jindal et al in ACESIII. This implementation
 required programmer to mark a block of code to be executed on GPU using
-directives \textbf{gpu_on} and \textbf{gpu_off} and manually manage memory
+directives \textbf{gpu\_on} and \textbf{gpu\_off} and manually manage memory
 transfer to and from GPU. Executing operations on small blocks on GPU can
 actually be slower than executing on CPU due to time lost in memory transfer and
 insignificant gain in speed. Thus it is better to execute blocks with 2 indices
