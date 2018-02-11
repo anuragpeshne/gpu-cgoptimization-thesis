@@ -58,12 +58,12 @@ load on workers, at same time also gives freedom to vary number of prefetched
 blocks.
 
 \subsection{Lazy Indices Probing}
-Each class implement pardo have a function \textbf{update} which calculates the
+Each class implementing pardo have a function \textbf{update} which calculates the
 set of indices and populates interpreter state from where the blocks are
 determined.
 
 %\hline
-\begin{algorithm}  {Update Indices}
+\begin{algorithm}  {$update\_indices() \rightarrow bool$}
 %\hline %
 \singlespacing
 
@@ -74,9 +74,17 @@ determined.
 \State $old\_index\_val \gets
 interpreter\_state.indices[index\_slot]$\Comment{get current index value}
 \State $new\_val \gets old\_index\_val + 1$\Comment{Increment the index as needed}
+\If{$new\_val \geq upper\_bound[index\_slot]$}
+  \State $new\_val \gets lower\_seg[index\_slot]$
+\EndIf
 \State $interpreter\_state.indices[index\_slot] \gets new\_val$\Comment{update
   the interpreter state}
 \EndFor
+\If{$all\ indices\ reached\ upper\_bound$}
+  \State \Return{false}
+\Else
+  \State \Return{true}
+\EndIf
 \EndProcedure
 %\hline
 \end{algorithmic}
@@ -85,14 +93,13 @@ interpreter\_state.indices[index\_slot]$\Comment{get current index value}
 
 The mechanism to generate next indices and changing the state was
 divided into two functions: \textbf{get\_next\_indices} and \textbf{update}. And
-another function \textbf{peek\_indices(n)} was written to probe and form a list
+another function \textbf{peek\_indices} was written to probe and form a list
 of subsequent \textbf{n} indices.
 
-\textbf{get\_next\_indices(current\_indices) $\rightarrow$ next\_indices} is now
-made a pure function which takes in set of current indices and outputs set of
-\textit{next} indices.
+\textbf{get\_next\_indices} is now made a pure function which takes in set of
+current indices and outputs set of \textit{next} indices.
 
-\begin{algorithm}  {get\_next\_indices}
+\begin{algorithm}  {get\_next\_indices([index]) $\rightarrow$ [index]}
 \singlespacing
 
 \begin{algorithmic}[1]
@@ -108,27 +115,62 @@ made a pure function which takes in set of current indices and outputs set of
 \end{algorithmic}
 \end{algorithm}
 
-The importance of \textbf{get\_next\_indices} of being pure function is that now
+The importance of \textbf{get\_next\_indices} being pure function is that now
 it can be composed with other function calls and be called multiple times without
 fear of any side effects. \textbf{peek\_indices(n)} maintains a list of indices
-and returns set of \textbf{n} indices is already computed or probes next set of
-indices if needed by calling get\_next\_indices by passing latest set of
-already calculated indices.
+and returns set of \textbf{n} indices if already computed or probes next set of
+indices if needed by calling \textbf{get\_next\_indices} by passing latest set of
+calculated indices.
 
-\begin{algorithm}  {peek\_indices(n)}
+\begin{algorithm}  {peek\_indices([[index]], n) $\rightarrow$ [[index]]}
 \singlespacing
 
 \begin{algorithmic}[1]
 \Function{peek\_indices}{$computed\_indices, n$}
-\If length(computed\_indices) > 0
-  \State $peeked\_indices \gets computed\_indices[0]$
-  \State \Return append(peeked\_indices, peek\_indices(rest(computed\_indices), n
-  - 1)
+\If{$n = 0$}\Comment{Base case for recursive call}
+  \State \Return $[\ ]$
+\Else
+  \If{$length(computed\_indices) > 1$}
+    \State $peeked\_indices \gets computed\_indices[0]$
+  \ElsIf{$length(computed\_indices) > 0$}
+    \State $peeked\_indices \gets get\_next\_indices(computed\_indices[0])$
+    \State $append(peeked\_indices, computed\_indices)$
+  \Else
+    \State \Return $[\ ]$
+  \EndIf
+  \State $rest\_peeked\_indices \gets peek\_indices(computed\_indices[1:], n - 1)$
+  \State \Return $append(peeked\_indices, rest\_peeked\_indices)$
 \EndIf
-\State $old\_index\_val \gets current\_indices[index\_id]$\Comment{get current index value}
-\State $new\_val \gets old\_index\_val + 1$\Comment{Increment the index as needed}
-\State $new\_indices \gets new\_val$\Comment{update the index into new set of indices}
-\State \Return{$new\_indices$}\Comment{return new set without any side effects}
+\EndFunction
+%\hline
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{peek\_indices} always appends to calculated indices or returns set of indices
+if already calculated. The updated function \textbf{update\_indices} pops first
+set of indices from the calculated indices list and update the interpreter
+global state so that other components can find it. The function
+\textbf{get\_next\_indices} requires set current indices to calculate set of next
+indices, that is why there is a need to keep at least one element in the list of
+calculated indices. \textbf{peek\_indices} makes sure there is always at least one
+element in the list, hence \textbf{update\_indices} calls \textbf{peek\_indices}
+to delegate this responsibility instead of directly getting from the list.
+
+\begin{algorithm}  {update\_indices() $\rightarrow$ bool}
+\singlespacing
+
+\begin{algorithmic}[1]
+\Function{update\_indices}{}
+\State $current\_indices \gets peek\_indices(computed\_indices, 1)$
+\If{$length(current\_indices) > 0$}\Comment{Base case for recursive call}
+  \State $pop(computed\_indices)$
+  \ForAll{$index\_slot\ in\ current\_indices $}
+    \State $interpreter\_state.indices[index\_slot] \gets current\_indices[index\_slot]$
+  \EndFor
+  \State \Return $true$
+\Else
+  \State \Return $false$
+\EndIf
 \EndFunction
 %\hline
 \end{algorithmic}
