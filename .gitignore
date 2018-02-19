@@ -7,3 +7,8 @@
 *.log
 *.el
 *.tmp
+*.toc
+*.bbl
+*.blg
+*.lof
+*.lot
