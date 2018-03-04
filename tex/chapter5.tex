@@ -1,6 +1,22 @@
-\chapter{SUMMARY AND CONCLUSIONS} \label{conclusion}
+\chapter{GPU TECHNIQUES USED} \label{gputechniques}
 
-\section{Non Porttitor Tellus}
+\section{Memory Pinning}
+This section presents technique of memory pinning which when used results in
+faster copying of data between CPU main memory and GPU memory.
+
+\subsection{Memcpy without Pinning}
+When memory is allocated using usual constructs such as \textbf{new} or
+\textbf{malloc}, the data allocated is pageable by default. The GPU cannot
+directly access data allocated in pageable host main memory. So when data
+movement is requested using CUDA functions such as \textbf{cuda_memcpy}, the
+CUDA driver has to first allocate a temporary page-locked, or ``pinned'', host
+memory, copy the host data to pinned memory and then transfer the data from
+pinned memory to device memory.
+
+- Async Memcpy: eager push
+
+\section{CUDA aware MPI}
+- MPI get async
 
 Aliquam molestie sed urna quis convallis. Aenean nibh eros, aliquam non eros in, tempus lacinia justo. In magna sapien, blandit a faucibus ac, scelerisque nec purus. Praesent fermentum felis nec massa interdum, vel dapibus mi luctus. Cras id fringilla mauris. Ut molestie eros mi, ut hendrerit nulla tempor et. Pellentesque tortor quam, mattis a scelerisque nec, euismod et odio. Mauris rhoncus metus sit amet risus mattis, eu mattis sem interdum.
 
