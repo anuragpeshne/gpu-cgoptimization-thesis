@@ -1,7 +1,33 @@
 * Introduction
+** Introduction to Issues with Working with GPU
+** Organization of Thesis
 * Related Work
+** Directive Based GPU Programming
+** GPU in Computational Chemistry
+** GPU Programming in Other High Level Programming Languages
+** GPU in Previous Version of ACES
 * Background
+** SIA
+** Architecture of SIA
+** SIAL
+*** SIAL Interpreter
+** Block Structure
+** Executing Super Instructions on GPU
+** Overview of ACES
 * Block Prefetching
+** Background
+** Implementation of Prefetching
+*** ~pardo~ Loop Implementation
+** Lazy Indices Probing
 * GPU Techniques
-* Experiment and Results
+** Memory Pinning
+*** ~memcpy~ without Pinning
+*** TODO Reuse allocated blocks
+** CUDA aware MPI
+** Streams
+*** Non Blocking Copying
+** TODO MPS
+* TODO Experiment and Results
 * Conclusion and Future Work
+** Make use of Non blocking copying
+** Exploit multiple ~GET~ lookahead
