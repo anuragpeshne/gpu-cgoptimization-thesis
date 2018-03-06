@@ -4,10 +4,11 @@
 * Introduction
 ** Introduction to Issues with Working with GPU
    In the previous version of ACES, the SIAL programmer had to manage the memory
-   transfer between GPU and CPU. While in ACES4, this has been automated by tracking
-   block changes using version numbers there is still need to programmer to mark
+   transfer between GPU and CPU. While in ACES4 this has been automated by tracking
+   block changes using version numbers, there is still need to programmer to mark
    regions of code to be executed on GPU.
-   Transfer data between GPU and CPU is expensive. And this can turn executing a
+
+   Transfering data between GPU and CPU is expensive. And this can make executing a
    calculation on GPU more expensive than on CPU. Judging the target computational
    device is difficult since the time required depends on size of block. Larger
    the block, longer it takes for transfering but at same time difference in
@@ -16,13 +17,13 @@
    can be more expensive on GPU or CPU depending on size of data provided.
    Various GPU techniques are implemented to solve this problem and to improve
    transfer time and to effectively use GPUs to execute looping constructs.
-** Introduction to Issue of Waiting for Data from Server
+** Introduction to Issue of Data Transfer from Server
    Looping constructs are the only way to work with Blocks. Typical workflow of
    SIAL includes requesting block of larger array at start of the loop, processing
    the block and then sending the block back to the server. The request to server
    for block is blocking. To mitigate the cost of sending data over network, prefetching
    is implemented which does the transfer concurrently with the block processing.
-** Organization of Thesis
+** TODO Organization of Thesis
 * Related Work
 ** Directive Based GPU Programming
 ** GPU in Computational Chemistry

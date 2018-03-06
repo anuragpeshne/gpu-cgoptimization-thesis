@@ -12,27 +12,42 @@ multidimensional arrays rather than individual floating point numbers.
 \section{Introduction to Issues with Working with GPUs}
 
 In ACESIII, the previous version of ACES, programmer had to deal with managing
-memory for GPU and marking regions well suited for execution on GPU. In ACES4,
-managing memory is done automatically by the runtime. This is implemented using
-version numbers for block data.
+the memory transfer between GPU and CPU and marking regions well suited for execution
+on GPU. In ACES4, managing memory transfer is done automatically by the runtime.
+This is implemented by tracking block changes using version numbers.
 
-But still there is need for manual intervention to determine which
-portion of the SIAL code is well suited for execution on GPU. This is not a
-trivial decision to make since performance of GPU v/s CPU depends on various factors such as
+Still there is need for SIAL programmer to decide which portion of the SIAL code
+is well suited for execution on GPU. Transferring data between GPU and CPU is
+expensive and can dominate the total time spend in computation. Hence this is not
+a trivial decision to make since the programmer has to minimize time spend in
+total memory transfers. This in turn depends on various factors such as
+size of the block and number of instructions in the block supported on GPU. Judging
+based on size of block is itself difficult because it depends type of GPU available
 at runtime. Larger blocks need more time to transfer between GPU and CPU, but at
-size of the block and surroudning instructions in the program. Judging
-based on size of block is itself difficult because of the type of GPU available
 same time the difference in time taken to operate on blocks by GPU and CPU grows
 exponentially with the size of the block. And lastly, same programs are used to
 calculate different results by supplying different data files. A portion of code
-which executed x times faster on GPU may in fact execute slower than CPU on
-smaller size of block.
+which executed faster on GPU for certain block size may in fact execute slower
+than on CPU for smaller block size if the gain in time by executing on GPU cannot
+compensate for the transfer time.
+
+\section{Introduction to Issue of Data Transfer from Server}
+In SIAL, looping constructs are the only way to work with individual blocks.
+Typical work~flow of SIAL includes requesting a block of larger array from server,
+processing the block, compute resulting block and send it back to the server. Though
+the operation of requesting block from server is non blocking, subsequent operations
+in the loop block until MPI transfer is completed. To amortize the cost of network
+transfer, prefetching has been implemented which does the transfer concurrently
+with the block processing. By prefetching the anticipated blocks that would be
+needed in next iteration of loop, the wait~time for block can be reduced and
+in some cases completely eliminated.
 
 \section{Organization of the Thesis}
 Chapter 2 presents related literature regarding efforts made to exploit GPU in
-SIA. Then, an introduction to background of this thesis, including architecture
-and implementation of SIA and ACES4, is presented in chapter 3. Chapter 4
-describes the problem and solution of optimizing use of GPU to execute SIAL
+SIA as well as other programming models and the technique of prefetching to hide
+latency in accessing data. Then an introduction to background of this thesis,
+including architecture and implementation of SIA and ACES4, is presented in chapter~3.
+Chapter 4 describes the problem and solution of optimizing use of GPU to execute SIAL
 code; the design and implementation of eager-pushing of blocks and dynamic
 determination of suitable code block for execution on GPU is presented in
 chapter 5. Chapter 6 states the results of the benchmarks and experiments. And
