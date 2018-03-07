@@ -2,41 +2,49 @@
 
 We discuss work done by others in using GPU for scientific calculations using
 several methods such as directive based GPU programming models, using Cuda in
-higher level programming language and use of GPU in previous versions of ACES.
+higher level programming language and use of GPU in previous versions of ACES
+and work done using prefetching to hide latency in accessing data.
 
-\section{Directive Based GPU programming}
+\section{GPGPU}
+This section discuss previoud work done on Genral Purpose computing on Graphics
+Processing Units.
+
+\subsection{Directive Based GPU programming}
 There are several attempts in area of directive based programming models. These
-attempts include OpenACC \cite{openacc}, OpenMP for accelerator
-\cite{openmpforaccelerators}, and less updated attempts including OpenMPC
-\cite{openmpc} and hiCuda \cite{hicuda}. The approach taken by these models
-is to make a implementation GPU ready by placing directives which made
+attempts include OpenACC~\cite{openacc}, OpenMP for
+accelerator~\cite{openmpforaccelerators}, and less updated attempts including
+OpenMPC~\cite{openmpc} and hiCuda~\cite{hicuda}. The approach taken by these models
+is to make a implementation GPU ready by placing directives which make
 execution of loops parallel. In contrast, SIA exploits coarse grained
 concurrency using super instructions and super numbers or blocks by executing
-super instruction on GPU. These super instructions can in turn make use of above
-models to make an existing CPU implementation GPU ready by inserting suitable
-directives or have a completely rewritten low level Cuda implementation. Thus
-these models works \textit{with} the previously mentioned models rather than in
-competition with.
+super instruction on GPU. These super instructions in turn exploit fine grained
+concurrency and can make use of above models to make an existing CPU implementation
+GPU ready by inserting suitable directives or have a completely rewritten low level
+Cuda implementation. Thus these models work \textit{with} the previously mentioned
+models rather than against them.
 
 \subsection{GPU in Computational Chemistry}
-
 There are implementations of coupled cluster methods in computational chemistry
-on GPUs reported \cite{bhaskar2013}\cite{deprince2011}\cite{maw2011}. In these
-implementations, the a specific algorithm was selected and then implemented on a
+on GPUs reported~\cite{bhaskar2013}\cite{deprince2011}\cite{maw2011}. In these
+implementations, a specific algorithm was selected and then implemented on a
 GPU in a highly optimized form. These implementations have hardware specific
-optimizations, and not generic enough to be effective on new hardware.
+optimizations, and are not generic enough to remain effective as new hardware
+development takes place.
 
-One such implementation of contraction operators on a GPU by Ma et al. generates
-CUDA code to directly implement the contractions and optimizes for the
-particular order of indices in the contractions. This, as compared to using
-permutations and then two dimensional matrix-matrix multiply as implemented in
-SIA, should achieve better performance for a contraction.
+One of the implementation of contraction operators on a GPU by
+Ma~et~al.~\cite{Ma2013} generates CUDA code to directly implement the contractions
+by optimizing for the particular order of indices in the contractions. This, as
+compared to using permutations and then two dimensional matrix-matrix multiplication
+as implemented in SIA, should achieve better performance for a contraction. These
+specialized CUDA contraction implementations were added to NWChem, a computational
+chemistry package, and considerable speedups are reported for CCSD(T) calculation
+on CPU/GPU hybrid systems. Such optimized operators can be incorporated into SIA
+and be provided as built in block super instruction for contraction.
 
-\section{GPU Programming in Other High Level Programming Languages}
-
+\subsection{GPU Programming in Other High Level Programming Languages}
 Several attempts for support for GPU in general purpose high level programming
-languages have been made. A few examples include PyCUDA \cite{pycuda2011}, jCUDA
-\cite{jcuda2009} and Chapel \cite{chapelgpu}. These toolkits gives an interface
+languages have been made. A few examples include PyCUDA~\cite{pycuda2011},
+jCUDA~\cite{jcuda2009} and Chapel~\cite{chapelgpu}. These toolkits gives an interface
 to GPU from high level programming languages such as Python and Java but
 programmer still needs to deal with low level GPU book keeping such as memory
 management and defining kernels. Whereas in SIA, once the superinstructions are
@@ -44,15 +52,21 @@ defined, runtime can jump between GPU and CPU implementation transparently to
 the domain programmer, the runtime takes care of memory management and GPU
 implementations of common operations on blocks are build into the runtime.
 
-\section{GPU in Previous Versions of ACES}
-
+\subsection{GPU in Previous Versions of ACES}
 There has been work done previously to exploit GPU in Super Instruction
-Architecture by \cite{jindal2016gpusial} in ACESIII. This implementation
+Architecture by Jindal~et~al~\cite{jindal2016gpusial} in ACESIII. This implementation
 required programmer to mark a block of code to be executed on GPU using
-directives \textbf{gpu\_on} and \textbf{gpu\_off} and manually manage memory
+directives \texttt{gpu\_on} and \texttt{gpu\_off} and manually manage memory
 transfer to and from GPU. Executing operations on small blocks on GPU can
-actually be slower than executing on CPU due to time lost in memory transfer and
-insignificant gain in speed. Thus it is better to execute blocks with 2 indices
-on CPU and block with 4 indices and up on GPU. SIAL programmer can take this
-call of which block is large enough so that benefit of executing it on GPU
-becomes significant.
+actually be slower than executing on CPU due to time spent in memory transfer and
+insignificant gain in speed. Thus it is better to execute small blocks with 2
+indices on CPU and larger block with 4 and up indices on GPU. It was left to the
+SIAL programmer to take this call on which block is large enough so that benefit
+of executing it on GPU becomes significant.
+
+\section{Prefetching}
+Prefetching is an old technique used in various levels of memory with the aim to
+hide the data access latency due to difference in speed to access data. A variety
+of approaches, including hardware level prefetching and caching, compiler techniques,
+pre-execution and runtime execution, hasve been implemented in high performance
+computing.

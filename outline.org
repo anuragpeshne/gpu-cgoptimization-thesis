@@ -25,12 +25,19 @@
    is implemented which does the transfer concurrently with the block processing.
 ** TODO Organization of Thesis
 * Related Work
-** Directive Based GPU Programming
-** GPU in Computational Chemistry
-** GPU Programming in Other High Level Programming Languages
-** GPU in Previous Version of ACES
+** GPGPU
+*** Directive Based GPU Programming
+*** GPU in Computational Chemistry
+*** GPU Programming in Other High Level Programming Languages
+*** GPU in Previous Version of ACES
 ** Prefetching
-*** General Idea
+   - Prefetching in hardware and compiler.
+   - hardware prefetching includes which memory address to prefetch based on past
+     access or future instructions.
+     - optimize loop, vector operation by guessing upcoming access and prefetch.
+   - compiler issues prefetch instructions
+     - DASH paper
+     - DAE: decoupled access execute
 * Background
 ** SIA
 ** Architecture of SIA
