@@ -1,0 +1,63 @@
+* Prefetching
+** C12H10 (BP) Molecule
+*** 2 look aheads
+**** Overall time
+     | sial file            | prefetching | no prefetching |
+     |----------------------+-------------+----------------|
+     | 0-scf_rhf.sialx      |     158.152 |        233.542 |
+     | 1-tran_uhf_no4.sialx |     278.609 |        281.769 |
+     | 2-rccsd_rhf.sialx    |     574.833 |         487.42 |
+**** ~wait_time_~
+     | sial file            |       prefetching | no prefetching |
+     |----------------------+-------------------+----------------|
+     | 0-scf_rhf.sialx      | 0.936000146752801 |   1.5215785463 |
+     | 1-tran_uhf_no4.sialx |   17.395676072819 |   9.1419706011 |
+     | 2-rccsd_rhf.sialx    |  21.8490559144711 |   17.830036283 |
+*** 1 look ahead
+**** Overall time
+     | sial file            | prefetching | no prefetching |
+     |----------------------+-------------+----------------|
+     | 0-scf_rhf.sialx      |     170.856 |         187.08 |
+     | 1-tran_uhf_no4.sialx |      210.18 |        239.714 |
+     | 2-rccsd_rhf.sialx    |     445.636 |        413.452 |
+**** ~wait_time~
+     | sial file            | prefetching |  no prefetching |
+     |----------------------+-------------+-----------------|
+     | 0-scf_rhf.sialx      |  1.39502056 | 1.2046145617539 |
+     | 1-tran_uhf_no4.sialx | 18.79856236 | 23.764131171276 |
+     | 2-rccsd_rhf.sialx    | 20.97147266 | 18.110462833891 |
+**** pref diff
+#+BEGIN_SRC sql
+SELECT pref.opcode, pref.sial_file_id, pref.line_number, nopref.line_number,
+nopref.mean - pref.mean AS diff
+FROM wait_time_ AS pref, prof_db.wait_time_ AS nopref WHERE pref.opcode = nopref.opcode
+AND pref.line_number = nopref.line_number ORDER BY diff ASC LIMIT 1
+#+END_SRC
+#+BEGIN_SRC text
+opcode       sial_file_id  line_number  line_number  diff
+-----------  ------------  -----------  -----------  ----------
+sip_barrier  1             744          744          0.55454
+sip_barrier  2             2466         2466         0.496508
+sip_barrier  2             1585         1585         0.410863
+sip_barrier  2             2344         2344         0.347903
+sip_barrier  0             907          907          0.234826
+sip_barrier  0             830          830          0.226802
+sip_barrier  0             764          764          0.1809754
+block_copy   2             773          773          0.153026
+sip_barrier  2             2071         2071         0.11735
+sip_barrier  1             1569         1569         0.0805701
+#+END_SRC
+#+BEGIN_SRC text
+opcode       sial_file_id  line_number  line_number  diff
+-----------  ------------  -----------  -----------  ----------
+sip_barrier  1             1572         1572         -7.98266
+sip_barrier  1             1063         1063         -0.99612
+sip_barrier  2             1423         1423         -0.85364
+sip_barrier  2             1683         1683         -0.498597
+sip_barrier  2             2551         2551         -0.444461
+sip_barrier  2             902          902          -0.43704
+sip_barrier  2             1727         1727         -0.41708
+sip_barrier  2             1628         1628         -0.354
+sip_barrier  2             1473         1473         -0.325359
+sip_barrier  2             1749         1749         -0.288999
+#+END_SRC
