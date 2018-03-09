@@ -34,6 +34,21 @@
    - Prefetching in hardware and compiler.
    - hardware prefetching includes which memory address to prefetch based on past
      access or future instructions.
+     - ~fetch~ instruction simply passes the address on to memory system without
+       forcing the processor to wait for a response. Similar to ~load~ except the
+       word is not forwarded to the processor after it has been cached.
+     - prematurely prefetched block may also displace data in the cache that is
+       currently in use by the processor resulting in what is known as
+       /cache pollution/
+     - Although uneccessary prefetches do not affect correct program behavior,
+       they consume memory bandwidth
+     - Prefetching is not restricted to fetching data from main memory into
+       processor cache. Rather it is a generally applicable technique for moving
+       memory objects up in the memory hierarchy before they are actually needed
+       by processor.
+     - Adaptive sequential prefetching policy that allows the value of K to vary
+       during program execution in such way to match K to degree of spatial locality
+       exhibited by program at a particular time.
      - optimize loop, vector operation by guessing upcoming access and prefetch.
    - compiler issues prefetch instructions
      - DASH paper
@@ -63,3 +78,4 @@
 * Conclusion and Future Work
 ** Make use of Non blocking copying
 ** Exploit multiple ~GET~ lookahead
+** Dynamic adjustment of K, similar to adaptive sequential prefetching policy.

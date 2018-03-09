@@ -31,7 +31,7 @@
 SELECT pref.opcode, pref.sial_file_id, pref.line_number, nopref.line_number,
 nopref.mean - pref.mean AS diff
 FROM wait_time_ AS pref, prof_db.wait_time_ AS nopref WHERE pref.opcode = nopref.opcode
-AND pref.line_number = nopref.line_number ORDER BY diff ASC LIMIT 1
+AND pref.line_number = nopref.line_number ORDER BY diff ASC LIMIT 10;
 #+END_SRC
 #+BEGIN_SRC text
 opcode       sial_file_id  line_number  line_number  diff

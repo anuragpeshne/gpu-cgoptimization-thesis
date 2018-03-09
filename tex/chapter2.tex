@@ -65,8 +65,24 @@ SIAL programmer to take this call on which block is large enough so that benefit
 of executing it on GPU becomes significant.
 
 \section{Prefetching}
-Prefetching is an old technique used in various levels of memory with the aim to
-hide the data access latency due to difference in speed to access data. A variety
-of approaches, including hardware level prefetching and caching, compiler techniques,
-pre-execution and runtime execution, hasve been implemented in high performance
-computing.
+Prefetching is an old technique~\cite{anacker68}\cite{Smith1982}\cite{Vanderwiel2000}
+used to get data up in memory hierarchy before they are actually needed by processor
+with the aim to hide the data access latency due to difference in speed to access
+data. A variety of approaches, including hardware prefetching and caching, compiler
+techniques, pre-execution and runtime execution, have been implemented in high
+performance computing.
+
+Hardware prefetching techniques including techniques such as transferring separate
+cache blocks~\cite{Smith1978} were implemented much before software techniques were
+implemented. Porterfield~\cite{Porterfield1989} introduced idea of software prefetching
+using special instruction to preload values into the cache without blocking the
+computation. Using this instruction the compiler can inform the cache over 100
+cycles before a load is required.
+
+Prefetching is also exploited in area of disk IO apart from feeding processor cache
+from memory. Patterson et al~\cite{Patterson1994} implemented informed prefetching
+mechanism for IO intensive application to exploit highly parallel IO systems. The
+mechanism depends on disclosure of future access dynamically.
+
+There had been work done~\cite{bhatia10} to determine size of cache to maximize
+hit rate in a sequential prefetching scheme.
