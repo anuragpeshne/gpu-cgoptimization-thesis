@@ -53,6 +53,14 @@
    - compiler issues prefetch instructions
      - DASH paper
      - DAE: decoupled access execute
+   - Similarities and difference
+     - In SIAL, we know which blocks need to be prefetched.
+     - know the exact sequence of blocks needed.
+     - where clauses can be evaluated during indices probing to know which iteration
+       will be evaluated
+     - similar as blocks are requested before they are needed to reduce/eliminate
+       block wait time.
+     - prefetching can be clubbed with parallel IO to get more throughput.
 * Background
 ** SIA
 ** Architecture of SIA
