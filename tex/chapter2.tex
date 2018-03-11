@@ -1,9 +1,12 @@
-\chapter{RELATED WORK} \label{lit}
+\chapter{RELATED WORK}\label{lit}
 
 We discuss work done by others in using GPU for scientific calculations using
 several methods such as directive based GPU programming models, using Cuda in
 higher level programming language and use of GPU in previous versions of ACES
-and work done using prefetching to hide latency in accessing data.
+and work done using prefetching to hide latency in accessing data. We also look
+at work done in general idea of prefetching such as non blocking fetch operation,
+techniques used to determine optimal prefetching parameters such as number of
+blocks to prefetch, prefetch cache size.
 
 \section{GPGPU}
 This section discuss previoud work done on Genral Purpose computing on Graphics
@@ -86,13 +89,20 @@ mechanism depends on disclosure of future access dynamically.
 
 Dahlgren and Stenström~\cite{Dahlgren1993} developed an algorithm to determine the
 number of memory blocks to prefetch. They proposed
-\textit{adaptive sequential prefetching} policy, which allows K, the number of blocks
-to prefetch to vary during runtime of the program to reflect spatial locality
+\textit{adaptive sequential prefetching} policy, which allows the number of blocks
+to prefetch, K to vary during runtime of the program to reflect spatial locality
 shown by the program. K is varied by calculating \textit{prefetch efficiency} metric
 which is defined as the ratio of useful prefetched blocks to the total number of
 prefetched blocks. If the prefetch efficiency exceeds a threshold then K is
 incremented and decremented if it drops below a lower threshold. The value of K
 can reach 0, effectively disabling prefetching.
 
-There had been work done~\cite{bhatia10} to determine size of cache to maximize
-hit rate in a sequential prefetching scheme.
+There had been work done by Bhatia el al~\cite{Bhatia2010} to determine size of
+cache to maximize hit rate in a sequential prefetching scheme. In this work, an
+online algorithm is devised which saves the blocks evicted from prefetch cache
+into another cache, \textit{evicted cache}. If the incoming request is satisfied
+by evicted cache, according to the algorithm the size of prefetch cache is too
+small and it increases it. If the request hits prefetch cache or there is miss
+on both of caches then the algorithm leaves the size unchanged. To determine if
+the cache size is too large, the eviction cache is observed and if eviction cache
+recevies no hits then the size of cache is decremented.

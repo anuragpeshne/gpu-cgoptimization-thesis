@@ -61,6 +61,8 @@
      - similar as blocks are requested before they are needed to reduce/eliminate
        block wait time.
      - prefetching can be clubbed with parallel IO to get more throughput.
+     - complex cache algorithms not required since blocks will not be used again
+       in a loop, once used - can safely evict from cache/prefetched memory.
 * Background
 ** SIA
 ** Architecture of SIA
