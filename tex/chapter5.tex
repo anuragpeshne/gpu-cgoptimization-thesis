@@ -8,7 +8,7 @@ faster copying of data between CPU main memory and GPU memory.
 When memory is allocated using usual constructs such as \textbf{new} or
 \textbf{malloc}, the data allocated is pageable by default. The GPU cannot
 directly access data allocated in pageable host main memory. So when data
-movement is requested using CUDA functions such as \textbf{cuda_memcpy}, the
+movement is requested using CUDA functions such as \texttt{cuda\_memcpy}, the
 CUDA driver has to first allocate a temporary page-locked, or ``pinned'', host
 memory, copy the host data to pinned memory and then transfer the data from
 pinned memory to device memory.
@@ -25,4 +25,3 @@ Semper vel lorem eu, venenatis ultrices est. Nam aliquet ut erat ac scelerisque.
 
 \subsubsection{Ut pellentesque velit sede}
  Placerat cursus. Integer congue urna non massa dictum, a pellentesque arcu accumsan. Nulla posuere, elit accumsan eleifend elementum, ipsum massa tristique metus, in ornare neque nisl sed odio. Nullam eget elementum nisi. Duis a consectetur erat, sit amet malesuada sapien. Aliquam nec sapien et leo sagittis porttitor at ut lacus. Vivamus vulputate elit vitae libero condimentum dictum. Nulla facilisi. Quisque non nibh et massa ullamcorper iaculis.
-

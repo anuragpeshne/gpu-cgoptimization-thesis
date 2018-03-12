@@ -1,13 +1,15 @@
-\chapter{BLOCK PREFETCHING} \label{block prefetching}
+\chapter{BLOCK PREFETCHING}\label{block prefetching}
 
 This chapter presents the idea of prefetching block data from server to hide the
 network transfer time.
 
 \section{Background}
-To process a large array, SIAL programs are written to process blocks of array
-in a pardo loop to spread the work across workers. After processing is done, the
-block is sent back to the server. This is a very common pattern in SIAL. There
-is network bound operation surrounding compute bound operations.
+To process a large array which cannot fit into memory of a single node, a typical
+workflow in SIAL consists of requesting a block of array from server in a
+\texttt{pardo} looping construct by each participating worker. After processing
+it, the resulting block is sent back to server. This common pattern can be
+summarized as single or multiple network bound operation surrounding one or more
+compute bound operations.
 
 %\hline
 \begin{algorithm}  {Processing large array}
@@ -15,7 +17,7 @@ is network bound operation surrounding compute bound operations.
 \singlespacing
 
 \begin{algorithmic}[1]
-%\caption{Processing large array in SIAL}\label{alg:euclid}
+%\caption{An example of typical workflow in SIAL}\label{alg:SIALWorkFLow}
 \Loop\Comment{SIAL do/pardo loop}
 \State $GET\ A[i, j]$\Comment{Request data from server asynchronously}
 \State $GET\ B[j, k]$\Comment{Network bound}
@@ -27,40 +29,44 @@ is network bound operation surrounding compute bound operations.
 \end{algorithmic}
 \end{algorithm}
 
-It is clear from the pseudocode that the computing resources is wasted due to
+It is clear from the pseudocode that the computing resources are wasted while
 waiting for the data to be ready. To improve the wait time of the compute
-operation, prefetching of the blocks from server over network using MPI was
-implemented.
+operation, non-blocking MPI call \texttt{MPI\_Irecv} was exploited to prefetch
+the blocks from server over network.
 
 \section{Implementation of Prefetching}
 
 \subsection{pardo Loop Implementation}
-While the \textbf{do} loop in SIAL is simple as it goes over the indices
-linearly, there are multiple implementation of pardo loop itself, which differ
-in the distribution of indices and thus blocks over workers:
+While the \texttt{do} loop which iterates over the indices one by one in SIAL is
+simple, there are multiple implementation of \texttt{pardo} loop, which differ
+in the distribution of indices and thus distribution of blocks over workers:
 \begin{itemize}
-\item \textbf{SequentialPardoLoop}: it behaves similar to a simple do loop,
+\item \texttt{SequentialPardoLoop}: it behaves similar to a simple do loop,
   except this loop can loop over multiple indices.
-\item \textbf{StaticTaskAllocParallelPardoLoop}: the indices for this loop are
+\item \texttt{StaticTaskAllocParallelPardoLoop}: the indices for this loop are
   determined statically by distributing the block over worker in a cyclic fashion.
-\item \textbf{BalancedTaskAllocParallelPardoLoop}: to support symmetric arrays,
-  SIAL has \textbf{where} construct in loops which prunes the iteration based on
-  some programmer defined condition. This loop respects that pruning.
-\item \textbf{FragLoopManager} and its sub classes: SIAL supports large sparse
-  arrays and to loop over them efficiently SIAL has implements for pardo loop.
+\item \texttt{BalancedTaskAllocParallelPardoLoop}: to support symmetric arrays,
+  SIAL has \texttt{where} construct in loops which prunes the iteration based on
+  some programmer defined condition. Due to such pruning there is a non zero
+  probability that all of the iterations are assigned to one particular worker.
+  This loop evaluates the \texttt{where} clauses and distributes the valid iteration
+  over workers in a balanced way.
+\item \texttt{FragLoopManager} and its sub classes: SIAL supports large sparse
+  arrays. To loop over them efficiently SIAL has various implementations of
+  fragmented pardo loops. These loops have knowledge of internal structure of the
+  sparse arrays and thus can skip over rows and columns having non useful values.
 \end{itemize}
-Due to such varieties of implementation of pardo and to not affect how
-subsequent indices are generated and yet to have a unified prefetching
-mechanism, it was necessary to implement a lazy prefetch mechanism which will
-probe for indices as needed. A lazy implementation would also support any other
-future implementation of dynamic distribution of blocks according to the work
-load on workers, at same time also gives freedom to vary number of prefetched
-blocks.
+Due to so many varieties of implementation of \texttt{pardo} looping construct
+and to support future implementations of indices generation schemes, it is
+important to keep the mechanism of prefetching separate from indices generation.
+For this a lazy prefetching mechanism was implemented which will probe for indices
+as needed dynamically. A lazy implementation would also give freedom to vary number
+of prefetched blocks at runtime.
 
 \subsection{Lazy Indices Probing}
-Each class implementing pardo have a function \textbf{update} which calculates the
-set of indices and populates interpreter state from where the blocks are
-determined.
+Each class implementing \texttt{pardo} have a function \texttt{update} which
+calculates the values of set of indices and populates interpreter state. This
+state is used by interpreter to calculate blocks using array and index values.
 
 %\hline
 \begin{algorithm}  {$update\_indices() \rightarrow bool$}
@@ -90,14 +96,15 @@ interpreter\_state.indices[index\_slot]$\Comment{get current index value}
 \end{algorithmic}
 \end{algorithm}
 
+The mechanism to generate next indices and changing the state is
+divided into two functions: \texttt{get\_next\_indices} and \texttt{update}.
+Another function \texttt{peek\_indices} is defined to probe and form a list
+of subsequent \texttt{n} indices.
 
-The mechanism to generate next indices and changing the state was
-divided into two functions: \textbf{get\_next\_indices} and \textbf{update}. And
-another function \textbf{peek\_indices} was written to probe and form a list
-of subsequent \textbf{n} indices.
-
-\textbf{get\_next\_indices} is now made a pure function which takes in set of
-current indices and outputs set of \textit{next} indices.
+\texttt{get\_next\_indices} is now changed to a function which produces set of
+\textit{next} indices based on indices passed as parameter rather than getting
+directly from interpreter state. This allows us to produce series of indices
+independent of state of interpreter.
 
 \begin{algorithm}  {get\_next\_indices([index]) $\rightarrow$ [index]}
 \singlespacing
@@ -109,51 +116,45 @@ current indices and outputs set of \textit{next} indices.
 \State $new\_val \gets old\_index\_val + 1$\Comment{Increment the index as needed}
 \State $new\_indices \gets new\_val$\Comment{update the index into new set of indices}
 \EndFor%
-\State \Return{$new\_indices$}\Comment{return new set without any side effects}
+\State \Return{$new\_indices$}\Comment{return new set independent of interpreter state}
 \EndFunction
 %\hline
 \end{algorithmic}
 \end{algorithm}
 
-The importance of \textbf{get\_next\_indices} being pure function is that now
-it can be composed with other function calls and be called multiple times without
-fear of any side effects. \textbf{peek\_indices(n)} maintains a list of indices
-and returns set of \textbf{n} indices if already computed or probes next set of
-indices if needed by calling \textbf{get\_next\_indices} by passing latest set of
-calculated indices.
+Since the function \texttt{get\_next\_indices} is now independent of interpreter
+state, it can be composed with other function calls other than \texttt{update}.
+\texttt{peek\_indices(n)} maintains a list of indices using \texttt{get\_next\_indices}
+and returns set of next indices if already computed or probes next set of indices
+by calling \texttt{get\_next\_indices} on last set of calculated indices.
 
-\begin{algorithm}  {peek\_indices([[index]], n) $\rightarrow$ [[index]]}
+\begin{algorithm}  {peek_indices(IndexList::iterator it) $\rightarrow$ [index]}
 \singlespacing
 
 \begin{algorithmic}[1]
-\Function{peek\_indices}{$computed\_indices, n$}
-\If{$n = 0$}\Comment{Base case for recursive call}
-  \State \Return $[\ ]$
-\Else
-  \If{$length(computed\_indices) > 1$}
-    \State $peeked\_indices \gets computed\_indices[0]$
-  \ElsIf{$length(computed\_indices) > 0$}
-    \State $peeked\_indices \gets get\_next\_indices(computed\_indices[0])$
-    \State $append(peeked\_indices, computed\_indices)$
-  \Else
+  \Function{peek\_indices}{$Indexlist::iterator it$}
+  \If{$IndexList.empty()$}
     \State \Return $[\ ]$
+  \Else
+    \State $peekedIndices \gets *it$
+    \If{$next(it) == IndexList.end()$}
+      \State $get\_next\_indices(*it)$
+    \EndIf
+    \State \Return $peekedIndices$
   \EndIf
-  \State $rest\_peeked\_indices \gets peek\_indices(computed\_indices[1:], n - 1)$
-  \State \Return $append(peeked\_indices, rest\_peeked\_indices)$
-\EndIf
-\EndFunction
+  \EndFunction
 %\hline
 \end{algorithmic}
 \end{algorithm}
 
-\textbf{peek\_indices} always appends to calculated indices or returns set of indices
-if already calculated. The updated function \textbf{update\_indices} pops first
+\texttt{peek\_indices} always appends to calculated indices or returns set of indices
+if already calculated. The updated function \texttt{update\_indices} pops first
 set of indices from the calculated indices list and update the interpreter
 global state so that other components can find it. The function
-\textbf{get\_next\_indices} requires set current indices to calculate set of next
+\texttt{get\_next\_indices} requires set current indices to calculate set of next
 indices, that is why there is a need to keep at least one element in the list of
-calculated indices. \textbf{peek\_indices} makes sure there is always at least one
-element in the list, hence \textbf{update\_indices} calls \textbf{peek\_indices}
+calculated indices. \texttt{peek\_indices} makes sure there is always at least one
+element in the list, hence \texttt{update\_indices} calls \texttt{peek\_indices}
 to delegate this responsibility instead of directly getting from the list.
 
 \begin{algorithm}  {update\_indices() $\rightarrow$ bool}
