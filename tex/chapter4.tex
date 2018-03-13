@@ -127,7 +127,7 @@ into multiple procedures:
   the set of indices requested for is last one in the list and there are more indices
   in the loop.
 
-  \begin{algorithm}  {peek\_indices(IndexList::iterator) $\rightarrow$ [index]}
+  \begin{algorithm}  {peek\_indices(IndexList::iterator) $\rightarrow$ [index], IndexList::iterator}
     \singlespacing
 
     \begin{algorithmic}[1]
@@ -140,7 +140,7 @@ into multiple procedures:
       \State $new\_indices \gets get\_next\_indices(*it)$
       \State $IndexList.insert\_after(it, new\_indices)$
       \EndIf
-      \State \Return $peekedIndices$
+      \State \Return $peekedIndices, it$
       \EndIf
       \EndFunction
       % \hline
@@ -150,7 +150,65 @@ into multiple procedures:
 \item \texttt{prefetch\_indices} remembers the last set of indices returned to each
   \texttt{GET} statement and returns the next set of indices on call. It remembers
   by mapping the position of indices in list to \texttt{line numbers} of each
-  \texttt{GET}.
+  \texttt{GET}. This makes varying the number of prefetched blocks for each
+  \texttt{GET} possible.
+
+  \begin{algorithm} {prefetch\_indices() $\rightarrow$ [index]}
+    \singlespacing
+
+    \begin{algorithmic}[1]
+      \Function{prefetch\_indices}{}
+      \State $line\_number \gets Interpreter.current\_line\_number()$
+
+      \If{$prefetech\_map.contains(line\_number)$}
+      \State $it \gets prefetch\_map[line\_number]$
+      \Else
+      \State $it \gets prefetch\_map.begin()$
+      \EndIf
+      \State $\{prefetched\_indices, it\} \gets peek\_indices(it)$
+      \State $prefetch\_map[line\_number] \gets it$
+      \State \Return $prefetech\_indices$
+      \EndFunction
+    \end{algorithmic}
+  \end{algorithm}
+
+  \begin{figure}[h] %place figure "here"
+    \centering
+
+    \tikzstyle{table}=[
+    matrix of nodes,
+    row sep=-\pgflinewidth,
+    column sep=-\pgflinewidth,
+    nodes={rectangle,draw=black,text width=15ex,align=center},
+    text depth=0.25ex,
+    text height=1.5ex,
+    nodes in empty cells]
+    \begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=7,
+        draw, rectangle split horizontal}, >=stealth, start chain]
+
+      \node[list,on chain] (A) {};
+      \node[list,on chain] (B) {};
+      \node[list,on chain] (C) {};
+      \node[on chain,draw,inner sep=6pt] (D) {};
+      \draw (D.north east) -- (D.south west);
+      \draw (D.north west) -- (D.south east);
+      \draw[*->] let \p1 = (A.seven), \p2 = (A.center) in (\x1,\y2) -- (B);
+      \draw[*->] let \p1 = (B.seven), \p2 = (B.center) in (\x1,\y2) -- (C);
+      \draw[*->] let \p1 = (C.seven), \p2 = (C.center) in (\x1,\y2) -- (D);
+
+      \matrix[table,below=of A] (map)
+      {
+        {Line Number}  & {Reference}  \\
+        {101}          & {}           \\
+        {102}          & {}           \\
+        {\vdots}       & {\vdots}     \\
+      };
+
+      \draw[*->] (map-2-2.center) to[out=0, in=270] (B.south);
+      \draw[*->] (map-3-2.center) to[out=0, in=270] (C.south);
+    \end{tikzpicture}
+    \caption{\texttt{prefetch\_indices} saves mapping of line number to position in list} \label{fig:prefetch_indices map}
+  \end{figure}
 
 \item \texttt{update} is now changed to simply pop the first set of indices from
   the list and update interpreter state so that other modules can find the value
@@ -176,28 +234,37 @@ into multiple procedures:
   \end{algorithm}
 \end{itemize}
 
-In all the functions \texttt{peek\_indices} and \texttt{update} can be modeled
-as producer and consumer problem on a bounded buffer.
+In all, the functions \texttt{peek\_indices} and \texttt{update} can be modeled
+as producer and consumer problem on a bounded buffer. And function \texttt{prefetch}
+indices is free to point at any set of indices on the list.
 
-\tikzstyle{table}=[rectangle split, rectangle split parts=2, draw,
-    rectangle split horizontal,minimum width=8cm]
-\begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=7,
-    draw, rectangle split horizontal}, >=stealth, start chain]
+  \begin{figure}[h] %place figure "here"
+    \centering
+    \begin{tikzpicture}[
+      list/.style={rectangle split, rectangle split parts=7,
+        draw, rectangle split horizontal},
+      function/.style={rectangle, draw,align=center},
+      >=stealth, start chain]
 
-  \node[list,on chain] (A) {};
-  \node[list,on chain] (B) {};
-  \node[list,on chain] (C) {};
-  \node[on chain,draw,inner sep=6pt] (D) {};
-  \draw (D.north east) -- (D.south west);
-  \draw (D.north west) -- (D.south east);
-  \draw[*->] let \p1 = (A.seven), \p2 = (A.center) in (\x1,\y2) -- (B);
-  \draw[*->] let \p1 = (B.seven), \p2 = (B.center) in (\x1,\y2) -- (C);
-  \draw[*->] let \p1 = (C.seven), \p2 = (C.center) in (\x1,\y2) -- (D);
+      \node[list,on chain] (A) {};
+      \node[list,on chain] (B) {};
+      \node[list,on chain] (C) {};
+      \node[on chain,draw,inner sep=6pt] (D) {};
+      \draw (D.north east) -- (D.south west);
+      \draw (D.north west) -- (D.south east);
+      \draw[*->] let \p1 = (A.seven), \p2 = (A.center) in (\x1,\y2) -- (B);
+      \draw[*->] let \p1 = (B.seven), \p2 = (B.center) in (\x1,\y2) -- (C);
+      \draw[*->] let \p1 = (C.seven), \p2 = (C.center) in (\x1,\y2) -- (D);
 
-  \node[table] (head) at ++(0, -4) {Line Number \nodepart{second} Reference};
-  \node[table,below=of head] (row1) {101};
-  \node[table,below=of row1] (row2) {102};
+      \node[function, below=of A]        (update)   {\texttt{update}};
+      \node[function, right=of update]   (prefetch) {\texttt{prefetch\_indices}};
+      \node[function, right=of prefetch] (peek)     {\texttt{peek\_indices}};
 
-  \draw[*->] (row1.second) -- (B.south);
-  \draw[*->] (row2.second) -- (C.south);
-\end{tikzpicture}
+      \draw[->]                (update.north)   -- (A.south);
+      \draw[densely dotted,->] (prefetch.north) -- (A.south);
+      \draw[densely dotted,->] (prefetch.north) -- (B.south);
+      \draw[densely dotted,->] (prefetch.north) -- (C.south);
+      \draw[->]                (peek.north)     -- (C.south);
+    \end{tikzpicture}
+    \caption{\texttt{update} consumes, \texttt{peek\_indices} produces if needed, \texttt{prefetch\_indices} is free to move along list} \label{fig:producer-consumer}
+  \end{figure}
