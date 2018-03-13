@@ -96,83 +96,108 @@ interpreter\_state.indices[index\_slot]$\Comment{get current index value}
 \end{algorithmic}
 \end{algorithm}
 
-The mechanism to generate next indices and changing the state is
-divided into two functions: \texttt{get\_next\_indices} and \texttt{update}.
-Another function \texttt{peek\_indices} is defined to probe and form a list
-of subsequent \texttt{n} indices.
+To implement lazy probing, the work done by procedure \texttt{update} is divided
+into multiple procedures:
 
-\texttt{get\_next\_indices} is now changed to a function which produces set of
-\textit{next} indices based on indices passed as parameter rather than getting
-directly from interpreter state. This allows us to produce series of indices
-independent of state of interpreter.
+\begin{itemize}
+\item \texttt{get\_next\_indices} produces set of \textit{next} indices purely
+  based on indices passed as parameter rather than getting directly from interpreter
+  state. This allows us to produce series of indices independent of state of
+  interpreter.
+  \begin{algorithm}  {get\_next\_indices([index]) $\rightarrow$ [index]}
+    \singlespacing
 
-\begin{algorithm}  {get\_next\_indices([index]) $\rightarrow$ [index]}
-\singlespacing
+    \begin{algorithmic}[1]
+      \Function{get\_next\_indices}{$current\_indices$}
+      \ForAll{$indx\_id\ in\ loop$}
+      \State $old\_index\_val \gets current\_indices[index\_id]$\Comment{get current index value}
+      \State $new\_val \gets old\_index\_val + 1$\Comment{Increment the index as needed}
+      \State $new\_indices \gets new\_val$\Comment{update the index into new set of indices}
+      \EndFor%
+      \State \Return{$new\_indices$}\Comment{return new set independent of interpreter state}
+      \EndFunction
+      % \hline
+    \end{algorithmic}
+  \end{algorithm}
 
-\begin{algorithmic}[1]
-\Function{get\_next\_indices}{$current\_indices$}
-\ForAll{$indx\_id\ in\ loop$}
-\State $old\_index\_val \gets current\_indices[index\_id]$\Comment{get current index value}
-\State $new\_val \gets old\_index\_val + 1$\Comment{Increment the index as needed}
-\State $new\_indices \gets new\_val$\Comment{update the index into new set of indices}
-\EndFor%
-\State \Return{$new\_indices$}\Comment{return new set independent of interpreter state}
-\EndFunction
-%\hline
-\end{algorithmic}
-\end{algorithm}
+\item \texttt{peek\_indices} returns set of indices and internally takes care of
+  maintaining and creating list of indices \textit{lazily}. It calls the procedure
+  \texttt{get\_next\_indices} to produce next set of indices by passing the last
+  set of indices in the list as needed. It increases the length of list by 1 if
+  the set of indices requested for is last one in the list and there are more indices
+  in the loop.
 
-Since the function \texttt{get\_next\_indices} is now independent of interpreter
-state, it can be composed with other function calls other than \texttt{update}.
-\texttt{peek\_indices(n)} maintains a list of indices using \texttt{get\_next\_indices}
-and returns set of next indices if already computed or probes next set of indices
-by calling \texttt{get\_next\_indices} on last set of calculated indices.
+  \begin{algorithm}  {peek\_indices(IndexList::iterator) $\rightarrow$ [index]}
+    \singlespacing
 
-\begin{algorithm}  {peek_indices(IndexList::iterator it) $\rightarrow$ [index]}
-\singlespacing
+    \begin{algorithmic}[1]
+      \Function{peek\_indices}{$it$}
+      \If{$IndexList.empty()$}
+      \State \Return $[\ ]$
+      \Else
+      \State $peekedIndices \gets *it$
+      \If{$next(it) == IndexList.end()$}
+      \State $new\_indices \gets get\_next\_indices(*it)$
+      \State $IndexList.insert\_after(it, new\_indices)$
+      \EndIf
+      \State \Return $peekedIndices$
+      \EndIf
+      \EndFunction
+      % \hline
+    \end{algorithmic}
+  \end{algorithm}
 
-\begin{algorithmic}[1]
-  \Function{peek\_indices}{$Indexlist::iterator it$}
-  \If{$IndexList.empty()$}
-    \State \Return $[\ ]$
-  \Else
-    \State $peekedIndices \gets *it$
-    \If{$next(it) == IndexList.end()$}
-      \State $get\_next\_indices(*it)$
-    \EndIf
-    \State \Return $peekedIndices$
-  \EndIf
-  \EndFunction
-%\hline
-\end{algorithmic}
-\end{algorithm}
+\item \texttt{prefetch\_indices} remembers the last set of indices returned to each
+  \texttt{GET} statement and returns the next set of indices on call. It remembers
+  by mapping the position of indices in list to \texttt{line numbers} of each
+  \texttt{GET}.
 
-\texttt{peek\_indices} always appends to calculated indices or returns set of indices
-if already calculated. The updated function \texttt{update\_indices} pops first
-set of indices from the calculated indices list and update the interpreter
-global state so that other components can find it. The function
-\texttt{get\_next\_indices} requires set current indices to calculate set of next
-indices, that is why there is a need to keep at least one element in the list of
-calculated indices. \texttt{peek\_indices} makes sure there is always at least one
-element in the list, hence \texttt{update\_indices} calls \texttt{peek\_indices}
-to delegate this responsibility instead of directly getting from the list.
+\item \texttt{update} is now changed to simply pop the first set of indices from
+  the list and update interpreter state so that other modules can find the value
+  of current indices. This decreases the length of list by 1.
+  \begin{algorithm}  {update\_indices() $\rightarrow$ bool}
+    \singlespacing
 
-\begin{algorithm}  {update\_indices() $\rightarrow$ bool}
-\singlespacing
+    \begin{algorithmic}[1]
+      \Function{update\_indices}{}
+      \State $current\_indices \gets peek\_indices(IndexList.begin())$
+      \If{$length(current\_indices) > 0$}\Comment{is there any more iteration}
+      \State $Indexlist.pop()$
+      \ForAll{$index\_slot\ in\ current\_indices $}
+      \State $interpreter\_state.indices[index\_slot] \gets current\_indices[index\_slot]$
+      \EndFor
+      \State \Return $true$
+      \Else
+      \State \Return $false$
+      \EndIf
+      \EndFunction
+      % \hline
+    \end{algorithmic}
+  \end{algorithm}
+\end{itemize}
 
-\begin{algorithmic}[1]
-\Function{update\_indices}{}
-\State $current\_indices \gets peek\_indices(computed\_indices, 1)$
-\If{$length(current\_indices) > 0$}\Comment{Base case for recursive call}
-  \State $pop(computed\_indices)$
-  \ForAll{$index\_slot\ in\ current\_indices $}
-    \State $interpreter\_state.indices[index\_slot] \gets current\_indices[index\_slot]$
-  \EndFor
-  \State \Return $true$
-\Else
-  \State \Return $false$
-\EndIf
-\EndFunction
-%\hline
-\end{algorithmic}
-\end{algorithm}
+In all the functions \texttt{peek\_indices} and \texttt{update} can be modeled
+as producer and consumer problem on a bounded buffer.
+
+\tikzstyle{table}=[rectangle split, rectangle split parts=2, draw,
+    rectangle split horizontal,minimum width=8cm]
+\begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=7,
+    draw, rectangle split horizontal}, >=stealth, start chain]
+
+  \node[list,on chain] (A) {};
+  \node[list,on chain] (B) {};
+  \node[list,on chain] (C) {};
+  \node[on chain,draw,inner sep=6pt] (D) {};
+  \draw (D.north east) -- (D.south west);
+  \draw (D.north west) -- (D.south east);
+  \draw[*->] let \p1 = (A.seven), \p2 = (A.center) in (\x1,\y2) -- (B);
+  \draw[*->] let \p1 = (B.seven), \p2 = (B.center) in (\x1,\y2) -- (C);
+  \draw[*->] let \p1 = (C.seven), \p2 = (C.center) in (\x1,\y2) -- (D);
+
+  \node[table] (head) at ++(0, -4) {Line Number \nodepart{second} Reference};
+  \node[table,below=of head] (row1) {101};
+  \node[table,below=of row1] (row2) {102};
+
+  \draw[*->] (row1.second) -- (B.south);
+  \draw[*->] (row2.second) -- (C.south);
+\end{tikzpicture}
