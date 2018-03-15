@@ -1,4 +1,145 @@
-\chapter{GPU TECHNIQUES USED} \label{gputechniques}
+\chapter{EXPLOITING GPU}\label{exploitinggpu}
+\section{Background}
+\texttt{do} and \texttt{pardo} looping constructs are one of the most important
+constructs in SIAL since they allow SIAL programmers to express operations on
+blocks. Using \texttt{pardo} construct the calculations can be done in parallel.
+SIAL runtime is responsible for the distribution of work over all the worker nodes.
+In this chapter we present the problems faced in using GPU to execute the looping
+constructs and how they were solved.
+
+\subsection{Attempts in ACESIII}
+There have been attempts\cite{jindal2016gpusial} made in previous version of ACES
+to use GPU to speed up computation. In this work the SIAL programmer had to deal
+with a lot of low level GPU memory operations such as allocating memory on GPU,
+copying blocks to and from GPU and deallocating memory on GPU. Since not all
+calculations are suitable to be executed on GPU, the SIAL programmer had to mark
+regions of SIAL code suitable to be executed on GPU.
+
+\begin{lstlisting}[caption={Code Fragment from ACESIII for CCSD calculation},
+  label={lst:ACESIII_gpucode}]
+#start of GPU region
+gpu_begin
+#allocate and initialize blocks on GPU
+gpu_put aoint(lambda,mu,sigma,nu) #allocate and copy data from CPU
+DO i1
+DO j1
+    gpu_put LT2AOab1(mu,i1,nu,j1)
+    gpu_put LT2AOab2(nu,j1,mu,i1)
+    gpu_put LTAOab(lambda,i1,sigma,j1)
+ENDDO j1
+ENDDO i1
+gpu begin
+DO i
+DO j
+    #perform computations on GPU
+    Yab(mu,i,nu,j) = 0.0
+    Y1ab(nu,j,mu,i) = 0.0
+    gpu_allocate Yab(mu,i,nu,j) # allocate temp blocks on GPU
+    gpu_allocate Y1ab(nu , j ,mu, i )
+    #contraction Y1ab(nu,j,mu,i) = Yab(mu,i,nu,j) #permutation
+    Yab(mu,i,nu,j) = aoint(lambda,mu,sigma,nu)*LTAOab(lambda,i,sigma,j)
+    LT2AOab1(mu,i,nu,j) += Yab(mu,i,nu,j) #element−wise sums
+    LT2AOab2(nu,j,mu,i) += Y1ab(nu,j,mu,i) #element−wise sums
+    gpu_free Yab(mu,i,nu,j) #free temp blocks on GPU
+    gpu_free Y1ab(nu,j,mu,i)
+ENDDO j
+ENDDO i
+#copy results to CPU , free blocks on GPU
+DO i1
+DO j1
+    gpu_get LT2AOab1(mu,i1,nu,j1)
+    gpu_get LT2AOab2(nu,j1,mu,i1)
+    gpu_free LT2AOab1(mu,i1,nu,j1)
+    gpu_free LT2AOab2(nu,j1,mu,i1)
+    gpu_free LTAOab(lambda,i1,sigma,j1)
+ENDDO j1
+ENDDO i1
+gpu_free aoint(lambda,mu,sigma,nu)
+gpu_end
+#end of GPU region
+\end{lstlisting}
+
+A code fragment from ACESIII for CCSD calculation is presented in
+\ref{lst:ACESIII_gpucode}. In line 2 and 39 the region is marked to be executed
+on GPU and blocks of lines 5-11 and 29-37 deal with managing memory to and from
+GPU and main memory. The actual calculations is done by lines 13-27.
+
+\section{Runtime Memory Management}
+To manage the block memory and to automate the memory transfer between GPU and CPU
+meta data about state of memory was stored in interpreter. The \texttt{Block} class
+which represents the super \textit{block} in interpreter was modified to now store
+this meta data and pointer to memory location in GPU and main memory in form of
+object of another class \texttt{Device\_Info}.
+
+Due to this added layer, supporting multiple compute devices is now possible.
+memory is also added to \texttt{Device\_Info} class. The meta data includes whether
+the block data was \textit{dirty}, \textit{valid} and a \textbf{version number}
+which helps in keeping block data allocated on GPU and main memory (CPU)
+synchronized.
+
+\begin{lstlisting}[caption={\texttt{Device\_Info} Class structure},
+  language=C++,
+  label={lst:device_info_structure}]
+class DeviceInfo {
+  double* data_ptr_;
+  unsigned int data_version_;
+  bool onDevice; // is block data on current device
+  bool isDirty;  // is block data modified/dirty
+  bool isAsync;  // are there any pending operations on device
+}
+\end{lstlisting}
+
+The code shown in~\ref{lst:device_info_structure} is one of the way of implementing
+the class \texttt{Device\_Info} in C++ language.
+
+Using the meta data and specifically \texttt{data\_version\_}, the runtime can keep
+track of changes in data on different devices and find the device with latest
+data by comparing version numbers:
+
+\begin{algorithm}  {Block::get\_latest\_data() $\rightarrow$ Device\_Info}
+  \singlespacing
+
+  \begin{algorithmic}[1]
+    \Function{Block::get\_latest\_data}{}
+    \State $highest\_version\_found \gets 0$
+    \State $highest\_version\_device \gets null$
+    \ForAll{$device\_info\ in\ this->devices$}
+    \If{$device\_info.data\_version > highest\_version\_found$}
+    \State {$highest\_version\_found \gets info.data\_version$}
+    \State {$highest\_version\_device \gets device\_info$}
+    \EndIf
+    \EndFor
+    \State \Return $highest\_version\_device$
+    \EndFunction
+    % \hline
+  \end{algorithmic}
+\end{algorithm}
+
+After determining the device with latest version of data, the runtime can update
+other devices if needed. The only interfacing function exposed outside of
+\texttt{Block} class is \texttt{get\_data(deviceid)} which returns pointer to memory
+location on device identified by \texttt{deviceid}. The logic to always return
+latest version of data can be embedded into \texttt{get\_data(device)}:
+
+\begin{algorithm}  {Block::get\_data(deviceid) $\rightarrow$ double*}
+  \singlespacing
+
+  \begin{algorithmic}[1]
+    \Function{Block::get\_data}{}
+    \State $latest\_device \gets this->get\_latest\_data()$
+    \If{$latest\_device.data\_version > this->devices[deviceid]$}
+    \State {$memcpy(latest\_device.data,\ this->devices[deviceid].data)$}
+    \EndIf
+    \State \Return $this->devices[deviceid].data$
+    \EndFunction
+    % \hline
+  \end{algorithmic}
+\end{algorithm}
+
+\section{Reducing Block Transfers}
+The SIAL compiler has information about block read/write access. Thus in every
+operation the intent
+
 
 \section{Memory Pinning}
 This section presents technique of memory pinning which when used results in
@@ -17,11 +158,3 @@ pinned memory to device memory.
 
 \section{CUDA aware MPI}
 - MPI get async
-
-Aliquam molestie sed urna quis convallis. Aenean nibh eros, aliquam non eros in, tempus lacinia justo. In magna sapien, blandit a faucibus ac, scelerisque nec purus. Praesent fermentum felis nec massa interdum, vel dapibus mi luctus. Cras id fringilla mauris. Ut molestie eros mi, ut hendrerit nulla tempor et. Pellentesque tortor quam, mattis a scelerisque nec, euismod et odio. Mauris rhoncus metus sit amet risus mattis, eu mattis sem interdum.
-
-\subsection{Nam Arcu Magna}
-Semper vel lorem eu, venenatis ultrices est. Nam aliquet ut erat ac scelerisque. Maecenas ut molestie mi. Phasellus ipsum magna, sollicitudin eu ipsum quis, imperdiet cursus turpis. Etiam pretium enim a fermentum accumsan. Morbi vel vehicula enim.
-
-\subsubsection{Ut pellentesque velit sede}
- Placerat cursus. Integer congue urna non massa dictum, a pellentesque arcu accumsan. Nulla posuere, elit accumsan eleifend elementum, ipsum massa tristique metus, in ornare neque nisl sed odio. Nullam eget elementum nisi. Duis a consectetur erat, sit amet malesuada sapien. Aliquam nec sapien et leo sagittis porttitor at ut lacus. Vivamus vulputate elit vitae libero condimentum dictum. Nulla facilisi. Quisque non nibh et massa ullamcorper iaculis.

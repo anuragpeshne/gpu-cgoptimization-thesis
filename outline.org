@@ -76,13 +76,37 @@
 ** Implementation of Prefetching
 *** ~pardo~ Loop Implementation
 ** Lazy Indices Probing
-* GPU Techniques
-** Memory Pinning
+** Ignoring loops with ~where~ clause
+** Server ignores request for non existing blocks
+   - ~MPI_Irecv~ with ~PREFETCH~, ignore if block not present
+   - with ~GET~, throw an error if block does not exists: error in SIAL.
+* Exploiting GPU
+** Background
+*** Settings in ACESIII.
+    - Programmer had to manage memory transfer.
+    - eg.
+    - mark region.
+*** Automatic Memory Management in ACES4
+    - Structure of block
+      - pointers to memory in main memory and GPU
+    - track changes using version numbers
+** Optimizing Block Copying
+*** Exploiting Block Modes
+    - Have information if the block is going to be used for reading or writing.
+    - if block requested for writing, block is *not* synchronized.
+    - if requested for reading, version numbers are compared to check if
+      synchronization is needed.
+*** Avoid double copy using Memory Pinning
+    - 2x speed improvement in ~memcpy~
+    - allows ~asyncmemcpy~
+*** Streams
+    - GPU tesla has 2 copy engine
+    - ~asyyncmemcpy~ using pinning and stream.
 *** ~memcpy~ without Pinning
 *** TODO Reuse allocated blocks
-** CUDA aware MPI
-** Streams
-*** Non Blocking Copying
+** Optimizing block movement
+*** CUDA aware MPI
+*** marking region mitigated
 ** TODO MPS
 * TODO Experiment and Results
 * Conclusion and Future Work
