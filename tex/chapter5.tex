@@ -59,8 +59,8 @@ gpu_end
 #end of GPU region
 \end{lstlisting}
 
-A code fragment from ACESIII for CCSD calculation is presented in
-\ref{lst:ACESIII_gpucode}. In line 2 and 39 the region is marked to be executed
+A code fragment from ACESIII for CCSD calculation is presented
+in~\ref{lst:ACESIII_gpucode}. In line 2 and 39 the region is marked to be executed
 on GPU and blocks of lines 5-11 and 29-37 deal with managing memory to and from
 GPU and main memory. The actual calculations is done by lines 13-27.
 
@@ -72,9 +72,9 @@ this meta data and pointer to memory location in GPU and main memory in form of
 object of another class \texttt{Device\_Info}.
 
 Due to this added layer, supporting multiple compute devices is now possible.
-memory is also added to \texttt{Device\_Info} class. The meta data includes whether
-the block data was \textit{dirty}, \textit{valid} and a \textbf{version number}
-which helps in keeping block data allocated on GPU and main memory (CPU)
+The meta data includes whether the block data was \textit{dirty}, \textit{valid}
+and a \textbf{version number} which is incremented each time the block is changed
+by the compute device. This helps in keeping the GPU and main memory (CPU)
 synchronized.
 
 \begin{lstlisting}[caption={\texttt{Device\_Info} Class structure},
@@ -89,18 +89,80 @@ class DeviceInfo {
 }
 \end{lstlisting}
 
-The code shown in~\ref{lst:device_info_structure} is one of the way of implementing
+The code shown in~\ref{lst:device_info_structure} is one of the way of expressing
 the class \texttt{Device\_Info} in C++ language.
+
+\begin{figure}[h] %place figure "here"
+  \centering
+
+  \tikzstyle{table}=[
+  matrix of nodes,
+  row sep=-\pgflinewidth,
+  column sep=-\pgflinewidth,
+  nodes={typetag}]
+  \begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=3,
+      draw, rectangle split horizontal,align=center}, >=stealth, start chain,
+    container/.style={draw=gray, inner sep=1ex},
+    typetag/.style={draw=none, anchor=west},
+    title/.style={draw=none, color=gray, inner sep=0pt}]
+
+    \matrix[table] (block)
+    {
+      |[title]|Block  &            \\
+      {BlockId}       & {$\dotsb$} \\
+      {BlockShape}    & {$\dotsb$} \\
+      {BlockSelector} & {$\dotsb$} \\
+      {Devices:}      & |[list]|   \\
+    };
+
+    \matrix[table, below=of block] (CPU_device)
+    {
+      |[title]|Device\_Info    &            \\
+      {\texttt{data\_version}} & {$\dotsb$} \\
+      {\texttt{onDevice}}      & {$\dotsb$} \\
+      {\texttt{isDirty}}       & {$\dotsb$} \\
+      {\texttt{isAsync}}       & {$\dotsb$} \\
+      {\texttt{data}}          & {}         \\
+    };
+
+    \matrix[table, right=of CPU_device] (GPU_device)
+    {
+      |[title]|Device\_Info    &            \\
+      {\texttt{data\_version}} & {$\dotsb$} \\
+      {\texttt{onDevice}}      & {$\dotsb$} \\
+      {\texttt{isDirty}}       & {$\dotsb$} \\
+      {\texttt{isAsync}}       & {$\dotsb$} \\
+      {\texttt{data}}          & {}         \\
+    };
+
+    \node[container, fit=(block)] {};
+    \node[container, fit=(CPU_device)] {};
+    \node[container, fit=(GPU_device)] {};
+
+    \node[inner sep=0pt, below=of CPU_device] (cpu-mem)
+    {\includegraphics[width=.20\textwidth]{images/cpu-mem.png}};
+
+    \node[inner sep=0pt, right=of cpu-mem] (gpu-mem)
+    {\includegraphics[width=.20\textwidth]{images/gpu-card.png}};
+
+    \draw[*->] let \p1 = (block-5-2.one), \p2 = (block-5-2.center) in (\x1,\y2)    -- (CPU_device);
+    \draw[*->] let \p1 = (block-5-2.second), \p2 = (block-5-2.center) in (\x1,\y2) -- (GPU_device);
+
+    \draw[*->] (CPU_device-6-2.center) -- (cpu-mem);
+    \draw[*->] (GPU_device-6-2.center) -- (gpu-mem);
+  \end{tikzpicture}
+  \caption{\texttt{Block} and \texttt{Device\_Info} structure}\label{fig:Device\_Info Structure}
+\end{figure}
 
 Using the meta data and specifically \texttt{data\_version\_}, the runtime can keep
 track of changes in data on different devices and find the device with latest
 data by comparing version numbers:
 
-\begin{algorithm}  {Block::get\_latest\_data() $\rightarrow$ Device\_Info}
+\begin{algorithm} {Block::get\_latest\_device() $\rightarrow$ Device\_Info}
   \singlespacing
 
   \begin{algorithmic}[1]
-    \Function{Block::get\_latest\_data}{}
+    \Function{Block::get\_latest\_device}{}
     \State $highest\_version\_found \gets 0$
     \State $highest\_version\_device \gets null$
     \ForAll{$device\_info\ in\ this->devices$}
@@ -125,8 +187,8 @@ latest version of data can be embedded into \texttt{get\_data(device)}:
   \singlespacing
 
   \begin{algorithmic}[1]
-    \Function{Block::get\_data}{}
-    \State $latest\_device \gets this->get\_latest\_data()$
+    \Function{Block::get\_data}{deviceid}
+    \State $latest\_device \gets this->get\_latest\_device()$
     \If{$latest\_device.data\_version > this->devices[deviceid]$}
     \State {$memcpy(latest\_device.data,\ this->devices[deviceid].data)$}
     \EndIf
@@ -134,25 +196,55 @@ latest version of data can be embedded into \texttt{get\_data(device)}:
     \EndFunction
     % \hline
   \end{algorithmic}
+  \label{alg:get_data}
 \end{algorithm}
 
-\section{Reducing Block Transfers}
-The SIAL compiler has information about block read/write access. Thus in every
-operation the intent
+\section{Optimizing Block Transfers}
+A enormous cost has to be paid~\cite{Bakkum2010}\cite{memorytransferoverhead}
+for transferring memory to GPU as compared to the time taken for actual computation
+on GPU. Hence to have significant speed gains by executing on GPU over executing
+on CPU, it is necessary to minimize time spent on block transfers. This has been
+achieved in by deploying multiple optimizations that are explained in this section.
 
+\subsection{Reducing Block Transfers}
+The SIAL runtime has the information about intent of each block request, whether
+the block is being requested to be read or written. Using this information the
+number of synchronizations between devices can be reduced. The blocks which are
+going to be written need not be synchronized, however the blocks requested for
+being read or updated need to be synchronized for the requested device.
+
+The algorithm presented in~\ref{alg:get_data} can be split into
+\texttt{get\_data} and a explicit \texttt{update\_data}:
+
+\begin{algorithm}  {Block::get\_data(deviceid) $\rightarrow$ double*}
+  \singlespacing
+
+  \begin{algorithmic}[1]
+    \Function{Block::get\_data}{deviceid}
+    \State \Return $this->devices[deviceid].data$
+    \EndFunction
+
+    \Function{Block::update\_data}{deviceid}
+    \State $latest\_device \gets this->get\_latest\_device()$
+    \If{$latest\_device.data\_version > this->devices[deviceid]$}
+    \State {$memcpy(latest\_device.data,\ this->devices[deviceid].data)$}
+    \EndIf
+    \EndFunction
+    % \hline
+  \end{algorithmic}
+\end{algorithm}
+
+This relatively simple change in organization of code along with the information
+about intent of the request reduced the synchronizations by TODO\%.
 
 \section{Memory Pinning}
-This section presents technique of memory pinning which when used results in
-faster copying of data between CPU main memory and GPU memory.
-
-\subsection{Memcpy without Pinning}
-When memory is allocated using usual constructs such as \textbf{new} or
-\textbf{malloc}, the data allocated is pageable by default. The GPU cannot
-directly access data allocated in pageable host main memory. So when data
-movement is requested using CUDA functions such as \texttt{cuda\_memcpy}, the
-CUDA driver has to first allocate a temporary page-locked, or ``pinned'', host
-memory, copy the host data to pinned memory and then transfer the data from
-pinned memory to device memory.
+The memory allocated on CPU or main memory is pageable by default. The GPU cannot
+access data on such pageable host memory~\cite{datatransferoptimization}
+\cite{programmingguidecuda}. For this reason when a memory copy operation is requested
+from host to the GPU, the CUDA driver first allocates a temporary \textbf{page locked},
+or \textit{pinned} memory on host (main memory) and copies the host memory to the
+temporary pinned memory and then finally transfers the memory from pinned memory
+to GPU device memory.
 
 - Async Memcpy: eager push
 
