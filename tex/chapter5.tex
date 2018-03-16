@@ -8,7 +8,7 @@ In this chapter we present the problems faced in using GPU to execute the loopin
 constructs and how they were solved.
 
 \subsection{Attempts in ACESIII}
-There have been attempts\cite{jindal2016gpusial} made in previous version of ACES
+There have been attempts\cite{Jindal2016} made in previous version of ACES
 to use GPU to speed up computation. In this work the SIAL programmer had to deal
 with a lot of low level GPU memory operations such as allocating memory on GPU,
 copying blocks to and from GPU and deallocating memory on GPU. Since not all
@@ -199,7 +199,7 @@ latest version of data can be embedded into \texttt{get\_data(device)}:
   \label{alg:get_data}
 \end{algorithm}
 
-\section{Optimizing Block Transfers}
+\section{Optimizing Block Copying}
 A enormous cost has to be paid~\cite{Bakkum2010}\cite{memorytransferoverhead}
 for transferring memory to GPU as compared to the time taken for actual computation
 on GPU. Hence to have significant speed gains by executing on GPU over executing
@@ -237,7 +237,7 @@ The algorithm presented in~\ref{alg:get_data} can be split into
 This relatively simple change in organization of code along with the information
 about intent of the request reduced the synchronizations by TODO\%.
 
-\section{Memory Pinning}
+\subsection{Memory Pinning}
 The memory allocated on CPU or main memory is pageable by default. The GPU cannot
 access data on such pageable host memory~\cite{datatransferoptimization}
 \cite{programmingguidecuda}. For this reason when a memory copy operation is requested
@@ -245,6 +245,79 @@ from host to the GPU, the CUDA driver first allocates a temporary \textbf{page l
 or \textit{pinned} memory on host (main memory) and copies the host memory to the
 temporary pinned memory and then finally transfers the memory from pinned memory
 to GPU device memory.
+\begin{figure}[h] %place figure "here"
+  \begin{tikzpicture}[
+    container/.style={draw=gray, inner sep=5mm},
+    typetag/.style={draw=black, anchor=west, inner sep=2mm},
+    title/.style={draw=none, color=gray, inner sep=0pt}]
+
+    \node[title]   (gpu-title)     at (0, 5) {GPU};
+    \node[typetag] (gpu-ram)       at (0.7, 4) {DRAM};
+    \node[title]   (cpu-title)     at (0, 2) {CPU};
+    \node[typetag] (pinned)        at (0, 1) {Pinned Memory};
+    \node[typetag] (main-pageable) at (4, 1) {Pageable Memory};
+
+    \node[container, fit=(gpu-title)(gpu-ram)]               {};
+    \node[container, fit=(cpu-title)(main-pageable)(pinned)] {};
+
+    \draw[draw=black, solid, line width=1mm, fill=black,
+    preaction={-triangle 90, thin, draw, shorten >=-1mm}] (main-pageable) -- (pinned.east);
+    \draw[draw=black, solid, line width=1mm, fill=black,
+    preaction={-triangle 90, thin, draw, shorten >=-1mm}] (pinned)        -- (gpu-ram.south);
+  \end{tikzpicture}
+  \caption{\texttt{memcpy} w/o memory pinning}\label{fig:wo_mem_pin}
+\end{figure}
+
+Due to this copying of data to first a temporary page locked memory, extra time
+is spent in redudant copy operation. To overcome this, the host memory can directly
+be allocated in pinned memory. For this CUDA gives API \texttt{cudaMallocHost()},
+\texttt{cudaHostAlloc()} to allocte memory and \texttt{cudaFreeHost()} to deallocate
+the memory. Using this technique the data flow presented in~\ref{fig:wo_mem_pin} is
+modified to flow presented in~\ref{fig:w_mem_pin}.
+as:
+
+\begin{figure}[h] %place figure "here"
+  \begin{tikzpicture}[
+    container/.style={draw=gray, inner sep=5mm},
+    typetag/.style={draw=black, anchor=west, inner sep=2mm},
+    title/.style={draw=none, color=gray, inner sep=0pt}]
+
+    \node[title]   (gpu-title)     at (0, 5) {GPU};
+    \node[typetag] (gpu-ram)       at (0.7, 4) {DRAM};
+    \node[title]   (cpu-title)     at (0, 2) {CPU};
+    \node[typetag] (pinned)        at (0, 1) {Pinned Memory};
+
+    \node[container, fit=(gpu-title)(gpu-ram)] {};
+    \node[container, fit=(cpu-title)(pinned)]  {};
+
+    \draw[draw=black, solid, line width=1mm, fill=black,
+    preaction={-triangle 90, thin, draw, shorten >=-1mm}] (pinned) -- (gpu-ram.south);
+  \end{tikzpicture}
+  \caption{\texttt{memcpy} with memory pinning}\label{fig:w_mem_pin}
+\end{figure}
+
+Apart from saving a redudant copy operation, memory page locking also helps in
+reducing time to copy because when memory is page locked, the GPU can invoke DMA
+controller~\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs} to transfer memory
+by passing the CPU. This results in twice\cite{datatransferoptimization} the
+bandwidth between host and GPU.
+
+\subsection{GPU Streams}
+A \textit{stream} in CUDA is a sequence of operations that execute on the device
+in the order in which they are issued by the hode code~\cite{overlapdatatransfer}.
+Streams can be considered as operation pipes in which the operations get evaluated in
+FIFO (First In First Out) fashion. Operations in different streams can be interleaved
+and CUDA driver might execute them concurrently.
+
+\subsubsection{Non Blocking Device Synchronization}
+GPU streams were used to implement non blocking SIA blocks synchronization. Current
+generation of GPU have dual DMA controllers~\cite{teslaspecs}\cite{teslakspecs}
+and one kernel execution engine. These hardware facilities have been exploited by
+implementing asynchronous memory copying for block synchronization.
+
+To implement the non blocking synchronization, the module
+\texttt{gpu\_super\_instructions} which
+
 
 - Async Memcpy: eager push
 
