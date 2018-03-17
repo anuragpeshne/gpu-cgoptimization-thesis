@@ -79,7 +79,7 @@ synchronized.
 
 \begin{lstlisting}[caption={\texttt{Device\_Info} Class structure},
   language=C++,
-  label={lst:device_info_structure}]
+  label={lst:deviceinfostructure}]
 class DeviceInfo {
   double* data_ptr_;
   unsigned int data_version_;
@@ -89,7 +89,7 @@ class DeviceInfo {
 }
 \end{lstlisting}
 
-The code shown in~\ref{lst:device_info_structure} is one of the way of expressing
+The code shown in~\ref{lst:deviceinfostructure} is one of the way of expressing
 the class \texttt{Device\_Info} in C++ language.
 
 \begin{figure}[h] %place figure "here"
@@ -151,7 +151,7 @@ the class \texttt{Device\_Info} in C++ language.
     \draw[*->] (CPU_device-6-2.center) -- (cpu-mem);
     \draw[*->] (GPU_device-6-2.center) -- (gpu-mem);
   \end{tikzpicture}
-  \caption{\texttt{Block} and \texttt{Device\_Info} structure}\label{fig:Device\_Info Structure}
+  \caption{\texttt{Block} and \texttt{Device\_Info} structure}\label{fig:Device\_Info\_Structure}
 \end{figure}
 
 Using the meta data and specifically \texttt{data\_version\_}, the runtime can keep
@@ -165,7 +165,7 @@ data by comparing version numbers:
     \Function{Block::get\_latest\_device}{}
     \State $highest\_version\_found \gets 0$
     \State $highest\_version\_device \gets null$
-    \ForAll{$device\_info\ in\ this->devices$}
+    \ForAll{$device\_info\ in\ this.devices$}
     \If{$device\_info.data\_version > highest\_version\_found$}
     \State {$highest\_version\_found \gets info.data\_version$}
     \State {$highest\_version\_device \gets device\_info$}
@@ -188,11 +188,11 @@ latest version of data can be embedded into \texttt{get\_data(device)}:
 
   \begin{algorithmic}[1]
     \Function{Block::get\_data}{deviceid}
-    \State $latest\_device \gets this->get\_latest\_device()$
-    \If{$latest\_device.data\_version > this->devices[deviceid]$}
-    \State {$memcpy(latest\_device.data,\ this->devices[deviceid].data)$}
+    \State $latest\_device \gets this.get\_latest\_device()$
+    \If{$latest\_device.data\_version > this.devices[deviceid]$}
+    \State {$memcpy(latest\_device.data,\ this.devices[deviceid].data)$}
     \EndIf
-    \State \Return $this->devices[deviceid].data$
+    \State \Return $this.devices[deviceid].data$
     \EndFunction
     % \hline
   \end{algorithmic}
@@ -221,13 +221,13 @@ The algorithm presented in~\ref{alg:get_data} can be split into
 
   \begin{algorithmic}[1]
     \Function{Block::get\_data}{deviceid}
-    \State \Return $this->devices[deviceid].data$
+    \State \Return $this.devices[deviceid].data$
     \EndFunction
 
     \Function{Block::update\_data}{deviceid}
-    \State $latest\_device \gets this->get\_latest\_device()$
-    \If{$latest\_device.data\_version > this->devices[deviceid]$}
-    \State {$memcpy(latest\_device.data,\ this->devices[deviceid].data)$}
+    \State $latest\_device \gets this.get\_latest\_device()$
+    \If{$latest\_device.data\_version > this.devices[deviceid]$}
+    \State {$memcpy(latest\_device.data,\ this.devices[deviceid].data)$}
     \EndIf
     \EndFunction
     % \hline
@@ -248,13 +248,13 @@ to GPU device memory.
 \begin{figure}[h] %place figure "here"
   \begin{tikzpicture}[
     container/.style={draw=gray, inner sep=5mm},
-    typetag/.style={draw=black, anchor=west, inner sep=2mm},
+    typetag/.style={draw=black, anchor=west, inner sep=2mm, text width=3cm},
     title/.style={draw=none, color=gray, inner sep=0pt}]
 
     \node[title]   (gpu-title)     at (0, 5) {GPU};
-    \node[typetag] (gpu-ram)       at (0.7, 4) {DRAM};
+    \node[typetag] (gpu-ram)       at (0, 4) {DRAM};
     \node[title]   (cpu-title)     at (0, 2) {CPU};
-    \node[typetag] (pinned)        at (0, 1) {Pinned Memory};
+    \node[typetag] (pinned)        at (0, 1) {Temporary Pinned Memory};
     \node[typetag] (main-pageable) at (4, 1) {Pageable Memory};
 
     \node[container, fit=(gpu-title)(gpu-ram)]               {};
@@ -296,28 +296,70 @@ as:
   \caption{\texttt{memcpy} with memory pinning}\label{fig:w_mem_pin}
 \end{figure}
 
+\subsubsection{Page Locked Memory Bandwidth}
 Apart from saving a redudant copy operation, memory page locking also helps in
 reducing time to copy because when memory is page locked, the GPU can invoke DMA
 controller~\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs} to transfer memory
 by passing the CPU. This results in twice\cite{datatransferoptimization} the
 bandwidth between host and GPU.
 
+\subsubsection{Asynchronous \texttt{memcpy}}
+Since CUDA controller can invoke DMA controller to copy memory if the host memory
+is page locked, this operation can be carried out asychronous not only to host but
+also asychronously to GPU kernel execution engine. Thus both host and GPU can carry
+on with execution of calculation while the blocks are synchronized. This is
+elaborated in section~\ref{nonblockdevicesync}.
+
+\subsubsection{Reusing Page Locked Memory Pages}
+TODO.
+
 \subsection{GPU Streams}
 A \textit{stream} in CUDA is a sequence of operations that execute on the device
-in the order in which they are issued by the hode code~\cite{overlapdatatransfer}.
+in the order in which they are issued by the host~\cite{overlapdatatransfer}.
 Streams can be considered as operation pipes in which the operations get evaluated in
 FIFO (First In First Out) fashion. Operations in different streams can be interleaved
 and CUDA driver might execute them concurrently.
 
-\subsubsection{Non Blocking Device Synchronization}
-GPU streams were used to implement non blocking SIA blocks synchronization. Current
-generation of GPU have dual DMA controllers~\cite{teslaspecs}\cite{teslakspecs}
-and one kernel execution engine. These hardware facilities have been exploited by
-implementing asynchronous memory copying for block synchronization.
+\subsubsection{Non Blocking Device Synchronization}\label{nonblockdevicesync}
+GPU streams were used to implement non blocking SIA blocks synchronization. Using
+multiple CUDA streams and page locked memory, DMA controllers can be invoked to
+transfer memory from host to GPU and vice-versa asynchronously to both CPU and GPU
+kernel execution engine. Current generation of GPU have dual DMA
+controllers~\cite{teslaspecs}\cite{teslakspecs} and one kernel execution engine.
+This means that the GPU can handle 2 asynchronous memory copying operation along
+with one kernel execution operation concurrently. These hardware features have
+been exploited by implementing asynchronous memory copying for block synchronization.
 
-To implement the non blocking synchronization, the module
-\texttt{gpu\_super\_instructions} which
+To implement the non blocking synchronization, multiple streams are created and
+stored in the module \texttt{gpu\_super\_instructions} which initializes and
+maintains the GPU state. The number of streams created is configurable and currently
+is set to 2 since current generation of GPU devices have 2 DMA controllers. Each
+\texttt{Device\_Info} object stores \texttt{gpu\_stream\_id} which is set when a
+copy operation on \texttt{Block} object is initiated. At same time a bit
+\texttt{isAsync} is set to denote that the \texttt{Block} object has pending
+asynchronous operations and before deferencing the memory pointer, runtime should
+wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchronize}.
 
+\begin{algorithm} {Asynchronous Block Synchronization}
+  \singlespacing
+
+  \begin{algorithmic}[1]
+    \Function{gpu\_memcpy}{src\_device, dest\_device, num\_elements}
+    \State $next\_stream \gets get\_next\_stream()$
+    \State $cudaMemcpyAsync(src\_device.data, dest\_device.data, num\_elements)$
+    \State {$dest\_device.stream\_id \gets next\_stream$}
+    \State {$dest\_device.isAsync \gets true$}
+    \EndFunction
+
+    \Function{block::get\_data}{deviceid}
+    \If{$this.devices[deviceid].isAsync$}
+    \State $cudaStreamSynchronize(this.devices[deiceid].stream\_id)$
+    \EndIf
+    \State \Return {$this.devices[deviceid].data$}
+    \EndFunction
+    % \hline
+  \end{algorithmic}
+\end{algorithm}
 
 - Async Memcpy: eager push
 
