@@ -208,7 +208,7 @@ achieved in by deploying multiple optimizations that are explained in this secti
 
 \subsection{Reducing Block Transfers}
 The SIAL runtime has the information about intent of each block request, whether
-the block is being requested to be read or written. Using this information the
+the block is being requested to be read, updated or written. Using this information the
 number of synchronizations between devices can be reduced. The blocks which are
 going to be written need not be synchronized, however the blocks requested for
 being read or updated need to be synchronized for the requested device.
@@ -223,7 +223,7 @@ The algorithm presented in~\ref{alg:get_data} can be split into
     \Function{Block::get\_data}{deviceid}
     \State \Return $this.devices[deviceid].data$
     \EndFunction
-
+    \\
     \Function{Block::update\_data}{deviceid}
     \State $latest\_device \gets this.get\_latest\_device()$
     \If{$latest\_device.data\_version > this.devices[deviceid]$}
@@ -237,7 +237,7 @@ The algorithm presented in~\ref{alg:get_data} can be split into
 This relatively simple change in organization of code along with the information
 about intent of the request reduced the synchronizations by TODO\%.
 
-\subsection{Memory Pinning}
+\subsection{Memory Pinning}\label{memory_pinning}
 The memory allocated on CPU or main memory is pageable by default. The GPU cannot
 access data on such pageable host memory~\cite{datatransferoptimization}
 \cite{programmingguidecuda}. For this reason when a memory copy operation is requested
@@ -298,10 +298,11 @@ as:
 
 \subsubsection{Page Locked Memory Bandwidth}
 Apart from saving a redudant copy operation, memory page locking also helps in
-reducing time to copy because when memory is page locked, the GPU can invoke DMA
-controller~\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs} to transfer memory
-by passing the CPU. This results in twice\cite{datatransferoptimization} the
-bandwidth between host and GPU.
+reducing time to copy because when memory is page locked, the GPU can invoke Direct
+Memory Access (DMA)
+controller~\cite{dmatransfer}\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs}
+to transfer memory by passing the CPU. This results in
+twice~\cite{datatransferoptimization} the bandwidth between host and GPU.
 
 \subsubsection{Asynchronous \texttt{memcpy}}
 Since CUDA controller can invoke DMA controller to copy memory if the host memory
@@ -326,18 +327,18 @@ multiple CUDA streams and page locked memory, DMA controllers can be invoked to
 transfer memory from host to GPU and vice-versa asynchronously to both CPU and GPU
 kernel execution engine. Current generation of GPU have dual DMA
 controllers~\cite{teslaspecs}\cite{teslakspecs} and one kernel execution engine.
-This means that the GPU can handle 2 asynchronous memory copying operation along
-with one kernel execution operation concurrently. These hardware features have
-been exploited by implementing asynchronous memory copying for block synchronization.
+This means that the GPU can handle 2 asynchronous memory copying operation concurrently.
+These hardware features have been exploited by implementing asynchronous memory
+copying for block synchronization.
 
 To implement the non blocking synchronization, multiple streams are created and
-stored in the module \texttt{gpu\_super\_instructions} which initializes and
+stored in the module \texttt{gpu\_super\_instructions} that initializes and
 maintains the GPU state. The number of streams created is configurable and currently
 is set to 2 since current generation of GPU devices have 2 DMA controllers. Each
 \texttt{Device\_Info} object stores \texttt{gpu\_stream\_id} which is set when a
 copy operation on \texttt{Block} object is initiated. At same time a bit
 \texttt{isAsync} is set to denote that the \texttt{Block} object has pending
-asynchronous operations and before deferencing the memory pointer, runtime should
+asynchronous operations. Before deferencing the memory pointer, runtime should
 wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchronize}.
 
 \begin{algorithm} {Asynchronous Block Synchronization}
@@ -346,14 +347,15 @@ wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchroniz
   \begin{algorithmic}[1]
     \Function{gpu\_memcpy}{src\_device, dest\_device, num\_elements}
     \State $next\_stream \gets get\_next\_stream()$
-    \State $cudaMemcpyAsync(src\_device.data, dest\_device.data, num\_elements)$
+    \State $cudaMemcpyAsync(src\_device.data, dest\_device.data, num\_elements, next\_stream)$
     \State {$dest\_device.stream\_id \gets next\_stream$}
     \State {$dest\_device.isAsync \gets true$}
     \EndFunction
-
+    \\
     \Function{block::get\_data}{deviceid}
     \If{$this.devices[deviceid].isAsync$}
     \State $cudaStreamSynchronize(this.devices[deiceid].stream\_id)$
+    \State $this.devices[deviceid].isAsync \gets false$
     \EndIf
     \State \Return {$this.devices[deviceid].data$}
     \EndFunction
@@ -361,7 +363,68 @@ wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchroniz
   \end{algorithmic}
 \end{algorithm}
 
-- Async Memcpy: eager push
+\section{GPU Buffers in Internode Communication}
+SIAL makes it possible to work extremly large arrays by dividing the array into
+multiple blocks and then server distributing the blocks to workers. Workers and
+Server nodes communicate using highly optimized MPI library. Since GPU have their
+own memory, using GPU for computation in a multinode environment can add an
+additional layer of communication between GPU and network cards. In this section
+optimizations for this communication are presented.
 
-\section{CUDA aware MPI}
-- MPI get async
+\subsection{Background}
+GPU cards have their own memory on which the GPU can compute. In
+section~\ref{memory_pinning} the techniques used for optimizing memory transfer
+between host memory (main memory) and GPU memory is discussed. Additionally when
+MPI is used for internode communication, the data buffers to send are staged
+to MPI buffers automatically by MPI. Thus when GPU are used along with MPI to send
+a unpinned memory buffer, in all there will 3 memory copy operations and 6 in
+total if we consider memory operations on the destination node.
+
+\begin{figure}[h] %place figure "here"
+  \begin{tikzpicture}[
+    container/.style={draw=gray, inner sep=5mm},
+    typetag/.style={draw=black, anchor=west, inner sep=2mm, text width=1.5cm},
+    title/.style={draw=none, color=gray, inner sep=0pt},
+    thickarrow/.style={draw=black, solid, line width=1mm,
+      preaction={-triangle 90, thin, draw, shorten >=-1mm}},
+    thickblue/.style={<-, draw=blue, thick, line width=1mm, shorten <= 2pt, shorten >= 2pt, bend right=45},
+    thickorange/.style={<-, draw=orange, thick, line width=1mm, shorten <= 2pt, shorten >= 2pt, bend right=10}]
+
+    \node[title]   (gpu-title1)     at (0, 5) {SRC GPU};
+    \node[typetag] (gpu-ram1)       at (0, 4) {DRAM};
+    \node[title]   (cpu-title1)     at (0, 2) {SRC CPU};
+    \node[typetag] (pinned1)        at (0, 1) {Pinned Memory};
+    \node[typetag] (main-pageable1) at (2.5, 1) {Pageable Memory};
+    \node[typetag] (mpi-buff1)      at (5, 1) {MPI Buffer}
+      edge[thickblue] (pinned1);
+
+    \node[title]   (gpu-title2)     at (14, 5) {DEST GPU};
+    \node[typetag] (gpu-ram2)       at (14, 4) {DRAM}
+      edge[thickorange] (gpu-ram1);
+    \node[title]   (cpu-title2)     at (9, 2) {DEST CPU};
+    \node[typetag] (mpi-buff2)      at (9, 1) {MPI Buffer};
+    \node[typetag] (main-pageable2) at (11.5, 1) {Pageable Memory};
+    \node[typetag] (pinned2)        at (14, 1) {Pinned Memory}
+      edge[thickblue] (mpi-buff2);
+
+    \node[container, fit=(gpu-title1)(gpu-ram1)]                           {};
+    \node[container, fit=(cpu-title1)(main-pageable1)(pinned1)(mpi-buff1)] {};
+
+    \node[container, fit=(gpu-title2)(gpu-ram2)]                           {};
+    \node[container, fit=(cpu-title2)(main-pageable2)(pinned2)(mpi-buff2)] {};
+
+    \draw[thickarrow] (gpu-ram1.south)      -- (pinned1.north);
+    \draw[thickarrow] (pinned1.east)        -- (main-pageable1.west);
+    \draw[thickarrow] (main-pageable1.east) -- (mpi-buff1.west);
+
+    \draw[thickarrow] (mpi-buff1.east)      -- (mpi-buff2.west);
+
+    \draw[thickarrow] (mpi-buff2.east)      -- (main-pageable2.west);
+    \draw[thickarrow] (main-pageable2.east) -- (pinned2.west);
+    \draw[thickarrow] (pinned2.north)       -- (gpu-ram2.south);
+
+    %\draw[thickarrow] (pinned1.north)   to[out=90, in=90] (mpi-buff1.north);
+    %\draw[thickarrow] (mpi-buff2.north) to[out=90, in=90] (pinned2.north);
+  \end{tikzpicture}
+  \caption{GPU Memory Buffer Transfer Over MPI}\label{fig:gpu_buff_transfer}
+\end{figure}
