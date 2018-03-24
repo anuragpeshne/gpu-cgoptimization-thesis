@@ -311,8 +311,30 @@ also asychronously to GPU kernel execution engine. Thus both host and GPU can ca
 on with execution of calculation while the blocks are synchronized. This is
 elaborated in section~\ref{nonblockdevicesync}.
 
+\subsection{Memory Pinning Overhead}
+It was observed that while pinned memory made memory transfer faster, it carried
+a large overhead as compared to allocation of non pinned memory. Similar observations
+by Boyer et al~\cite{Boyer2009}\cite{memory-management-overhead}\cite{pinned-tradeoff}
+have been reported. They reported memory allocation calls \texttt{cudaMalloc} to
+be 30-40\% more expensive than \texttt{malloc} and \texttt{udaHostMalloc} to be
+3-5 times more expensive than \texttt{malloc}. To overcome a scheme was developed
+to reused the already page locked memory pages.
+
 \subsubsection{Reusing Page Locked Memory Pages}
-TODO.
+The problem of caching page locked memory pages is similar to problem of dynamic
+allocation of memory handled by Operating System. Extensive work~\cite{Wilson1995}
+is done in solving the problem of efficiently allocation memory dynamically such
+that the external and internal fragmentation is optimized along with time taken
+to find suitable block of memory. Caching and serving page locked memory blocks
+is similar to dynamic memmory allocation in the way that it needs to find suitable
+size memory block such that least space in form of internal fragmentation is wasted
+but it is different from dynamic allocation in the way that it cannot split or
+coalesce blocks.
+
+\subsubsection{Implementation of Caching Mechanism}
+Two maps are used for book keeping. One maps the block size to a list of
+\texttt{double} pointer and other serves as reverse lookup from pointer to size
+of block.
 
 \subsection{GPU Streams}
 A \textit{stream} in CUDA is a sequence of operations that execute on the device
