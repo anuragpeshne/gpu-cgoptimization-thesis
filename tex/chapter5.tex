@@ -316,25 +316,146 @@ It was observed that while pinned memory made memory transfer faster, it carried
 a large overhead as compared to allocation of non pinned memory. Similar observations
 by Boyer et al~\cite{Boyer2009}\cite{memory-management-overhead}\cite{pinned-tradeoff}
 have been reported. They reported memory allocation calls \texttt{cudaMalloc} to
-be 30-40\% more expensive than \texttt{malloc} and \texttt{udaHostMalloc} to be
-3-5 times more expensive than \texttt{malloc}. To overcome a scheme was developed
-to reused the already page locked memory pages.
+be 30-40\% more expensive than \texttt{malloc} and \texttt{cudaHostMalloc} to be
+3-5 times more expensive than \texttt{malloc}. To overcome this, a scheme was
+developed to reuse the already page locked memory pages.
 
 \subsubsection{Reusing Page Locked Memory Pages}
 The problem of caching page locked memory pages is similar to problem of dynamic
-allocation of memory handled by Operating System. Extensive work~\cite{Wilson1995}
-is done in solving the problem of efficiently allocation memory dynamically such
-that the external and internal fragmentation is optimized along with time taken
-to find suitable block of memory. Caching and serving page locked memory blocks
+allocation of memory which is handled by Operating System. Extensive work~\cite{Wilson1995}
+is done in solving the problems of efficiently allocation memory dynamically such
+as external and internal fragmentation along with time taken to find suitable
+block of memory is minimized. Caching and serving page locked memory blocks
 is similar to dynamic memmory allocation in the way that it needs to find suitable
 size memory block such that least space in form of internal fragmentation is wasted
-but it is different from dynamic allocation in the way that it cannot split or
-coalesce blocks.
+but it is different from dynamic allocation in the way that the memory blocks cannot
+be split or coalesced.
 
 \subsubsection{Implementation of Caching Mechanism}
-Two maps are used for book keeping. One maps the block size to a list of
-\texttt{double} pointer and other serves as reverse lookup from pointer to size
-of block.
+When a page locked block of memory is deleted, instead of un-pinning it and calling
+\texttt{delete[]} on it, it is saved into a list. Two maps are used for book
+keeping. One of it, \texttt{fig:free\_list}, presented in figure~\ref{fig:free_list},
+maps the block size to a list of \texttt{double} pointers. When a request for
+block of memory is received this list is searched for block of size equal or
+greater than size of block requested. If no such block exists then a new block
+is created, pinned and returned. It is possible that there is not enough free
+memory in the system to allocate a new block, in that case, few blocks of smaller
+sizes are pinned and returned to OS and then a new block is requested. If there
+are no blocks in \texttt{free\_list} and block size is greater than free memory
+than system is out of memory and exception is thrown.
+
+The other map serves as reverse lookup, presented in figure~\ref{fig:reverse_lookup}
+from pointer to size of block. This reverse lookup is essential to know actual
+size of block being returned since when a block requested, the caching mechanism
+returns block of equal or greater size. Hence the size of requested block cannot
+be used to populate \texttt{free\_list}.
+
+\begin{figure}[h]
+  \centering
+
+  \begin{tikzpicture}[
+    list/.style={matrix of nodes,
+      nodes={draw=gray, align=center, inner sep=0pt, text width=0.6cm,
+        minimum height=0.6cm}, anchor=west},
+    table/.style={matrix of nodes,
+      nodes={draw=gray, align=center, inner sep=0pt, text width=0.8cm,
+        minimum height=0.8cm}, anchor=north},
+    title/.style={draw=none, color=gray, inner sep=0pt}]
+
+    \node[title] (s-title) at (0, 5.5) {Sizes};
+    \matrix[table] (sizes) at (0, 5)
+    {
+      {}       \\
+      {}       \\
+      {}       \\
+      {\vdots} \\
+    };
+
+    \node[title]  (p-title)      at (5, 5.5) {[\texttt{double*}]};
+    \matrix[list] (pointer_row1) at (4, 4.5) {{} & {} & {} & {}               \\};
+    \matrix[list] (pointer_row2) at (4, 3.5) {{} & {} & {} & {} & {} & {} & {}\\};
+    \matrix[list] (pointer_row3) at (4, 2.5) {{} & {} & {}                    \\};
+
+    \draw[->] (sizes-1-1.east) -- (pointer_row1.west);
+    \draw[->] (sizes-2-1.east) -- (pointer_row2.west);
+    \draw[->] (sizes-3-1.east) -- (pointer_row3.west);
+  \end{tikzpicture}
+  \caption{Structure of \texttt{free\_list} map used for mapping block size to list of free blocks.}\label{fig:free_list}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+
+  \begin{tikzpicture}[
+    table/.style={matrix of nodes,
+      nodes={draw=gray, align=center, inner sep=0pt, text width=0.8cm,
+        minimum height=0.8cm}, anchor=north},
+    title/.style={draw=none, color=gray, inner sep=0pt}]
+
+    \node[title]   (s-title)  at (0, 5.5) {\texttt{double*}};
+    \matrix[table] (pointers) at (0, 5)
+    {
+      {}       \\
+      {}       \\
+      {}       \\
+      {\vdots} \\
+    };
+
+    \node[title]   (p-title) at (4, 5.5) {\texttt{size}};
+    \matrix[table] (sizes)   at (4, 5)
+    {
+      {}       \\
+      {}       \\
+      {}       \\
+      {\vdots} \\
+    };
+
+    \draw[->] (pointers-1-1.east) -- (sizes-1-1.west);
+    \draw[->] (pointers-2-1.east) -- (sizes-2-1.west);
+    \draw[->] (pointers-3-1.east) -- (sizes-3-1.west);
+  \end{tikzpicture}
+  \caption{Structure of \texttt{reverse\_lookup} map used for mapping back blocks to actual size of block.}\label{fig:reverse_lookup}
+\end{figure}
+
+\begin{algorithm} {Page Locked Block Allocation}
+  \singlespacing
+
+  \begin{algorithmic}[1]
+    \Function{allocate}{size}
+    \State $cached\_block\_list \gets free\_list.get\_greater\_or\_equal(size)$
+    \If{$cached\_block\_list.length == 0$}
+      \If{$allocated\_bytes + size \times sizeof(double) < total\_memory$}
+        \State $new\_block \gets new double[size]$
+        \State $cudaHostRegister(new\_block, size)$
+        \State $allocated\_bytes += size \times sizeof(double)$
+        \State $reverse\_lookup[new\_block] \gets size$
+        \State \Return $new\_block$
+      \Else
+        \State $freed\_elements \gets 0$
+        \While{$freed\_elements < size$}
+          \If{$free\_list.empty()$}
+            \State $throw "out of memory"$
+          \EndIf
+          \ForAll{$block in free\_list.top()->second$}
+            \State $freed\_elements += free\_list.top()->first$
+            \State $cudaHostUnregister(block)$
+            \State $delete[] block$
+          \EndFor
+        \EndWhile
+      \EndIf
+    \Else
+      \State $cached\_block \gets cached\_block\_list.pop()$
+      \State \Return $cached\_block$
+    \EndIf
+    \EndFunction
+    \\
+    \Function{free}{block}
+    \State $actual\_size \gets reverse\_lookup[block]$
+    \State $free\_list[actual\_size].append(block)$
+    \EndFunction
+    % \hline
+  \end{algorithmic}
+\end{algorithm}
 
 \subsection{GPU Streams}
 A \textit{stream} in CUDA is a sequence of operations that execute on the device
