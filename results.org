@@ -61,3 +61,7 @@ sip_barrier  2             1628         1628         -0.354
 sip_barrier  2             1473         1473         -0.325359
 sip_barrier  2             1749         1749         -0.288999
 #+END_SRC
+* Caching Pinned Blocks:
+  | Total Block Request |   Hit |  Miss |
+  |                9005 |  8373 |   709 |
+  |              175217 | 97317 | 80962 |
