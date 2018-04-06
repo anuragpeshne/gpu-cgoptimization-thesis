@@ -7,4 +7,3 @@ set ylabel 'Seconds'
 
 plot 'index_length_p.csv' using 1:3 smooth csplines title "Prefetch Mean",\
      'index_length_np.csv' using 1:3 smooth csplines title "Non Prefetch Mean"
-

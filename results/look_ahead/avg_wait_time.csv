@@ -1,0 +1,8 @@
+set term eps
+set output 'avg_wait_time.eps'
+set datafile separator ","
+set title  'Number of Prefetch v/s Mean Iteration Wait Time'
+set xlabel 'Number of Prefetch'
+set ylabel 'Seconds'
+
+plot 'prefetch.csv' using 1:2 smooth csplines title "Mean"
