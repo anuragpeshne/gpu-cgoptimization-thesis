@@ -1,0 +1,20 @@
+\chapter{CONCLUSION AND FUTURE WORK}\label{conclusion}
+
+This thesis present few of the possible performance optimizations on looping
+constructs for SIA.
+
+To exploit GPU in an efficient way several techniques, including GPU streams,
+memory pinning, were used.
+
+Exploit CUDA streams to execute non dependent line of execution concurrently.
+
+\section{Prefetching}
+\subsection{Index Length}
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    \node[inner sep=0pt] at (0, 0)
+    {\includegraphics[width=.90\textwidth]{results/index_length/p_first_mean.eps}};
+  \end{tikzpicture}
+  \caption{Index Range v/s \texttt{wait\_time} per iteration}
+\end{figure}
