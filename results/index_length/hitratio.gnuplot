@@ -1,9 +1,10 @@
 set term epslatex color colortext
 set output 'results/index_length/hitratio.eps'
 set datafile separator ","
-set title  'Index Length v/s Prefetch Hit Ratio'
 set xlabel 'Index Length'
-set ylabel 'Seconds'
+set ylabel 'Ratio'
+set key outside tmargin center
+set grid
 
-plot 'results/index_length/index_length_p.csv' using 1:5 smooth csplines title "Prefetch",\
-     'results/index_length/index_length_np.csv' using 1:5 smooth csplines title "Non Prefetch"
+plot 'results/index_length/index_length_p.csv' using 1:5 with lp title "Prefetch",\
+     'results/index_length/index_length_np.csv' using 1:5 with lp title "No Prefetch"

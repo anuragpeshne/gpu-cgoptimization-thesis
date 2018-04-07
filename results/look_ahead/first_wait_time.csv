@@ -1,8 +1,0 @@
-set term eps
-set output 'first_wait_time.eps'
-set datafile separator ","
-set title  'Number of Prefetch v/s First Iteration Wait Time'
-set xlabel 'Number of Prefetch'
-set ylabel 'Seconds'
-
-plot 'prefetch.csv' using 1:3 smooth csplines title "First"

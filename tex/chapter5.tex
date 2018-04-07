@@ -140,10 +140,10 @@ the class \texttt{Device\_Info} in C++ language.
     \node[container, fit=(GPU_device)] {};
 
     \node[inner sep=0pt, below=of CPU_device] (cpu-mem)
-    {\includegraphics[width=.20\textwidth]{images/cpu-mem.png}};
+    {\includegraphics[width=.25\textwidth]{images/cpu-mem.jpg}};
 
     \node[inner sep=0pt, right=of cpu-mem] (gpu-mem)
-    {\includegraphics[width=.20\textwidth]{images/gpu-card.png}};
+    {\includegraphics[width=.25\textwidth]{images/gpu-card.png}};
 
     \draw[*->] let \p1 = (block-5-2.one), \p2 = (block-5-2.center) in (\x1,\y2)    -- (CPU_device);
     \draw[*->] let \p1 = (block-5-2.second), \p2 = (block-5-2.center) in (\x1,\y2) -- (GPU_device);

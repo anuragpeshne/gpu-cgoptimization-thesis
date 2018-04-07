@@ -10,8 +10,69 @@ Exploit CUDA streams to execute non dependent line of execution concurrently.
 
 \section{Prefetching}
 \subsection{Index Length}
+As range of Index increased, prefetching got working. This can be easily observed
+from \texttt{hit\_ratio}.
 \begin{figure}[h]
-  \centering
+  \input{results/index_length/hitratio}
+  \caption{Index Range v/s \texttt{hit\_ratio}}
+\end{figure}
+
+It is observed that the first request to server during which request for multiple
+blocks is made takes longer as number of index range increases.
+\begin{figure}[h]
   \input{results/index_length/p_first_mean}
-  \caption{Index Range v/s \texttt{wait\_time} per iteration}
+  \caption{Index Range v/s \texttt{wait\_time\_} per iteration}
+\end{figure}
+
+Thus to compensate for the high cost of first iteration, it needs index of length
+around 5 to decrease the \texttt{wait\_time\_} by factor of 2. The mean \texttt{wait\_time\_}
+per iteration decreased as compared to loops with no prefetching.
+\begin{figure}[h]
+  \input{results/index_length/p_np_mean}
+  \caption{Index Range v/s \texttt{wait\_time\_} per iteration in Prefetched and no Prefetched Loop}
+\end{figure}
+
+\subsection{Block Size}
+Block size affects the first request made during prefetching. Since along with this
+request, multiple requests for prefetching are made. This evident from Block Size
+v/s mean \texttt{wait\_time} for first iteration.
+\begin{figure}[h]
+  \input{results/block_size/first_wait_time}
+  \caption{Block Size v/s \texttt{wait\_time\_} for first iteration}
+\end{figure}
+
+But once the request for blocks are made, subsequent iterations are affected less
+by the block size as compared to loops in which prefetching is not done. This results
+in overall reduction in mean \texttt{wait\_time\_}.
+\begin{figure}[h]
+  \input{results/block_size/avg_wait_time}
+  \caption{Block Size v/s Mean \texttt{wait\_time\_} for Prefetched and No Prefetch Loop}
+\end{figure}
+
+This is can viewed in better way by looking at both mean \texttt{wait\_time\_} and
+mean \texttt{wait\_time\_} for first iteration together.
+\begin{figure}[h]
+  \input{results/block_size/avg_all}
+  \caption{Block Size v/s Mean \texttt{wait\_time\_} for Prefetched and No Prefetch Loop}
+\end{figure}
+
+\subsection{Number of Blocks to Prefetch}
+The number of blocks to prefetch affects the initial request made.
+\begin{figure}[h]
+  \input{results/look_ahead/first_wait_time}
+  \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+\end{figure}
+
+To determine optimal number of block to prefetch we need to consider how much
+number of block prefetching affect mean \texttt{wait\_time\_}.
+\begin{figure}[h]
+  \input{results/look_ahead/avg_wait_time}
+  \caption{Number of Block Prefetched v/s mean \texttt{wait\_time\_}}
+\end{figure}
+
+Hit ratio saturates after hitting a critical amount. There is no much use after
+that to increase number of blocks to prefetch.
+\begin{figure}[h]
+  \input{results/look_ahead/hit_ratio}
+  \caption{Number of Block Prefetched v/s Hit Ratio} for first request}
 \end{figure}
