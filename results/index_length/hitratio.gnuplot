@@ -3,7 +3,7 @@ set output 'results/index_length/hitratio.eps'
 set datafile separator ","
 set xlabel 'Index Length'
 set ylabel 'Ratio'
-set key outside tmargin center
+set key outside top center
 set grid
 
 plot 'results/index_length/index_length_p.csv' using 1:5 with lp title "Prefetch",\

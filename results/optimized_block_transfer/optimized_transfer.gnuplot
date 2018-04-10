@@ -1,4 +1,4 @@
-set term eps
+set term epslatex
 set output 'results/optimized_block_transfer/optimized_transfer.eps'
 set datafile separator ","
 set xtics ("contraction_small_test" 0.25, "rccsd_rhf" 1.75)
