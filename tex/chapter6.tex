@@ -74,5 +74,13 @@ Hit ratio saturates after hitting a critical amount. There is no much use after
 that to increase number of blocks to prefetch.
 \begin{figure}[h]
   \input{results/look_ahead/hit_ratio}
-  \caption{Number of Block Prefetched v/s Hit Ratio} for first request}
+  \caption{Number of Block Prefetched v/s Hit Ratio for first request}
+\end{figure}
+
+\section{GPU}
+\subsection{Memory Pinning}
+\subsubsection{Copy Speed}
+\begin{figure}[h]
+  \input{results/mempin/block_copy/pin_vs_nopin}
+  \caption{Time taken to transfer block to GPU for \textit{pinned} and \textit{non pinned} blocks}
 \end{figure}

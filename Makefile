@@ -11,18 +11,23 @@ INDEX_LENGTH_EPS = results/index_length/p_first_mean.eps \
 									 results/index_length/p_np_mean.eps \
 									 results/index_length/hitratio.eps
 
+MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps
+
 all: main.pdf
 
 $(BLOCK_SIZE_EPS): results/block_size/no_prefetch.csv results/block_size/prefetch.csv
 $(LOOK_AHEAD_EPS): results/look_ahead/prefetch.csv
 $(INDEX_LENGTH_EPS): results/index_length/index_length_p.csv results/index_length/index_length_np.csv
+$(MEM_PIN_EPS): results/mempin/block_copy/data.csv
 
 %.eps: %.gnuplot
 	gnuplot $<
 
-main.pdf: main.tex $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS)
-	pdflatex --output-format=pdf main.tex
+main.bbl: bib/References.bib
 	bibtex main
+
+main.pdf: main.tex main.bbl $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS)
+	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
 
