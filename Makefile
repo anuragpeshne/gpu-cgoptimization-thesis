@@ -1,4 +1,8 @@
 TEXINPUTS := ./sty:./tex
+TEX_FILES = main.tex \
+						tex/chapter1.tex tex/chapter2.tex tex/chapter3.tex tex/chapter4.tex \
+						tex/chapter5.tex tex/chapter6.tex
+
 BLOCK_SIZE_EPS = results/block_size/avg_all.eps \
 								 results/block_size/avg_wait_time.eps \
 								 results/block_size/first_wait_time.eps
@@ -11,14 +15,15 @@ INDEX_LENGTH_EPS = results/index_length/p_first_mean.eps \
 									 results/index_length/p_np_mean.eps \
 									 results/index_length/hitratio.eps
 
-MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps
+MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps \
+							results/optimized_block_transfer/rccsd_rhf.eps
 
 all: main.pdf
 
 $(BLOCK_SIZE_EPS): results/block_size/no_prefetch.csv results/block_size/prefetch.csv
 $(LOOK_AHEAD_EPS): results/look_ahead/prefetch.csv
 $(INDEX_LENGTH_EPS): results/index_length/index_length_p.csv results/index_length/index_length_np.csv
-$(MEM_PIN_EPS): results/mempin/block_copy/data.csv
+$(MEM_PIN_EPS): results/mempin/block_copy/data.csv results/optimized_block_transfer/data.csv
 
 %.eps: %.gnuplot
 	gnuplot $<
@@ -26,7 +31,7 @@ $(MEM_PIN_EPS): results/mempin/block_copy/data.csv
 main.bbl: bib/References.bib
 	bibtex main
 
-main.pdf: main.tex main.bbl $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS)
+main.pdf: $(TEX_FILES) main.bbl $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS)
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
