@@ -89,3 +89,16 @@ that to increase number of blocks to prefetch.
   \input{results/optimized_block_transfer/rccsd_rhf}
   \caption{Optimized v/s Unoptimized Block Tranfers for \texttt{rccsd\_rhf.sialx}}
 \end{figure}
+
+\subsection{Memory Pinning Overhead}
+\subsubsection{\texttt{alloc}}
+\begin{figure}[h]
+  \input{results/mempin/overhead/alloc}
+  \caption{Pinned and non Pinned memory allocation}
+\end{figure}
+
+\subsubsection{\texttt{free}}
+\begin{figure}[h]
+  \input{results/mempin/overhead/free}
+  \caption{Pinned and non Pinned memory de-allocation}
+\end{figure}

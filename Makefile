@@ -16,14 +16,16 @@ INDEX_LENGTH_EPS = results/index_length/p_first_mean.eps \
 									 results/index_length/hitratio.eps
 
 MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps \
-							results/optimized_block_transfer/rccsd_rhf.eps
+							results/optimized_block_transfer/rccsd_rhf.eps \
+							results/mempin/overhead/alloc.eps \
+							results/mempin/overhead/free.eps
 
 all: main.pdf
 
 $(BLOCK_SIZE_EPS): results/block_size/no_prefetch.csv results/block_size/prefetch.csv
 $(LOOK_AHEAD_EPS): results/look_ahead/prefetch.csv
 $(INDEX_LENGTH_EPS): results/index_length/index_length_p.csv results/index_length/index_length_np.csv
-$(MEM_PIN_EPS): results/mempin/block_copy/data.csv results/optimized_block_transfer/data.csv
+$(MEM_PIN_EPS): results/mempin/block_copy/data.csv results/optimized_block_transfer/data.csv results/mempin/overhead/data.csv
 
 %.eps: %.gnuplot
 	gnuplot $<
