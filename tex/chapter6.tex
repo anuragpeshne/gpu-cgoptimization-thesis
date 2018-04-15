@@ -1,12 +1,72 @@
 \chapter{EXPERIMENTS AND RESULTS}\label{results}
 
 This thesis present a few of the possible performance optimizations on looping
-constructs for SIA.
+constructs for SIA. These optimizations primarily aimed to reduce the network
+operation cost and computing cost. This section describes series of experiments
+conducted by varying input parameters such as block size as well as the optimization
+parameters such as number of blocks to prefetch and its effects on the performance
+of the system.
 
-To exploit GPU in an efficient way several techniques, including GPU streams,
-memory pinning, were used.
+\section{Environment}
+These experiments were carried on HiperGator Computer at UF. Table~\ref{hpg2spec}
+describes the specification of HiperGator 2. Table~\ref{hpgcomputespecs}
+explains the specifications of HiperGator 2 compute nodes and table~\ref{hpggpuspecs}
+explains the specifications of HiperGator 2 GPU nodes.
+\begin{table}[h]
+  \centering
+  \begin{tabular}{l | c}
+    Name        & Specifications  \\ \hline
+    Total Cores & 30,000          \\
+    Memory      & 120 Terabytes   \\
+    Storage     & 1 Petabytes     \\
+    Max Speed   & 1,100 Teraflops \\
+  \end{tabular}
+  \caption{HiperGator 2 Spec Sheet}
+  \label{tab:hpg2spec}
+\end{table}
 
-Exploit CUDA streams to execute non dependent line of execution concurrently.
+\begin{table}[h]
+  \begin{tabular}{l | c}
+    Name                       & Specification     \\ \hline
+    Manufacturer               & Dell Technologies \\
+    Processor                  & Intel E5-2698v3   \\
+    Base Processor Frequency   & 2.3 GHz           \\
+    Sockets                    & 2                 \\
+    Cores per socket           & 16                \\
+    Thread(s) per core         & 1                 \\
+    Memory per node            & 128 Gigabytes     \\
+    Memory Frequency           & 2133 MHz DDR4     \\
+  \end{tabular}
+  \caption{HiperGator 2 Compute Node~\cite{hpg2-spec-sheet}\cite{intel-compute-cpu-spec}}
+  \label{tab:hpgcomputespecs}
+\end{table}
+
+\begin{table}[h]
+  \begin{tabular}{l | c}
+    Name                       & Specification     \\ \hline
+    Manufacturer               & Dell Technologies \\
+    Processor                  & INTEL E5-2683     \\
+    Base Processor Frequency   & 2.0 GHz           \\
+    Sockets                    & 2                 \\
+    Cores per socket           & 14                \\
+    Thread(s) per core         & 1                 \\
+    GPU                        & Tesla K80         \\
+    Memory per node            & 128 Gigabytes     \\
+    Memory Frequency           & 2133 MHz DDR4     \\
+  \end{tabular}
+  \caption{HiperGator 2 GPU Node}
+  \label{tab:hpggpuspecs}
+\end{table}
+
+\begin{table}[h]
+  \begin{tabular}{l | c}
+    Name             & Specification   \\ \hline
+    Node Connection  & Mellanox 56Gbit/s FDR InfiniBand interconnect \\
+    Core Switches    & 100 Gbit/s EDR InfiniBand standard            \\
+  \end{tabular}
+  \caption{HiperGator 2 Node interconnect specificatioN}
+  \label{tab:hpgconnectspecs}
+\end{table}
 
 \section{Prefetching}
 \subsection{Index Length}
