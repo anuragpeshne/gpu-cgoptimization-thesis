@@ -8,26 +8,35 @@ parameters such as number of blocks to prefetch and its effects on the performan
 of the system.
 
 \section{Environment}
-These experiments were carried on HiperGator Computer at UF. Table~\ref{hpg2spec}
-describes the specification of HiperGator 2. Table~\ref{hpgcomputespecs}
-explains the specifications of HiperGator 2 compute nodes and table~\ref{hpggpuspecs}
-explains the specifications of HiperGator 2 GPU nodes.
+These experiments were carried on HiperGator Computer at UF. Table~\ref{tab:hpg2spec}
+describes the specification of HiperGator 2. Table~\ref{tab:hpgcomputespecs}
+explains the specifications of HiperGator 2 \textbf{compute} nodes and
+table~\ref{tab:hpggpuspecs} explains the specifications of HiperGator 2 \textbf{GPU}
+nodes. The table~\ref{tab:hpgconnectspecs} describes the specification for the
+node interconnect in HiperGator 2.
+
 \begin{table}[h]
   \centering
   \begin{tabular}{l | c}
-    Name        & Specifications  \\ \hline
+    \hline
+    Name        & Specifications  \\
+    \hline
     Total Cores & 30,000          \\
     Memory      & 120 Terabytes   \\
     Storage     & 1 Petabytes     \\
     Max Speed   & 1,100 Teraflops \\
+    \hline
   \end{tabular}
   \caption{HiperGator 2 Spec Sheet}
   \label{tab:hpg2spec}
 \end{table}
 
 \begin{table}[h]
+  \centering
   \begin{tabular}{l | c}
-    Name                       & Specification     \\ \hline
+    \hline
+    Name                       & Specification     \\
+    \hline
     Manufacturer               & Dell Technologies \\
     Processor                  & Intel E5-2698v3   \\
     Base Processor Frequency   & 2.3 GHz           \\
@@ -36,16 +45,20 @@ explains the specifications of HiperGator 2 GPU nodes.
     Thread(s) per core         & 1                 \\
     Memory per node            & 128 Gigabytes     \\
     Memory Frequency           & 2133 MHz DDR4     \\
+    \hline
   \end{tabular}
-  \caption{HiperGator 2 Compute Node~\cite{hpg2-spec-sheet}\cite{intel-compute-cpu-spec}}
+  \caption{HiperGator 2 \textbf{Compute} Node}
   \label{tab:hpgcomputespecs}
 \end{table}
 
 \begin{table}[h]
+  \centering
   \begin{tabular}{l | c}
-    Name                       & Specification     \\ \hline
+    \hline
+    Name                       & Specification     \\
+    \hline
     Manufacturer               & Dell Technologies \\
-    Processor                  & INTEL E5-2683     \\
+    Processor                  & Intel E5-2683     \\
     Base Processor Frequency   & 2.0 GHz           \\
     Sockets                    & 2                 \\
     Cores per socket           & 14                \\
@@ -53,44 +66,89 @@ explains the specifications of HiperGator 2 GPU nodes.
     GPU                        & Tesla K80         \\
     Memory per node            & 128 Gigabytes     \\
     Memory Frequency           & 2133 MHz DDR4     \\
+    \hline
   \end{tabular}
-  \caption{HiperGator 2 GPU Node}
+  \caption{HiperGator 2 \textbf{GPU} Node}
   \label{tab:hpggpuspecs}
 \end{table}
 
 \begin{table}[h]
+  \centering
   \begin{tabular}{l | c}
-    Name             & Specification   \\ \hline
+    \hline
+    Name             & Specification                                 \\
+    \hline
     Node Connection  & Mellanox 56Gbit/s FDR InfiniBand interconnect \\
     Core Switches    & 100 Gbit/s EDR InfiniBand standard            \\
+    \hline
   \end{tabular}
-  \caption{HiperGator 2 Node interconnect specificatioN}
+  \caption{HiperGator 2 Node interconnect specification}
   \label{tab:hpgconnectspecs}
 \end{table}
 
 \section{Prefetching}
+This section presents several experiments conducted to investigate the optimal
+parameters and tradeoffs involved in the selection of the parameters.
+
+\subsection{\texttt{hit\_ratio}}
+To understand the performance of the prefetching mechanism a new metric is introduced.
+Prefetch \texttt{hit\_ratio} is defined as the ratio of the number of times the
+SIA runtime did not have to block for a certain data block to be ready and total
+number of times the data block is accessed:
+\[
+  \texttt{hit\_ratio} = \frac{number~of~times~no~blocking~required}{total~number~of~times~data~accessed}
+\]
+The \texttt{hit\_ratio} represents the number of times prefetching was successful
+to hide network transfer cost. In the following experiments \texttt{hit\_ratio}
+will be used where appropriate to measure effectiveness of parameters in prefetching.
+
 \subsection{Index Length}
-As range of Index increased, prefetching got working. This can be easily observed
-from \texttt{hit\_ratio}.
+The length of indices is the length of the range of indices involved in the loop.
+The length of indices can have high impact on prefetching. To study this relation
+between index length and prefetching, \texttt{hit\_ratio} is observed by varying
+the range of indices. This is presented in figure~\ref{fig:hitratio}.
 \begin{figure}[h]
   \input{results/index_length/hitratio}
-  \caption{Index Range v/s \texttt{hit\_ratio}}
+  \caption{Index Range Length v/s \texttt{hit\_ratio}}
+  \label{fig:hitratio}
 \end{figure}
 
-It is observed that the first request to server during which request for multiple
-blocks is made takes longer as number of index range increases.
+Note that the runtime has to block for data only first time it accesses a block.
+Subsequent accesses do not need any blocking since the data is ready. Hence the
+\texttt{hit\_ratio} with no prefetching is non zero.
+
+If a index spans only 1 then there is no scope for the runtime to do prefetching.
+This is evident from the plot when index length is 1, the \texttt{hit\_ratio} with
+prefetching is equal to with no prefetching. As range of index length increased,
+prefetching gets working. This can be easily observed from exponential growth in
+\texttt{hit\_ratio}. And eventually the curve for \texttt{hit\_ratio} flattens out
+after 6 since no significant improvement is achieved by increasing the index range
+length.
+
+It is observed that as the runtime requests for multiple blocks for prefetching,
+the first request to server takes longer as number of index range increases. This
+side effect can be explained using the preceding observation about \texttt{hit\_ratio}.
+Since the increase in index range length activates prefetching the first request
+to server becomes costlier. This is presented in figure~\ref{fig:p_first_mean}.
 \begin{figure}[h]
   \input{results/index_length/p_first_mean}
   \caption{Index Range v/s \texttt{wait\_time\_} per iteration}
+  \label{fig:p_first_mean}
 \end{figure}
 
-Thus to compensate for the high cost of first iteration, it needs index of length
-around 5 to decrease the \texttt{wait\_time\_} by factor of 2. The mean \texttt{wait\_time\_}
-per iteration decreased as compared to loops with no prefetching.
+It can be concluded from previous observation that prefetching increases the time
+for the first request to server. Thus to compensate for the high cost of first
+iteration by offsetting it in subsequent iterations the length of index range to
+should be sufficient enough. The mean time taken per iteration is plotted against
+the length of index range in figure~\ref{fig:p_np_mean}.
+
 \begin{figure}[h]
   \input{results/index_length/p_np_mean}
   \caption{Index Range v/s \texttt{wait\_time\_} per iteration in Prefetched and no Prefetched Loop}
 \end{figure}
+
+The length of index should be around 5 to decrease the \texttt{wait\_time\_}
+by factor of 2.
 
 \subsection{Block Size}
 Block size affects the first request made during prefetching. Since along with this
