@@ -244,27 +244,150 @@ that to increase number of blocks to prefetch. This explains the rise in mean
 number of blocks available without blocking stays constant.
 
 \section{GPU}
+This section presents the experiments performed to benchmark the performance of
+using Graphic Processing Unit.
 \subsection{Memory Pinning}
+Many of the optimization of involves page locking the host memory so that GPU can
+bypass processor and access the memory directly. This section presents various
+operations which exploits page locked memory.
 \subsubsection{Copy Speed}
+GPU can access only page locked memory. Without explicit page locked memory, the
+GPU driver first copies the memory to a temporary page lock memory and then copies
+to GPU buffer. By explicitly page locking memory, saving one copy operation is expected.
+Figure~\ref{fig:mem_pin/block_copy} presents varying block size against time to
+copy block.
+
 \begin{figure}[h]
   \input{results/mempin/block_copy/pin_vs_nopin}
   \caption{Time taken to transfer block to GPU for \textit{pinned} and \textit{non pinned} blocks}
+  \label{fig:mempin_block_copy}
 \end{figure}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{l | l | l}
+    \hline
+    Block Size & Pinned      & Not Pinned  \\
+    \hline
+    225        & 6.50641e-05 & 5.64773e-05 \\
+    400        & 5.69895e-05 & 4.88665e-05 \\
+    625        & 5.77066e-05 & 4.97829e-05 \\
+    900        & 7.04844e-05 & 5.80885e-05 \\
+    1225       & 6.93239e-05 & 5.98077e-05 \\
+    1600       & 7.10636e-05 & 8.65366e-05 \\
+    2025       & 7.18348e-05 & 6.23930e-05 \\
+    2500       & 7.40327e-05 & 6.16256e-05 \\
+    3025       & 7.27288e-05 & 6.21453e-05 \\
+    3600       & 7.76853e-05 & 6.55819e-05 \\
+    50625      & 5.90589e-05 & 0.000120046 \\
+    160000     & 0.000131335 & 0.000248844 \\
+    390625     & 0.000305546 & 0.000510937 \\
+    810000     & 0.000607461 & 0.001069850 \\
+    1500625    & 0.001107430 & 0.002165080 \\
+    2560000    & 0.001884320 & 0.003161620 \\
+    4100625    & 0.003069470 & 0.004814120 \\
+    6250000    & 0.004606550 & 0.006790370 \\
+    9150625    & 0.006778680 & 0.010549700 \\
+    12960000   & 0.009527120 & 0.015224000 \\
+    \hline
+  \end{tabular}
+  \caption{Block size against time taken to copy data in page locked and non page locked memory}
+  \label{tab:mempin_block_copy}
+\end{table}
+
+It is evident from the plot and table~\ref{tab:mempin_block_copy} that explicit
+page locking only results in faster memory copy if the size of block is above
+1600 elements. After the size of block crosses a threshold the pinned blocks are
+copied almost twice as fast as compared to non pinned blocks.
+
 \subsection{Optimized Transfer}
+The block transfer optimization considers whether the block is requested with
+intention of being read or written. Hence to benchmark this optimization real world
+test case is needed. Here \texttt{rccsd\_rhf.sialx} is used to investigate the
+number of transfers saved by exploiting the intent. This is presented in
+figure~\ref{fig:optimized_block_transfer}.
+
 \begin{figure}[h]
   \input{results/optimized_block_transfer/rccsd_rhf}
   \caption{Optimized v/s Unoptimized Block Tranfers for \texttt{rccsd\_rhf.sialx}}
+  \label{fig:optimized_block_transfer}
 \end{figure}
 
 \subsection{Memory Pinning Overhead}
+To benchmark the page lock memory allocation against non page locked memory allocation
+such as allocated using \texttt{malloc} function call, two tests were done. The
+first test benchmarks allocation and second benchmarks the deallocation. These two
+operations are presented in figure~\ref{fig:mempin_alloc} and figure~\ref{fig:mempin_free}
+by plotting time taken by page locked operations against non page locked operations.
+
 \subsubsection{\texttt{alloc}}
+Table~\ref{tab:mempin_alloc} describes the time taken for page locked memory allocation
+and non page locked memory allocation.
+\begin{table}[h]
+  \centering
+  \begin{tabular}{l | l | l}
+    \hline
+    Block Size & Pinned Memory Alloc & Non Pinned Memory Alloc \\
+    \hline
+    225        & 3.59733e-05         & 9.35048e-07             \\
+    400        & 1.99117e-05         & 4.13507e-07             \\
+    625        & 2.71294e-05         & 2.93367e-06             \\
+    900        & 1.76281e-05         & 5.90459e-07             \\
+    1225       & 2.44398e-05         & 6.18398e-07             \\
+    1600       & 1.55177e-05         & 2.54251e-06             \\
+    2025       & 2.82563e-05         & 3.18140e-06             \\
+    2500       & 2.04109e-05         & 3.00072e-06             \\
+    3025       & 1.91461e-05         & 3.29316e-06             \\
+    \hline
+  \end{tabular}
+  \caption{Block Size against Page locked and non page locked memory allocation}
+  \label{tab:mempin_alloc}
+\end{table}
+
 \begin{figure}[h]
   \input{results/mempin/overhead/alloc}
   \caption{Pinned and non Pinned memory allocation}
+  \label{fig:mempin_alloc}
 \end{figure}
 
+It is clear from table~\ref{tab:mempin_alloc} and figure~\ref{fig:mempin_alloc}
+that the time required to allocate both page locked and non page locked memory
+is independent of the size of memory requested. But the allocating page locked
+memory can be around 10 to 100 times costlier than non page locked memory.
+
 \subsubsection{\texttt{free}}
+Similar test was performed to benchmark page locked and non page locked memory
+deallocation. Table~\ref{tab:mempin_free} describes the time taken by the deallocation
+operation against varying size of block.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{l | l | l}
+    \hline
+    Block Size & Pinned Memory Free & Non Pinned Memory Free \\
+    \hline
+    225        & 2.78205e-05        & 4.19095e-07            \\
+    400        & 2.54586e-05        & 4.04194e-07            \\
+    625        & 2.88431e-05        & 5.94184e-07            \\
+    900        & 3.09199e-05        & 4.95464e-07            \\
+    1225       & 2.51215e-05        & 2.44007e-07            \\
+    1600       & 2.58479e-05        & 2.98023e-07            \\
+    2025       & 2.80552e-05        & 3.98606e-07            \\
+    2500       & 3.52804e-05        & 6.81728e-07            \\
+    3025       & 2.70978e-05        & 2.64496e-07            \\
+    \hline
+  \end{tabular}
+  \caption{Block size against Page locked and non page locked memory deallocation}
+  \label{tab:mempin_free}
+\end{table}
+
 \begin{figure}[h]
   \input{results/mempin/overhead/free}
   \caption{Pinned and non Pinned memory de-allocation}
+  \label{fig:mempin_free}
 \end{figure}
+
+The results are similar to page locked and non page locked allocation, the time
+taken for page locked and non page locked memory deallocation is independent of
+the size of the block. Page locked memory deallocation is around 100 times costlier
+than non page locked memory deallocation.
