@@ -391,3 +391,11 @@ The results are similar to page locked and non page locked allocation, the time
 taken for page locked and non page locked memory deallocation is independent of
 the size of the block. Page locked memory deallocation is around 100 times costlier
 than non page locked memory deallocation.
+
+\subsection{RDMA}
+
+\begin{figure}[h]
+  \input{results/mempin/rdma/pin_vs_nopin}
+  \caption{Pinned and non Pinned memory MPI block transfer \texttt{wait\_time\_}}
+  \label{fig:mempin_rdma}
+\end{figure}
