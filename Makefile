@@ -19,7 +19,9 @@ MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps \
 							results/optimized_block_transfer/rccsd_rhf.eps \
 							results/mempin/overhead/alloc.eps \
 							results/mempin/overhead/free.eps \
-							results/mempin/rdma/pin_vs_nopin.eps
+							results/mempin/rdma/get.eps \
+							results/mempin/rdma/put.eps \
+							results/mempin/rdma/total.eps
 
 all: main.pdf
 

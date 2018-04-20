@@ -393,9 +393,27 @@ the size of the block. Page locked memory deallocation is around 100 times costl
 than non page locked memory deallocation.
 
 \subsection{RDMA}
+To benchmark RDMA, Cuda aware implementation of MPI was used. The size of block
+was varied against CPU and GPU buffer passed to MPI transfer functions. The results
+are presented in figure~\ref{fig:mempin_rdma}.
 
+\subsubsection{\texttt{GET}}
 \begin{figure}[h]
-  \input{results/mempin/rdma/pin_vs_nopin}
-  \caption{Pinned and non Pinned memory MPI block transfer \texttt{wait\_time\_}}
-  \label{fig:mempin_rdma}
+  \input{results/mempin/rdma/get}
+  \caption{GPU and CPU buffer passed to \texttt{GET}}
+  \label{fig:mempin_rdma_get}
+\end{figure}
+
+\subsubsection{\texttt{PUT}}
+\begin{figure}[h]
+  \input{results/mempin/rdma/put}
+  \caption{GPU and CPU buffer passed to \texttt{PUT}}
+  \label{fig:mempin_rdma_put}
+\end{figure}
+
+\subsubsection{Total Transfer}
+\begin{figure}[h]
+  \input{results/mempin/rdma/total_transfer}
+  \caption{Total MPI transfer compared to Cuda Aware MPI transfer}
+  \label{fig:mempin_rdma_total}
 \end{figure}
