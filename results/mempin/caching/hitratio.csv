@@ -1,0 +1,6 @@
+File,Hit,Miss,Ratio
+scf_rhf_coreh,7975,214,0.97386738
+tran_rhf_no4v,8028,229,0.97226596
+rccsd_rhf,12859,1435,0.89960823
+rccsdpt_aaa,14899,3012,0.83183519
+rccsdpt_aab,15822,3696,0.81063634

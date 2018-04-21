@@ -417,3 +417,47 @@ are presented in figure~\ref{fig:mempin_rdma}.
   \caption{Total MPI transfer compared to Cuda Aware MPI transfer}
   \label{fig:mempin_rdma_total}
 \end{figure}
+
+\subsection{Caching Page Locked Blocks}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{l | r | r | r}
+    \hline
+    File          & Hit   & Miss & Ratio      \\
+    \hline
+    scf\_rhf\_coreh &  7975 &  214 & 0.97386738 \\
+    tran\_rhf\_no4v &  8028 &  229 & 0.97226596 \\
+    rccsd\_rhf      & 12859 & 1435 & 0.89960823 \\
+    rccsdpt\_aaa    & 14899 & 3012 & 0.83183519 \\
+    rccsdpt\_aab    & 15822 & 3696 & 0.81063634 \\
+    \hline
+  \end{tabular}
+  \caption{Page Locked Memory Blocks hit rate}
+  \label{tab:mempin_hitrate}
+\end{table}
+
+\begin{figure}[h]
+  \input{results/mempin/caching/caching}
+  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non Page Locked allocation
+  and dellocation times}
+  \label{fig:mempin_caching}
+\end{figure}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{l | r | r | r}
+    \hline
+    File            & Not Cached & Cached     & Unpinned    \\
+    \hline
+    scf\_rhf\_coreh & 0.1717890  & 0.00710591 & 0.00138408  \\
+    tran\_rhf\_no4v & 0.0119096  & 0.00223255 & 3.35677e-05 \\
+    rccsd\_rhf      & 0.7167320  & 0.07038730 & 0.00620503  \\
+    rccsdpt\_aaa    & 0.0136935  & 0.00248791 & 8.10297e-05 \\
+    rccsdpt\_aab    & 0.0198253  & 0.00259629 & 4.97848e-05 \\
+    \hline
+  \end{tabular}
+  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non Page Locked allocation
+  and dellocation times}
+  \label{tab:mempin_caching}
+\end{table}
