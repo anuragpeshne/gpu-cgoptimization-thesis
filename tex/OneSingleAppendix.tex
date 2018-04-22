@@ -11,10 +11,10 @@
 
 \appendix %
 
-\chapter*{APPENDIX \\ THIS IS THE FIRST APPENDIX} %puts the chapter title at the beginning of the
+\chapter*{APPENDIX \\ SIALX PROGRAM USED FOR BECHMARKING} %puts the chapter title at the beginning of the
 % appendix without changing the chapter number
 
-\addcontentsline{toc}{chapter}{APPENDIX: THIS IS THE FIRST APPENDIX} %puts the appendix title
+\addcontentsline{toc}{chapter}{APPENDIX: SIALX PROGRAMS USED FOR BENCHMARKING} %puts the appendix title
 % in the TOC correctly
 
 \chaptermark{Appendix}
@@ -22,35 +22,74 @@
 \setcounter{chapter}{1} %These commands set the chapter counter properly and the appendix text
 % is ready to go.
 
-And the appendix text goes here. Lorem ipsum dolor sit amet, consectetuer
-adipiscing elit. Maecenas eget magna. Aenean et lorem. Ut dignissim neque
-at nisi. In hac habitasse platea dictumst. In porta ornare eros. Nunc eu ante.
-In non est vehicula tellus cursus suscipit. Proin sed libero. Sed risus
-enim, eleifend in, pellentesque ac, nonummy quis, nulla. Phasellus
-imperdiet libero nec massa. Ut sapien libero, adipiscing eu,
-volutpat porttitor, ultricies eget, nisi. Sed odio. Suspendisse
-potenti. Duis dolor augue, viverra id, porta in, dignissim id, nisl.
-Vivamus blandit cursus eros. Maecenas sit amet urna sit amet orci
-nonummy pharetra.
+Listing~\ref{lst:put_test} presents the sialx program used for benchmark various
+parameters while evaluating block prefetch.
 
-Praesent cursus nibh et mauris. In aliquam felis sit amet ligula.
-Nulla faucibus nisl eget nisl. Aliquam tincidunt. Mauris eget elit
-sed massa luctus posuere. Pellentesque suscipit. In odio urna,
-semper ut, convallis ut, porta et, nibh. Nulla sodales metus nec
-velit posuere gravida. Cras tristique. Etiam urna risus, accumsan
-ut, placerat sed, iaculis id, est.
+\begin{lstlisting}[caption={\texttt{put\_test.sialx}: sialx program used for benchmarking prefetching},
+  label={lst:put_test}]
+sial put_test
+  predefined int norb
+  aoindex i = 1:norb
+  aoindex j = 1:norb
+  distributed a[i,j]
+  distributed b[i,j]
+  temp t[i,j]
 
-Nullam mi. Pellentesque habitant morbi tristique senectus et netus
-et malesuada fames ac turpis egestas. Duis vitae metus in massa
-hendrerit rhoncus. Fusce tortor justo, laoreet eu, facilisis at,
-gravida et, felis. Donec imperdiet mollis erat. Integer tempus nulla
-ac lorem. Fusce porttitor. Aenean quis arcu. Morbi consectetuer, leo
-eu mollis elementum, urna massa malesuada risus, euismod tempor
-lorem elit ut mauris. Cras elit orci, facilisis ac, mattis iaculis,
-cursus ac, augue. Donec eget nisl. Pellentesque fermentum sodales
-nibh. Vivamus non risus. Donec est libero, tincidunt sit amet,
-pretium vitae, blandit sed, tellus. Nunc diam risus, interdum sed,
-laoreet quis, varius ac, turpis. In et purus eget nibh vehicula
-rhoncus. Aenean et neque. Praesent nisl nisi, tempus quis, nonummy
-ac, auctor a, neque. Suspendisse et metus. Suspendisse non metus eu
-mauris auctor sagittis.
+  scalar x
+
+  print "starting loop"
+  pardo i
+    do j
+      t[i,j] = (scalar)((i-1)*norb + (j-1)) + 1.0
+      put a[i,j] = t[i,j]
+    enddo j
+  endpardo i
+
+  sip_barrier
+
+  pardo i
+    do j
+    get a[i,j]
+    x = a[i,j] * a[i,j]
+    put b[i,j] = a[i,j]
+    enddo j
+  endpardo i
+
+endsial put_test
+\end{lstlisting}
+
+Listing~\ref{lst:contraction_small_test} presents the sialx program used for benchmarking
+parameters used while evaluating GPU exploitation.
+
+\begin{lstlisting}[caption={\texttt{contraction\_small\_test.sialx}: sialx program to benchmark GPU exploitation},
+  label={lst:contraction_small_test}]
+sial contraction_small
+  special fill_block_cyclic wr
+  aoindex i = 1:1
+  aoindex j = 1:1
+  aoindex k = 1:1
+  aoindex l = 1:1
+  aoindex m = 1:1
+
+  temp a[i, j, k, l]
+  temp b[j, k]
+  local c[i, l]
+
+  gpu_on
+  do k
+    do j
+      execute fill_block_cyclic b [j, k] 1.0
+      do i
+        do l
+          allocate c[i, l]
+          execute fill_block_cyclic a[i, j, k, l] 1.0
+          c[i, l] = a[i, j, k, l] * b[j, k]
+        enddo l
+      enddo i
+    enddo j
+  enddo k
+
+  gpu_off
+
+endsial contraction_small
+\end{lstlisting}
