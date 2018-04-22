@@ -254,7 +254,7 @@ operations which exploits page locked memory.
 GPU can access only page locked memory. Without explicit page locked memory, the
 GPU driver first copies the memory to a temporary page lock memory and then copies
 to GPU buffer. By explicitly page locking memory, saving one copy operation is expected.
-Figure~\ref{fig:mem_pin/block_copy} presents varying block size against time to
+Figure~\ref{fig:mempin_block_copy} presents varying block size against time to
 copy block.
 
 \begin{figure}[h]
@@ -395,7 +395,7 @@ than non page locked memory deallocation.
 \subsection{RDMA}
 To benchmark RDMA, Cuda aware implementation of MPI was used. The size of block
 was varied against CPU and GPU buffer passed to MPI transfer functions. The results
-are presented in figure~\ref{fig:mempin_rdma}.
+for \texttt{GET} operation are presented in figure~\ref{fig:mempin_rdma_get}.
 
 \subsubsection{\texttt{GET}}
 \begin{figure}[h]
@@ -404,12 +404,37 @@ are presented in figure~\ref{fig:mempin_rdma}.
   \label{fig:mempin_rdma_get}
 \end{figure}
 
+
+The highest amount of time is taken by by passing main memory address to MPI function,
+followed by passing page locked main memory address to MPI and passing GPU memory
+address to Cuda Aware MPI implementation. Here there are two important things to
+notice:
+\begin{enumerate}
+\item If Cuda aware MPI implementation is used than DMA is used for transfering
+  data from network fabric to GPU buffers directly.
+\item It seems that just by page locking main memory, even without using GPU, DMA
+  is invoked by MPI implementation for transfer of data from network fabric to
+  main memory.
+\end{enumerate}
+
+There is not much of difference in time in \texttt{PUT} operation, as presented
+in figure~\ref{fig:mempin_rdma_put}. The time taken by passing main memory address,
+page locked main memory address and GPU memory address to MPI function varies slightly
+as size of block increases.
+
 \subsubsection{\texttt{PUT}}
 \begin{figure}[h]
   \input{results/mempin/rdma/put}
   \caption{GPU and CPU buffer passed to \texttt{PUT}}
   \label{fig:mempin_rdma_put}
 \end{figure}
+
+Even though there is not much improvement in speed if address of GPU memory is
+passed to MPI function, by passing GPU address directly the complete operation
+can be executed on GPU without requiring the data to be copied to main memory. This
+saves two GPU memory and main memory copy operations and thus get substantial improvement
+in speed of overall operation. The time spent on overall operation is plotted in
+figure~\ref{fig:mempin_rdma_total}.
 
 \subsubsection{Total Transfer}
 \begin{figure}[h]
@@ -418,13 +443,33 @@ are presented in figure~\ref{fig:mempin_rdma}.
   \label{fig:mempin_rdma_total}
 \end{figure}
 
+There is significant speedup as block size grows beyond 2000 with Cuda Aware
+implementation getting around 5 times faster than original main memory implementation
+for block sizes of around 3000.
+
 \subsection{Caching Page Locked Blocks}
+Caching page locked memory blocks is important since allocating page locked memory
+is 100 times costlier than non page locked memory. To test caching two parameters
+have been selected as most appropriate: hit ratio and time spend in allocation with
+and without caching.
+
+\textit{Hit Ratio} is simply the ratio of number of times allocation request was
+full filled by cached block and the total number times memory allocation request
+was made.
+\[
+  \texttt{hit\_ratio} = \frac{number~of~times~memory~allocation~request~full~filled~by~cached~block}{total~number~of~memory~allocation~requests~made}
+\]
+
+Since the Hit Ratio does not depend on size of memory block requested for, rather
+than depends on the pattern of allocation and deallocation, the hit ratio is calculated
+for real quantum chemistry calculation program. Table~\ref{tab:mempin_hitrate}
+presents the hit ratio for given calculation programs.
 
 \begin{table}[h]
   \centering
   \begin{tabular}{l | r | r | r}
     \hline
-    File          & Hit   & Miss & Ratio      \\
+    File            & Hit   & Miss & Ratio      \\
     \hline
     scf\_rhf\_coreh &  7975 &  214 & 0.97386738 \\
     tran\_rhf\_no4v &  8028 &  229 & 0.97226596 \\
@@ -437,12 +482,26 @@ are presented in figure~\ref{fig:mempin_rdma}.
   \label{tab:mempin_hitrate}
 \end{table}
 
+It is evident that cost of allocation of page locked memory is
+paid only less than 20\% of the time for these programs.
+
+To study the effect of caching on actual allocation time, the time taken by actual
+allocation in the above mentioned programs is calculated for the cases when blocks
+are cached and not cached. Time taken when page locking is not done altogether is
+also calculated to study the cost paid for page locking even after caching with
+respect to not page locking. The results are plotted in figure~\ref{fig:mempin_caching}.
+
 \begin{figure}[h]
   \input{results/mempin/caching/caching}
   \caption{Page Locked Cached v/s Page Locked Uncached v/s Non Page Locked allocation
   and dellocation times}
   \label{fig:mempin_caching}
 \end{figure}
+
+By caching the page locked memory blocks the allocation time is brought down by
+almost factor of 10. However this is still greater than allocation time spent in
+case of non page locked memory. This difference is difficult to plot, the numerical
+values of allocation time are presented in table~\ref{tab:mempin_caching}.
 
 \begin{table}[h]
   \centering
@@ -461,3 +520,7 @@ are presented in figure~\ref{fig:mempin_rdma}.
   and dellocation times}
   \label{tab:mempin_caching}
 \end{table}
+
+The caching improves the time spend in allocation by factor of 10. However the time
+spent in non page locked memory allocation is still less than caching by factor
+of 10 and in some cases around 100.
