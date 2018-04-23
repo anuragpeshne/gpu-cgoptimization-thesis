@@ -29,13 +29,13 @@ deployed and scaled on multiple nodes in a high performance computing cluster
 using Message Passing Interface (MPI) for inter process communication. Since the
 multidimensional arrays involved in the calculations can be extremely large for
 memory of a single processor, SIA divides the arrays into chunks of much of
-manageable size. These chunks can be divided to different processors to work on
-them concurrently.
+manageable size. These chunks can be distributed to different processors and the
+processors can work on the chunks concurrently.
 
 SIA supports arrays of size greater than combined memory of all processors
 involved in computation by providing facility of storing the chunks which are
 not \textit{hot}, that is the chunks which are not going to be used soon, on
-larger, although slower, hard drives. This swapping of blocks is automatic
+larger, although slower, memory on hard drives. This swapping of blocks is automatic
 and transparent to the programmer. To facilitate the movement of data among
 processing units and swapping out blocks to hard drives, SIA divides available
 processors into two groups, workers and servers - workers are responsible for
@@ -50,13 +50,13 @@ domain. The idea behind SIAL is to keep the domain problem separate from
 platform and computing problem. SIAL programs are written by the domain experts
 whereas the intricacies involved in execution of SIAL programs, like distribution of
 data, parallel execution, memory management, runtime optimizations, is handled
-computing experts.
+by computing experts.
 
-SIAL apart from providing programmers with conditional constructs, looping constructs,
-procedures, way to import other SIAL programs like conventional general purpose
-programming language, also provides special parallel looping construct and a way
+SIAL apart from providing programmers with conventional constructs such as
+conditional constructs, looping constructs, procedures, way to import other SIAL
+programs like general purpose programming language, also provides special parallel looping construct and a way
 to define domain specific block operation or \textit{super instruction}. The
-parallel looping construct \textbf{pardo} loops over multiple indices, and
+parallel looping construct \texttt{pardo} loops over multiple indices, and
 distributes blocks to difference processors. This construct is of special
 interest to us since the optimizations done using GPU are mostly done in the
 interpretation of this looping construct.
@@ -83,22 +83,22 @@ present on the processor.
 As described above, instead of processing data as a single floating point
 number, SIA processes blocks of floating point numbers. These blocks are chunks
 of even larger multidimensional arrays. This is represented inside SIAL
-interpreter as \textbf{Block} class. Since SIA supports heterogeneous computing
+interpreter using \texttt{Block} class. Since SIA supports heterogeneous computing
 using other computing devices such as GPU and GPU has their own device memory
 which is separate from main processor memory and GPU works on its own memory
-only, there is a facility in Block class to represent the Block memory in other
+only, there is a facility in \texttt{Block} class to represent the block memory in other
 computing device. Along with member attributes which represent block metadata
 and member functions which act on the block, the Block class has pointers to
 memory location on each computation unit: CPU, GPU and support for more
 computing device such as Intel Xeon Phi.
 
 The Block class depending upon the active computing device will return the
-appropriate device memory address. There is also logic build into the Block
+appropriate device memory address. There is also logic build into the \texttt{Block}
 class to automatically synchronize memory for various devices so that if one
 device operates on the block and then in next instruction another device wants
 to read the block, the block memory will be automatically synchronized and the
 next device will read updated memory. This is done by maintaining version numbers
-to each memory and then updating the memory based upon the version numbers when
+for each memory and then updating the memory based upon the version numbers when
 memory is accessed.
 
 \section{Executing Super Instructions on GPU}
