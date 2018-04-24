@@ -15,7 +15,7 @@ blocks or super numbers. These super numbers are input to special instructions
 written to operate on blocks instead of floating point numbers and hence called
 as super instructions.
 
-SIA can execute instructions on the blocks in parallel on multiple processor, to
+SIA can execute instructions on the blocks in parallel on multiple processor. To
 facilitate movement of blocks among parallel execution units, server-client
 architecture is used. SIA provides SIAL, a block oriented domain specific
 language (DSL), which can be used to formulate problems of any domain and a way
@@ -28,7 +28,7 @@ SIA can execute instructions in parallel over multiple processors. It can be
 deployed and scaled on multiple nodes in a high performance computing cluster
 using Message Passing Interface (MPI) for inter process communication. Since the
 multidimensional arrays involved in the calculations can be extremely large for
-memory of a single processor, SIA divides the arrays into chunks of much of
+memory of a single processor, SIA divides the arrays into chunks of
 manageable size. These chunks can be distributed to different processors and the
 processors can work on the chunks concurrently.
 
@@ -38,31 +38,31 @@ not \textit{hot}, that is the chunks which are not going to be used soon, on
 larger, although slower, memory on hard drives. This swapping of blocks is automatic
 and transparent to the programmer. To facilitate the movement of data among
 processing units and swapping out blocks to hard drives, SIA divides available
-processors into two groups, workers and servers - workers are responsible for
+processors into two groups, workers and servers --- workers are responsible for
 actual execution of instructions on the blocks, while servers make sure blocks
 are served to and from workers. The division of number of servers versus number
 of workers is chosen by SIA but can be overridden by passing command line
 arguments.
 
 \section{SIAL}
-SIAL is a programming language provided for expressing problems of targeted
+SIAL is a programming language provided for expressing problems of target
 domain. The idea behind SIAL is to keep the domain problem separate from
 platform and computing problem. SIAL programs are written by the domain experts
 whereas the intricacies involved in execution of SIAL programs, like distribution of
-data, parallel execution, memory management, runtime optimizations, is handled
+data, parallel execution, memory management, runtime optimizations, are handled
 by computing experts.
 
-SIAL apart from providing programmers with conventional constructs such as
+SIAL, apart from providing programmers with conventional constructs such as
 conditional constructs, looping constructs, procedures, way to import other SIAL
 programs like general purpose programming language, also provides special parallel looping construct and a way
 to define domain specific block operation or \textit{super instruction}. The
-parallel looping construct \texttt{pardo} loops over multiple indices, and
+parallel looping construct, \texttt{pardo}, loops over multiple indices, and
 distributes blocks to difference processors. This construct is of special
 interest to us since the optimizations done using GPU are mostly done in the
 interpretation of this looping construct.
 
 As mentioned above, domain experts can write their own domain specific
-instructions which take in multiple blocks and output a resulting block. These
+instructions which take in single or multiple blocks and output a resulting block. These
 instructions can be written in C, C++ or Fortran. Since these languages are much
 more closer to hardware, these super instructions can be written in a very
 optimized way. Further, this facility can be exploited to port the language to
@@ -85,8 +85,8 @@ number, SIA processes blocks of floating point numbers. These blocks are chunks
 of even larger multidimensional arrays. This is represented inside SIAL
 interpreter using \texttt{Block} class. Since SIA supports heterogeneous computing
 using other computing devices such as GPU and GPU has their own device memory
-which is separate from main processor memory and GPU works on its own memory
-only, there is a facility in \texttt{Block} class to represent the block memory in other
+which is separate from main processor memory, there is a facility in
+\texttt{Block} class to represent the block memory in other
 computing device. Along with member attributes which represent block metadata
 and member functions which act on the block, the Block class has pointers to
 memory location on each computation unit: CPU, GPU and support for more
