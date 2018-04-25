@@ -189,7 +189,7 @@ latest version of data can be embedded into \texttt{get\_data(device)}:
   \begin{algorithmic}[1]
     \Function{Block::get\_data}{deviceid}
     \State $latest\_device \gets this.get\_latest\_device()$
-    \If{$latest\_device.data\_version > this.devices[deviceid]$}
+    \If{$latest\_device.data\_version > this.devices[deviceid].data\_version$}
     \State {$memcpy(latest\_device.data,\ this.devices[deviceid].data)$}
     \EndIf
     \State \Return $this.devices[deviceid].data$
@@ -226,7 +226,7 @@ The algorithm presented in~\ref{alg:get_data} can be split into
     \\
     \Function{Block::update\_data}{deviceid}
     \State $latest\_device \gets this.get\_latest\_device()$
-    \If{$latest\_device.data\_version > this.devices[deviceid]$}
+    \If{$latest\_device.data\_version > this.devices[deviceid].data\_version$}
     \State {$memcpy(latest\_device.data,\ this.devices[deviceid].data)$}
     \EndIf
     \EndFunction
@@ -234,8 +234,8 @@ The algorithm presented in~\ref{alg:get_data} can be split into
   \end{algorithmic}
 \end{algorithm}
 
-This relatively simple change in organization of code along with the information
-about intent of the request reduced the synchronizations by TODO\%.
+This relatively simple change in code along with the information
+about intent of the request can reduce several unnecessary synchronizations.
 
 \subsection{Memory Pinning}\label{memory_pinning}
 The memory allocated on CPU or main memory is pageable by default. The GPU cannot
@@ -271,10 +271,9 @@ to GPU device memory.
 Due to this copying of data to first a temporary page locked memory, extra time
 is spent in redudant copy operation. To overcome this, the host memory can directly
 be allocated in pinned memory. For this CUDA gives API \texttt{cudaMallocHost()},
-\texttt{cudaHostAlloc()} to allocte memory and \texttt{cudaFreeHost()} to deallocate
+\texttt{cudaHostAlloc()} to allocate memory and \texttt{cudaFreeHost()} to deallocate
 the memory. Using this technique the data flow presented in~\ref{fig:wo_mem_pin} is
 modified to flow presented in~\ref{fig:w_mem_pin}.
-as:
 
 \begin{figure}[h] %place figure "here"
   \begin{tikzpicture}[
@@ -301,7 +300,7 @@ Apart from saving a redudant copy operation, memory page locking also helps in
 reducing time to copy because when memory is page locked, the GPU can invoke Direct
 Memory Access (DMA)
 controller~\cite{dmatransfer}\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs}
-to transfer memory bypassing the CPU. This results in
+to transfer memory bypassing the CPU. This results in around
 twice~\cite{datatransferoptimization} the bandwidth between host and GPU.
 
 \subsubsection{Asynchronous \texttt{memcpy}}
@@ -317,7 +316,7 @@ a large overhead as compared to allocation of non pinned memory. Similar observa
 by Boyer et al~\cite{Boyer2009}\cite{memory-management-overhead}\cite{pinned-tradeoff}
 have been reported. They reported memory allocation calls \texttt{cudaMalloc} to
 be 30-40\% more expensive than \texttt{malloc} and \texttt{cudaHostMalloc} to be
-3-5 times more expensive than \texttt{malloc}. To overcome this, a scheme was
+slower than \texttt{malloc} by a factor of 100. To overcome this, a caching scheme was
 developed to reuse the already page locked memory pages.
 
 \subsubsection{Reusing Page Locked Memory Pages}
@@ -334,15 +333,15 @@ be split or coalesced.
 \subsubsection{Implementation of Caching Mechanism}
 When a page locked block of memory is deleted, instead of un-pinning it and calling
 \texttt{delete[]} on it, it is saved into a list. Two maps are used for book
-keeping. One of it, \texttt{fig:free\_list}, presented in figure~\ref{fig:free_list},
-maps the block size to a list of \texttt{double} pointers. When a request for
+keeping. One of it, \texttt{free\_list}, presented in figure~\ref{fig:free_list},
+maps the block size to a list of pointers to \texttt{double}. When a request for
 block of memory is received this list is searched for block of size equal or
 greater than size of block requested. If no such block exists then a new block
 is created, pinned and returned. It is possible that there is not enough free
 memory in the system to allocate a new block, in that case, few blocks of smaller
-sizes are pinned and returned to OS and then a new block is requested. If there
+sizes are un-pinned and returned to OS and then a new block is requested. If there
 are no blocks in \texttt{free\_list} and block size is greater than free memory
-than system is out of memory and exception is thrown.
+then system is out of memory and exception is thrown.
 
 The other map serves as reverse lookup, presented in figure~\ref{fig:reverse_lookup}
 from pointer to size of block. This reverse lookup is essential to know actual
@@ -465,7 +464,7 @@ FIFO (First In First Out) fashion. Operations in different streams can be interl
 and CUDA driver might execute them concurrently.
 
 \subsubsection{Non Blocking Device Synchronization}\label{nonblockdevicesync}
-GPU streams were used to implement non blocking SIA blocks synchronization. Using
+GPU streams were used to implement non blocking SIA block synchronization. Using
 multiple CUDA streams and page locked memory, DMA controllers can be invoked to
 transfer memory from host to GPU and vice-versa asynchronously to both CPU and GPU
 kernel execution engine. Current generation of GPU have dual DMA
@@ -507,7 +506,7 @@ wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchroniz
 \end{algorithm}
 
 \section{GPU Buffers in Internode Communication}
-SIAL makes it possible to work extremly large arrays by dividing the array into
+SIAL makes it possible to work on extremly large arrays by dividing the array into
 multiple blocks and then server distributing the blocks to workers. Workers and
 Server nodes communicate using highly optimized MPI library. Since GPU have their
 own memory, using GPU for computation in a multinode environment can add an
@@ -517,7 +516,7 @@ optimizations for this communication are presented.
 \subsection{Background}
 GPU cards have their own memory on which the GPU can compute. In
 Section~\ref{memory_pinning} the techniques used for optimizing memory transfer
-between host memory (main memory) and GPU memory is discussed. Additionally when
+between host memory (main memory) and GPU memory are discussed. Additionally when
 MPI is used for internode communication, the data buffers to send are staged
 to MPI buffers automatically by MPI. To send a buffer allocated on GPU using MPI,
 it first has to be copied to main memory so that its pointer can be passed to

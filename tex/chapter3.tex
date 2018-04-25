@@ -65,7 +65,7 @@ As mentioned above, domain experts can write their own domain specific
 instructions which take in single or multiple blocks and output a resulting block. These
 instructions can be written in C, C++ or Fortran. Since these languages are much
 more closer to hardware, these super instructions can be written in a very
-optimized way. Further, this facility can be exploited to port the language to
+optimized way. Further, this facility can be exploited to port the super instructions to
 other computing devices such as GPU by writing these super instructions in
 Nvidia CUDA.
 
@@ -95,7 +95,7 @@ computing device such as Intel Xeon Phi.
 The Block class depending upon the active computing device will return the
 appropriate device memory address. There is also logic build into the \texttt{Block}
 class to automatically synchronize memory for various devices so that if one
-device operates on the block and then in next instruction another device wants
+device edits the block and then in next instruction another device wants
 to read the block, the block memory will be automatically synchronized and the
 next device will read updated memory. This is done by maintaining version numbers
 for each memory and then updating the memory based upon the version numbers when
