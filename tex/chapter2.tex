@@ -1,7 +1,7 @@
 \chapter{RELATED WORK}\label{lit}
 
 We discuss work done by others in using GPU for scientific calculations using
-several methods such as directive based GPU programming models, using Cuda in
+several methods such as directive based GPU programming models, using CUDA in
 higher level programming language and use of GPU in previous versions of ACES
 and work done using in prefetching to hide latency in accessing data. We also look
 at work done in general idea of prefetching such as non blocking fetch operation,
@@ -23,7 +23,7 @@ concurrency using super instructions and super numbers or blocks by executing
 super instruction on GPU. These super instructions in turn exploit fine grained
 concurrency and can make use of above models to make an existing CPU implementation
 GPU ready by inserting suitable directives or have a completely rewritten low level
-Cuda implementation. Thus these models work \textit{with} the previously mentioned
+CUDA implementation. Thus these models work \textit{with} the previously mentioned
 models rather than against them.
 
 \subsection{GPU in Computational Chemistry}
@@ -97,7 +97,7 @@ prefetched blocks. If the prefetch efficiency exceeds a threshold then K is
 incremented and decremented if it drops below a lower threshold. The value of K
 can reach 0, effectively disabling prefetching.
 
-There had been work done by Bhatia el al~\cite{Bhatia2010} to determine size of
+There had been work done by Bhatia et al~\cite{Bhatia2010} to determine size of
 cache to maximize hit rate in a sequential prefetching scheme. In this work, an
 online algorithm is devised which saves the blocks evicted from prefetch cache
 into another cache, \textit{evicted cache}. If the incoming request is satisfied

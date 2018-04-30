@@ -1,6 +1,6 @@
 \chapter{EXPLOITING GPU}\label{exploitinggpu}
 \section{Background}
-\texttt{do} and \texttt{pardo} looping constructs are one of the most important
+The \texttt{do} and \texttt{pardo} looping constructs are one of the most important
 constructs in SIAL since they allow SIAL programmers to express operations on
 blocks. Using \texttt{pardo} construct the calculations can be done in parallel.
 SIAL runtime is responsible for the distribution of work over all the worker nodes.
@@ -65,8 +65,8 @@ on GPU and blocks of lines 5-11 and 29-37 deal with managing memory to and from
 GPU and main memory. The actual calculations is done by lines 13-27.
 
 \section{Runtime Memory Management}
-To manage the block memory and to automate the memory transfer between GPU and CPU
-meta data about state of memory was stored in interpreter. The \texttt{Block} class
+To manage the block memory and to automate the memory transfer between GPU and CPU,
+metadata about state of memory was stored in interpreter. The \texttt{Block} class
 which represents the super \textit{block} in interpreter was modified to now store
 this meta data and pointer to memory location in GPU and main memory in form of
 object of another class \texttt{Device\_Info}.
@@ -200,11 +200,11 @@ latest version of data can be embedded into \texttt{get\_data(device)}:
 \end{algorithm}
 
 \section{Optimizing Block Copying}
-A enormous cost has to be paid~\cite{Bakkum2010}\cite{memorytransferoverhead}
+An enormous cost has to be paid~\cite{Bakkum2010}\cite{memorytransferoverhead}
 for transferring memory to GPU as compared to the time taken for actual computation
 on GPU. Hence to have significant speed gains by executing on GPU over executing
 on CPU, it is necessary to minimize time spent on block transfers. This has been
-achieved in by deploying multiple optimizations that are explained in this section.
+achieved by deploying multiple optimizations that are explained in this section.
 
 \subsection{Reducing Block Transfers}
 The SIAL runtime has the information about intent of each block request, whether
@@ -214,7 +214,7 @@ going to be written need not be synchronized, however the blocks requested for
 being read or updated need to be synchronized for the requested device.
 
 The algorithm presented in~\ref{alg:get_data} can be split into
-\texttt{get\_data} and a explicit \texttt{update\_data}:
+\texttt{get\_data} and an explicit \texttt{update\_data}:
 
 \begin{algorithm}  {Block::get\_data(deviceid) $\rightarrow$ double*}
   \singlespacing
@@ -234,7 +234,7 @@ The algorithm presented in~\ref{alg:get_data} can be split into
   \end{algorithmic}
 \end{algorithm}
 
-This relatively simple change in code along with the information
+This change in accessing and updating block data along with the information
 about intent of the request can reduce several unnecessary synchronizations.
 
 \subsection{Memory Pinning}\label{memory_pinning}
@@ -305,7 +305,7 @@ twice~\cite{datatransferoptimization} the bandwidth between host and GPU.
 
 \subsubsection{Asynchronous \texttt{memcpy}}
 Since CUDA controller can invoke DMA controller to copy memory if the host memory
-is page locked, this operation can be carried out asychronous not only to host but
+is page locked, this operation can be carried out asychronously not only to host but
 also asychronously to GPU kernel execution engine. Thus both host and GPU can carry
 on with execution of calculation while the blocks are synchronized. This is
 elaborated in section~\ref{nonblockdevicesync}.
@@ -322,10 +322,10 @@ developed to reuse the already page locked memory pages.
 \subsubsection{Reusing Page Locked Memory Pages}
 The problem of caching page locked memory pages is similar to problem of dynamic
 allocation of memory which is handled by Operating System. Extensive work~\cite{Wilson1995}
-is done in solving the problems of efficiently allocation memory dynamically such
+is done in solving the problems involved in efficiently allocating memory dynamically such
 as external and internal fragmentation along with time taken to find suitable
 block of memory is minimized. Caching and serving page locked memory blocks
-is similar to dynamic memmory allocation in the way that it needs to find suitable
+is similar to dynamic memory allocation in the way that it needs to find suitable
 size memory block such that least space in form of internal fragmentation is wasted
 but it is different from dynamic allocation in the way that the memory blocks cannot
 be split or coalesced.
@@ -480,7 +480,7 @@ is set to 2 since current generation of GPU devices have 2 DMA controllers. Each
 \texttt{Device\_Info} object stores \texttt{gpu\_stream\_id} which is set when a
 copy operation on \texttt{Block} object is initiated. At same time a bit
 \texttt{isAsync} is set to denote that the \texttt{Block} object has pending
-asynchronous operations. Before deferencing the memory pointer, runtime should
+asynchronous operations. Before de-referencing the memory pointer, runtime should
 wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchronize}.
 
 \begin{algorithm} {Asynchronous Block Synchronization}
@@ -532,16 +532,17 @@ buffers. This transfer is represented in Figure~\ref{fig:gpu_buff_transfer} by b
 arrows. It is worth noting that though this saves couple of copy operations, the
 buffers still are managed through CPU memory and thus are limited by the CPU
 memory bandwidth. SIA will make use of this when the buffers are page locked and
-software libraries \& hardware facilities are not present for RDMA which is
+software libraries \& hardware facilities are not present for Remote Direct Memory
+Access (RDMA) which is
 presented next.
 
 \subsection{MPI Transfers Using RDMA}
 The intermediate copying operations to host memory can be avoided further by
-taking advantage of Remote Direct Memory Access (RDMA). RDMA is a technique using
+taking advantage of RDMA. RDMA is a technique using
 which the GPU can send buffers from GPU memory to network adapter without staging
 through host memory. OpenMPI supports RDMA~\cite{openmpi-cudaaware} and thus all
 the extra copy operations can be avoided.
-Further RDMA transfers work independently of the CPU and thus it not only saves
+Further RDMA transfers work independent of the CPU and thus it not only saves
 extra copy operations, the transfer is done over PCI-E and is independent
 of the CPU memory bandwidth and the memory bus traffic congestion.
 This is conceptually represented in Figure~\ref{fig:gpu_buff_transfer} using orange

@@ -393,7 +393,7 @@ the size of the block. Page locked memory deallocation is around 100 times costl
 than non page locked memory deallocation.
 
 \subsection{RDMA}
-To benchmark RDMA, Cuda aware implementation of MPI was used. The size of block
+To benchmark RDMA, CUDA aware implementation of MPI was used. The size of block
 was varied against CPU and GPU buffer passed to MPI transfer functions. The results
 for \texttt{GET} operation are presented in figure~\ref{fig:mempin_rdma_get}.
 
@@ -405,12 +405,12 @@ for \texttt{GET} operation are presented in figure~\ref{fig:mempin_rdma_get}.
 \end{figure}
 
 
-The highest amount of time is taken by by passing main memory address to MPI function,
+The highest amount of time is taken by passing main memory address to MPI function,
 followed by passing page locked main memory address to MPI and passing GPU memory
-address to Cuda Aware MPI implementation. Here there are two important things to
+address to CUDA Aware MPI implementation. Here, there are two important things to
 notice:
 \begin{enumerate}
-\item If Cuda aware MPI implementation is used than DMA is used for transfering
+\item If CUDA aware MPI implementation is used then DMA is used for transfering
   data from network fabric to GPU buffers directly.
 \item It seems that just by page locking main memory, even without using GPU, DMA
   is invoked by MPI implementation for transfer of data from network fabric to
@@ -439,11 +439,11 @@ figure~\ref{fig:mempin_rdma_total}.
 \subsubsection{Total Transfer}
 \begin{figure}[h]
   \input{results/mempin/rdma/total_transfer}
-  \caption{Total MPI transfer compared to Cuda Aware MPI transfer}
+  \caption{Total MPI transfer compared to CUDA Aware MPI transfer}
   \label{fig:mempin_rdma_total}
 \end{figure}
 
-There is significant speedup as block size grows beyond 2000 with Cuda Aware
+There is significant speedup as block size grows beyond 2000 with CUDA Aware
 implementation getting around 5 times faster than original main memory implementation
 for block sizes of around 3000.
 

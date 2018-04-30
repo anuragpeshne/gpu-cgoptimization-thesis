@@ -17,8 +17,8 @@ This is implemented by tracking block changes using version numbers.
 
 Still there is need for SIAL programmer to decide which portion of the SIAL code
 is well suited for execution on GPU. Transferring data between GPU and CPU is
-expensive and can dominate the total time spend in computation. Hence this is not
-a trivial decision to make since the programmer has to minimize time spend in
+expensive and can dominate the total time spent in computation. Hence this is not
+a trivial decision to make since the programmer has to minimize time spent in
 total memory transfers. This in turn depends on various factors such as
 size of the block and number of instructions in the code block supported on GPU. Judging
 based on size of block is itself difficult because it depends on the type of GPU available
@@ -35,7 +35,7 @@ In SIAL, looping constructs are the only way to work with individual blocks.
 Typical work~flow of SIAL includes requesting a block of larger array from server,
 processing the block, compute resulting block and send it back to the server. Though
 the operation of requesting block from server is non blocking, subsequent operations
-in the loop block until MPI transfer is completed. To amortize the cost of network
+in the loop block until Message Passing Interface (MPI) transfer is completed. To amortize the cost of network
 transfer, prefetching has been implemented which does the transfer concurrently
 with the block processing. By prefetching the anticipated blocks that would be
 needed in next iteration of loop, the wait~time for block can be reduced and

@@ -1,9 +1,8 @@
 \chapter{BACKGROUND: SUPER INSTRUCTION ARCHITECTURE} \label{background}
 
-This chapter introduces the Super Instruction Architecture (SIA), ACES4, an
-implementation of SIA, block based programming, the design of worker and server,
-Super Instruction Assembly Language (SIAL), parallel looping constructs and
-design of GPU implementation.
+This chapter introduces the SIA, ACES4, an implementation of SIA, block based
+programming, the design of worker and server, SIAL, parallel looping constructs
+and design of GPU implementation.
 
 \section{SIA}
 The Super Instruction Architecture is a special purpose, domain agnostic,
@@ -26,7 +25,7 @@ SIAL and constructs in it.
 \section{Architecture of SIA}
 SIA can execute instructions in parallel over multiple processors. It can be
 deployed and scaled on multiple nodes in a high performance computing cluster
-using Message Passing Interface (MPI) for inter process communication. Since the
+using MPI for inter process communication. Since the
 multidimensional arrays involved in the calculations can be extremely large for
 memory of a single processor, SIA divides the arrays into chunks of
 manageable size. These chunks can be distributed to different processors and the
@@ -93,7 +92,7 @@ memory location on each computation unit: CPU, GPU and support for more
 computing device such as Intel Xeon Phi.
 
 The Block class depending upon the active computing device will return the
-appropriate device memory address. There is also logic build into the \texttt{Block}
+appropriate device memory address. There is also a logic build into the \texttt{Block}
 class to automatically synchronize memory for various devices so that if one
 device edits the block and then in next instruction another device wants
 to read the block, the block memory will be automatically synchronized and the

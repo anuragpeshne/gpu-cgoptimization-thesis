@@ -2,7 +2,7 @@ set term epslatex color colortext lw 3 dl 3
 set output 'results/index_length/hitratio.eps'
 set datafile separator ","
 set xlabel 'Index Length'
-set ylabel 'Ratio'
+set ylabel 'Hit Ratio'
 set key outside top center
 set grid
 
