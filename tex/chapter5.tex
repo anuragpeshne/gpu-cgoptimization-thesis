@@ -269,7 +269,7 @@ to GPU device memory.
 \end{figure}
 
 Due to this copying of data to first a temporary page locked memory, extra time
-is spent in redudant copy operation. To overcome this, the host memory can directly
+is spent in redundant copy operation. To overcome this, the host memory can directly
 be allocated in pinned memory. For this CUDA gives API \texttt{cudaMallocHost()},
 \texttt{cudaHostAlloc()} to allocate memory and \texttt{cudaFreeHost()} to deallocate
 the memory. Using this technique the data flow presented in~\ref{fig:wo_mem_pin} is
@@ -296,7 +296,7 @@ modified to flow presented in~\ref{fig:w_mem_pin}.
 \end{figure}
 
 \subsubsection{Page Locked Memory Bandwidth}
-Apart from saving a redudant copy operation, memory page locking also helps in
+Apart from saving a redundant copy operation, memory page locking also helps in
 reducing time to copy because when memory is page locked, the GPU can invoke Direct
 Memory Access (DMA)
 controller~\cite{dmatransfer}\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs}
@@ -305,8 +305,8 @@ twice~\cite{datatransferoptimization} the bandwidth between host and GPU.
 
 \subsubsection{Asynchronous \texttt{memcpy}}
 Since CUDA controller can invoke DMA controller to copy memory if the host memory
-is page locked, this operation can be carried out asychronously not only to host but
-also asychronously to GPU kernel execution engine. Thus both host and GPU can carry
+is page locked, this operation can be carried out asynchronously not only to host but
+also asynchronously to GPU kernel execution engine. Thus both host and GPU can carry
 on with execution of calculation while the blocks are synchronized. This is
 elaborated in section~\ref{nonblockdevicesync}.
 
@@ -506,10 +506,10 @@ wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchroniz
 \end{algorithm}
 
 \section{GPU Buffers in Internode Communication}
-SIAL makes it possible to work on extremly large arrays by dividing the array into
+SIAL makes it possible to work on extremely large arrays by dividing the array into
 multiple blocks and then server distributing the blocks to workers. Workers and
 Server nodes communicate using highly optimized MPI library. Since GPU have their
-own memory, using GPU for computation in a multinode environment can add an
+own memory, using GPU for computation in a multi node environment can add an
 additional layer of communication between GPU and network cards. In this section
 optimizations for this communication are presented.
 

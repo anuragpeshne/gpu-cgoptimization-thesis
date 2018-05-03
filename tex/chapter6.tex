@@ -150,7 +150,7 @@ the length of index range in figure~\ref{fig:p_np_mean}.
 
 The length of index should be around 5 to decrease the \texttt{wait\_time\_}
 by factor of 2. The mean \texttt{wait\_time} per iteration with prefetching can
-reduce upto 3 times as compared to with no prefetching if the length of index
+reduce up to 3 times as compared to with no prefetching if the length of index
 length is greater than 9.
 
 \subsection{Block Size}
@@ -309,7 +309,7 @@ figure~\ref{fig:optimized_block_transfer}.
 
 \begin{figure}[h]
   \input{results/optimized_block_transfer/rccsd_rhf}
-  \caption{Optimized v/s Unoptimized Block Tranfers for \texttt{rccsd\_rhf.sialx}}
+  \caption{Optimized v/s Unoptimized Block Transfers for \texttt{rccsd\_rhf.sialx}}
   \label{fig:optimized_block_transfer}
 \end{figure}
 
@@ -410,7 +410,7 @@ followed by passing page locked main memory address to MPI and passing GPU memor
 address to CUDA Aware MPI implementation. Here, there are two important things to
 notice:
 \begin{enumerate}
-\item If CUDA aware MPI implementation is used then DMA is used for transfering
+\item If CUDA aware MPI implementation is used then DMA is used for transferring
   data from network fabric to GPU buffers directly.
 \item It seems that just by page locking main memory, even without using GPU, DMA
   is invoked by MPI implementation for transfer of data from network fabric to
@@ -494,7 +494,7 @@ respect to not page locking. The results are plotted in figure~\ref{fig:mempin_c
 \begin{figure}[h]
   \input{results/mempin/caching/caching}
   \caption{Page Locked Cached v/s Page Locked Uncached v/s Non Page Locked allocation
-  and dellocation times}
+  and deallocation times}
   \label{fig:mempin_caching}
 \end{figure}
 
@@ -517,7 +517,7 @@ values of allocation time are presented in table~\ref{tab:mempin_caching}.
     \hline
   \end{tabular}
   \caption{Page Locked Cached v/s Page Locked Uncached v/s Non Page Locked allocation
-  and dellocation times}
+  and deallocation times}
   \label{tab:mempin_caching}
 \end{table}
 

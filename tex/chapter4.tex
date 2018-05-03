@@ -109,7 +109,7 @@ into multiple procedures:
 
     \begin{algorithmic}[1]
       \Function{get\_next\_indices}{$current\_indices$}
-      \ForAll{$indx\_id\ in\ loop$}
+      \ForAll{$index\_id\ in\ loop$}
       \State $old\_index\_val \gets current\_indices[index\_id]$\Comment{get current index value}
       \State $new\_val \gets old\_index\_val + 1$\Comment{Increment the index as needed}
       \State $new\_indices \gets new\_val$\Comment{update the index into new set of indices}
@@ -160,14 +160,14 @@ into multiple procedures:
       \Function{prefetch\_indices}{}
       \State $line\_number \gets Interpreter.current\_line\_number()$
 
-      \If{$prefetech\_map.contains(line\_number)$}
+      \If{$prefetch\_map.contains(line\_number)$}
       \State $it \gets prefetch\_map[line\_number]$
       \Else
       \State $it \gets prefetch\_map.begin()$
       \EndIf
       \State $\{prefetched\_indices, it\} \gets peek\_indices(it)$
       \State $prefetch\_map[line\_number] \gets it$
-      \State \Return $prefetech\_indices$
+      \State \Return $prefetch\_indices$
       \EndFunction
     \end{algorithmic}
   \end{algorithm}
