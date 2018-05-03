@@ -24,6 +24,8 @@ MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps \
 							results/mempin/rdma/total.eps \
 							results/mempin/caching/caching.eps
 
+PREFETCH_REAL = results/prefetch_real/server.eps
+
 all: main.pdf
 
 $(BLOCK_SIZE_EPS): results/block_size/no_prefetch.csv \
@@ -35,6 +37,7 @@ $(MEM_PIN_EPS): results/mempin/block_copy/data.csv \
 								results/optimized_block_transfer/data.csv \
 								results/mempin/overhead/data.csv results/mempin/rdma/data.csv \
 								results/mempin/caching/data.csv
+$(PREFETCH_REAL): results/prefetch_real/data.csv
 
 %.eps: %.gnuplot
 	gnuplot $<
@@ -42,7 +45,7 @@ $(MEM_PIN_EPS): results/mempin/block_copy/data.csv \
 main.bbl: bib/References.bib
 	bibtex main
 
-main.pdf: $(TEX_FILES) main.bbl $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS)
+main.pdf: $(TEX_FILES) main.bbl $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS) $(PREFETCH_REAL)
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
