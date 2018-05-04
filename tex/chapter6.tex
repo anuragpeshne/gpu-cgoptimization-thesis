@@ -255,6 +255,16 @@ figure~\ref{fig:prefetch_real}.
   \label{fig:prefetch_real}
 \end{figure}
 
+\begin{figure}[h]
+  \input{results/prefetch_real/barrier_wait_time}
+  \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,254;green,56;blue,34}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Barrier \texttt{wait\_time}
+  \\
+  \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (1cm,0.5cm);} w/~~Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (1cm,0.5cm);}  w/~~Prefetch Barrier \texttt{wait\_time}
+  \caption{\texttt{wait\_time} and barrier \texttt{wait\_time} variation againsts number of servers.}
+  \label{fig:prefetch_real_barrier}
+\end{figure}
 \section{GPU}
 This section presents the experiments performed to benchmark the performance of
 using Graphic Processing Unit.
