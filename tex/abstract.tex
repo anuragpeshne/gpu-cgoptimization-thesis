@@ -1,9 +1,27 @@
 % Write in only the text of your abstract, all the extra heading jargon is automatically taken care of
 \begin{abstract}
-Abstracts should be less than 350 words. Any Greek letters or symbols not found on a standard computer keyboard will have to be spelled out in the electronic version so try to avoid them in the Abstract if possible. The best way to compile the document is to use the make\_xelatex.bat file. If you are using Linux or Macintosh Operating Systems there are examples of make files for these systems in the Make Files Folder but they may be outdated and need to be modified for them to work properly. This document is the official tutorial outlining the use and implementation of the UF \LaTeX 2\ensuremath{\epsilon} Template for use on thesis and dissertations. The tutorial will cover the basic files, commands, and syntax in order to properly implement the template.  It should be made clear that this tutorial will not tell
-one how to use \LaTeX 2\ensuremath{\epsilon}.  It will be assumed that you will have had some previous knowledge or experience with \LaTeX 2\ensuremath{\epsilon}, but, there are many aspects of publishing for the UF Graduate School that requires attention to some details that are normally not required in \LaTeX 2\ensuremath{\epsilon}.
+  The Super Instruction Architecture (SIA) is a parallel programming environment
+  engineered to work on large blocks of floating point numbers. Looping constructs
+  \texttt{do} and \texttt{pardo} are one of the most important constructs in Super
+  Instruction Assembly Language (SIAL) since they allow the programmer to work
+  with individual block. To improve the runtime performance of the looping constructs
+  two techniques are used: improving GPU utilization and using prefetching to
+  hide network latency.\\
 
-Pay particular attention to the section on references. NONE of the bibliography style files (.bst) are an assurance that your document's reference style will meet the Editorial Guidelines. You MUST get a .bst file that matches the style used by the journal you used as a guide for your references and citations. The files included in this document are examples only and are NOT to be used unless they match your sample article exactly!
+  In previous versions, the domain programmer was needed to manually copy main memory
+  and GPU memory and to mark parts of SIAL code to be executed on GPU. Copying data
+  between GPU memory and main memory is costly and have high impact on overall
+  performance of GPU execution. For this reason choosing correct block of code is
+  very crucial to overall performance. Automatic memory management is provided
+  and various techniques are implemented to reduce and in some cases eliminate
+  GPU memory and main memory transfer cost.\\
 
-You should have a .bib file (we have included several examples) that contains your reference sources. Place your .bib file in the bib folder and enter the name of the file in the list of bib files, or enter your reference information into one of our existing .bib files if you don't already have one. Just make sure to preserve the format of each kind of reference. Each time you cite a reference you enter the "key" (the first field in the reference listing in the .bib file) associated with that reference. During the compilation process LaTeX will gather all the references, insert the correct method of citation and list the references in the correct location in the proper format for the reference style selected.
+  There is a common code pattern in SIAL to request block of data followed by
+  computation on that block. Deterministic request of blocks have been exploited
+  to implement prefetching to optimally utilize network resources during the time
+  when compute resources have blocked the control flow.\\
+
+  Various experiments have been conducted to evaluate effect of change of various
+  parameters on GPU utilization, prefetching, \texttt{wait\_time} and overall
+  computation time.
 \end{abstract}
