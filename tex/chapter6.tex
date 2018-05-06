@@ -90,7 +90,7 @@ node interconnect in HiperGator 2.
 This section presents several experiments conducted to investigate the optimal
 parameters and tradeoffs involved in the selection of the parameters.
 
-\subsection{\texttt{hit\_ratio}}
+\subsection{\texttt{hit\_ratio}}\label{sec:hit_ratio}
 To understand the performance of the prefetching mechanism a new metric is introduced.
 Prefetch \texttt{hit\_ratio} is defined as the ratio of the number of times the
 SIA runtime did not have to block for a certain data block to be ready and total
@@ -243,7 +243,7 @@ that to increase number of blocks to prefetch. This explains the rise in mean
 \texttt{wait\_time\_} as \texttt{wait\_time\_} for first request grows and the
 number of blocks available without blocking stays constant.
 
-\subsection{$C_{12}H_{10}(BP)$ Molecule}
+\subsection{$C_{12}H_{10}(BP)$ Molecule}\label{sec:bp_molecule}
 To study the effect of prefetching on real world application, a job from ACES4 on
 $C_{12}H_{10}$ molecule was executed. The total number of workers were 3 and number
 of servers were varied to study its effect on prefetching. This is plotted in
@@ -291,7 +291,7 @@ bypass processor and access the memory directly. This section presents various
 operations which exploits page locked memory.
 \subsubsection{Copy Speed}
 GPU can access only page locked memory. Without explicit page locked memory, the
-GPU driver first copies the memory to a temporary page lock memory and then copies
+GPU driver first copies the memory to a temporary page locked memory and then copies
 to GPU buffer. By explicitly page locking memory, saving one copy operation is expected.
 Figure~\ref{fig:mempin_block_copy} presents varying block size against time to
 copy block.
@@ -456,18 +456,19 @@ notice:
   main memory.
 \end{enumerate}
 
+\subsubsection{\texttt{PUT}}
 There is not much of difference in time in \texttt{PUT} operation, as presented
 in figure~\ref{fig:mempin_rdma_put}. The time taken by passing main memory address,
 page locked main memory address and GPU memory address to MPI function varies slightly
 as size of block increases.
 
-\subsubsection{\texttt{PUT}}
 \begin{figure}[h]
   \input{results/mempin/rdma/put}
   \caption{GPU and CPU buffer passed to \texttt{PUT}}
   \label{fig:mempin_rdma_put}
 \end{figure}
 
+\subsubsection{Total Transfer}
 Even though there is not much improvement in speed if address of GPU memory is
 passed to MPI function, by passing GPU address directly the complete operation
 can be executed on GPU without requiring the data to be copied to main memory. This
@@ -475,7 +476,6 @@ saves two GPU memory and main memory copy operations and thus get substantial im
 in speed of overall operation. The time spent on overall operation is plotted in
 figure~\ref{fig:mempin_rdma_total}.
 
-\subsubsection{Total Transfer}
 \begin{figure}[h]
   \input{results/mempin/rdma/total_transfer}
   \caption{Total MPI transfer compared to CUDA Aware MPI transfer}
@@ -493,10 +493,10 @@ have been selected as most appropriate: hit ratio and time spend in allocation w
 and without caching.
 
 \textit{Hit Ratio} is simply the ratio of number of times allocation request was
-full filled by cached block and the total number times memory allocation request
+fulfilled by cached block and the total number times memory allocation request
 was made.
 \[
-  \texttt{hit\_ratio} = \frac{number~of~times~memory~allocation~request~full~filled~by~cached~block}{total~number~of~memory~allocation~requests~made}
+  \texttt{hit\_ratio} = \frac{number~of~times~memory~allocation~request~fulfilled~by~cached~block}{total~number~of~memory~allocation~requests~made}
 \]
 
 Since the Hit Ratio does not depend on size of memory block requested for, rather
