@@ -44,7 +44,7 @@ in the distribution of indices and thus distribution of blocks over workers:
 \item \texttt{SequentialPardoLoop}: it behaves similar to a simple do loop,
   except this loop can loop over multiple indices.
 \item \texttt{StaticTaskAllocParallelPardoLoop}: the indices for this loop are
-  determined statically by distributing the block over worker in a cyclic fashion.
+  determined statically by distributing the block over workers in a cyclic fashion.
 \item \texttt{BalancedTaskAllocParallelPardoLoop}: to support symmetric arrays,
   SIAL has \texttt{where} construct in loops which prunes the iteration based on
   some programmer defined condition. Due to such pruning there is a non zero

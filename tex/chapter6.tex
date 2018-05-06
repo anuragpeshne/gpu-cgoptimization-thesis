@@ -240,10 +240,10 @@ by plotting number of blocks to prefetch against \texttt{hit\_ratio}.
 
 Hit ratio saturates after hitting a critical amount. There is no much use after
 that to increase number of blocks to prefetch. This explains the rise in mean
-\texttt{wait\_time\_} as \texttt{wait\_time\_} for first request grows but the
+\texttt{wait\_time\_} as \texttt{wait\_time\_} for first request grows and the
 number of blocks available without blocking stays constant.
 
-\subsection{$C_{12}H_{10}(BP)$}
+\subsection{$C_{12}H_{10}(BP)$ Molecule}
 To study the effect of prefetching on real world application, a job from ACES4 on
 $C_{12}H_{10}$ molecule was executed. The total number of workers were 3 and number
 of servers were varied to study its effect on prefetching. This is plotted in
@@ -254,6 +254,23 @@ figure~\ref{fig:prefetch_real}.
   \caption{Effects of varying number of servers on $C_{12}H_{10}$ molecule.}
   \label{fig:prefetch_real}
 \end{figure}
+
+As number of server increase the overall run time for programs with prefetching
+decreases. This is clear from figure~\ref{fig:prefetch_real}, as the difference
+in run time of programs without prefetch and prefetch increase. It is worth noticing
+that the only couple of programs show significant increase in difference while one
+of the programs shows no difference in prefetching and no prefetching. To study
+why this is the case, total \texttt{wait\_time} of the programs is plotted in
+figure~\ref{fig:prefetch_real_barrier}.
+
+In the figure~\ref{fig:prefetch_real_barrier}, along with \texttt{wait\_time},
+\texttt{barrier wait\_time} is also plotted for all the programs involved. The
+\texttt{wait\_time} of program \texttt{scf\_rhf} is mostly due to \texttt{barrier wait\_time}
+and rest two have considerably less \texttt{barrier wait\_time} as compared to
+overall \texttt{wait\_time}. This explains why only two of the 3 programs showed
+significant improvement by prefetching since prefetching helps in reducing \texttt{wait\_time}
+for block to be transfered over the network. The program \texttt{sch\_rhf} did not
+have much \texttt{wait\_time} for network transfer.
 
 \begin{figure}[h]
   \input{results/prefetch_real/barrier_wait_time}

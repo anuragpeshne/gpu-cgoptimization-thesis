@@ -2,6 +2,7 @@ set term epslatex lw 3 dl 3
 set output 'results/prefetch_real/servers.eps'
 set datafile separator ","
 set ylabel 'Time Difference(seconds)'
+set xlabel 'Number of Servers'
 set key outside top center
 set xtics 1
 

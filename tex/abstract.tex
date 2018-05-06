@@ -8,7 +8,7 @@
   two techniques are used: improving GPU utilization and using prefetching to
   hide network latency.\\
 
-  In previous versions, the domain programmer was needed to manually copy main memory
+  In previous versions, the domain programmer was needed to manually transfer blocks between main memory
   and GPU memory and to mark parts of SIAL code to be executed on GPU. Copying data
   between GPU memory and main memory is costly and have high impact on overall
   performance of GPU execution. For this reason choosing correct block of code is
@@ -17,9 +17,11 @@
   GPU memory and main memory transfer cost.\\
 
   There is a common code pattern in SIAL to request block of data followed by
-  computation on that block. Deterministic request of blocks have been exploited
+  computation on that block. This pattern makes inefficient use of network resource
+  and compute resource since one remains under utilized when other is used.
+  Deterministic request of blocks have been exploited
   to implement prefetching to optimally utilize network resources during the time
-  when compute resources have blocked the control flow.\\
+  compute resources have blocked the control flow.\\
 
   Various experiments have been conducted to evaluate effect of change of various
   parameters on GPU utilization, prefetching, \texttt{wait\_time} and overall

@@ -229,11 +229,18 @@ The algorithm presented in~\ref{alg:get_data} can be split into
     \If{$latest\_device.data\_version > this.devices[deviceid].data\_version$}
     \State {$memcpy(latest\_device.data,\ this.devices[deviceid].data)$}
     \EndIf
+    \State \Return $this$
     \EndFunction
     % \hline
   \end{algorithmic}
 \end{algorithm}
 
+Now, with this change, the runtime can decide whether synchronizing block contents
+is necessary. If the synchronization is needed it can call
+\texttt{block->update\_data(device)->get\_data(device)}
+as in case of block read or update. If no synchronization is needed, as in case
+of block being written, runtime can simply get the pointer on device memory by calling
+\texttt{block->get\_data(device)}.
 This change in accessing and updating block data along with the information
 about intent of the request can reduce several unnecessary synchronizations.
 
@@ -314,7 +321,7 @@ elaborated in section~\ref{nonblockdevicesync}.
 It was observed that while pinned memory made memory transfer faster, it carried
 a large overhead as compared to allocation of non pinned memory. Similar observations
 by Boyer et al~\cite{Boyer2009}\cite{memory-management-overhead}\cite{pinned-tradeoff}
-have been reported. They reported memory allocation calls \texttt{cudaMalloc} to
+have been reported. They reported memory allocation call \texttt{cudaMalloc} to
 be 30-40\% more expensive than \texttt{malloc} and \texttt{cudaHostMalloc} to be
 slower than \texttt{malloc} by a factor of 100. To overcome this, a caching scheme was
 developed to reuse the already page locked memory pages.
@@ -323,8 +330,8 @@ developed to reuse the already page locked memory pages.
 The problem of caching page locked memory pages is similar to problem of dynamic
 allocation of memory which is handled by Operating System. Extensive work~\cite{Wilson1995}
 is done in solving the problems involved in efficiently allocating memory dynamically such
-as external and internal fragmentation along with time taken to find suitable
-block of memory is minimized. Caching and serving page locked memory blocks
+as external and internal fragmentation along with minimizing the time taken to find
+suitable block of memory. Caching and serving page locked memory blocks
 is similar to dynamic memory allocation in the way that it needs to find suitable
 size memory block such that least space in form of internal fragmentation is wasted
 but it is different from dynamic allocation in the way that the memory blocks cannot
@@ -332,7 +339,7 @@ be split or coalesced.
 
 \subsubsection{Implementation of Caching Mechanism}
 When a page locked block of memory is deleted, instead of un-pinning it and calling
-\texttt{delete[]} on it, it is saved into a list. Two maps are used for book
+\texttt{delete[]} on it, it is saved in a list. Two maps are used for book
 keeping. One of it, \texttt{free\_list}, presented in figure~\ref{fig:free_list},
 maps the block size to a list of pointers to \texttt{double}. When a request for
 block of memory is received this list is searched for block of size equal or
@@ -344,10 +351,10 @@ are no blocks in \texttt{free\_list} and block size is greater than free memory
 then system is out of memory and exception is thrown.
 
 The other map serves as reverse lookup, presented in figure~\ref{fig:reverse_lookup}
-from pointer to size of block. This reverse lookup is essential to know actual
-size of block being returned since when a block requested, the caching mechanism
+from pointer to size of block. This reverse lookup is essential when a block is
+returned to be deallocated to know actual size of block since when a block is requested, the caching mechanism
 returns block of equal or greater size. Hence the size of requested block cannot
-be used to populate \texttt{free\_list}.
+be used to calculate size of block allocated to populate \texttt{free\_list}.
 
 \begin{figure}[h]
   \centering
@@ -423,25 +430,24 @@ be used to populate \texttt{free\_list}.
     \Function{allocate}{size}
     \State $cached\_block\_list \gets free\_list.get\_greater\_or\_equal(size)$
     \If{$cached\_block\_list.length == 0$}
-      \If{$allocated\_bytes + size \times sizeof(double) < total\_memory$}
-        \State $new\_block \gets new double[size]$
-        \State $cudaHostRegister(new\_block, size)$
-        \State $allocated\_bytes += size \times sizeof(double)$
-        \State $reverse\_lookup[new\_block] \gets size$
-        \State \Return $new\_block$
-      \Else
+      \If{$allocated\_bytes + size \times sizeof(double) > total\_memory$}
         \State $freed\_elements \gets 0$
         \While{$freed\_elements < size$}
           \If{$free\_list.empty()$}
             \State $throw "out of memory"$
           \EndIf
-          \ForAll{$block in free\_list.top()->second$}
+          \ForAll{$block~in~free\_list.top()->second$}
             \State $freed\_elements += free\_list.top()->first$
             \State $cudaHostUnregister(block)$
             \State $delete[] block$
           \EndFor
         \EndWhile
       \EndIf
+      \State $new\_block \gets new double[size]$
+      \State $cudaHostRegister(new\_block, size)$
+      \State $allocated\_bytes += size \times sizeof(double)$
+      \State $reverse\_lookup[new\_block] \gets size$
+      \State \Return $new\_block$
     \Else
       \State $cached\_block \gets cached\_block\_list.pop()$
       \State \Return $cached\_block$
@@ -459,15 +465,15 @@ be used to populate \texttt{free\_list}.
 \subsection{GPU Streams}
 A \textit{stream} in CUDA is a sequence of operations that execute on the device
 in the order in which they are issued by the host~\cite{overlapdatatransfer}.
-Streams can be considered as operation pipes in which the operations get evaluated in
-FIFO (First In First Out) fashion. Operations in different streams can be interleaved
+Streams can be considered as pipes of operations in which the operations get evaluated in
+First In First Out (FIFO) fashion. Operations in different streams can be interleaved
 and CUDA driver might execute them concurrently.
 
 \subsubsection{Non Blocking Device Synchronization}\label{nonblockdevicesync}
 GPU streams were used to implement non blocking SIA block synchronization. Using
 multiple CUDA streams and page locked memory, DMA controllers can be invoked to
 transfer memory from host to GPU and vice-versa asynchronously to both CPU and GPU
-kernel execution engine. Current generation of GPU have dual DMA
+kernel execution engine. Current generation of GPU have two DMA
 controllers~\cite{teslaspecs}\cite{teslakspecs} and one kernel execution engine.
 This means that the GPU can handle 2 asynchronous memory copying operation concurrently.
 These hardware features have been exploited by implementing asynchronous memory
