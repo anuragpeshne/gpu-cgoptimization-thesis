@@ -1,4 +1,4 @@
-set term epslatex size 6.5,8.62 color colortext dl 3 lw 3
+set term epslatex size 6.5,7.62 color colortext dl 3 lw 3
 set output 'results/mempin/caching/caching.eps'
 set datafile separator ","
 unset xlabel

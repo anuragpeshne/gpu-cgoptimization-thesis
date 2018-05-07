@@ -24,7 +24,7 @@ MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps \
 							results/mempin/rdma/total.eps \
 							results/mempin/caching/caching.eps
 
-PREFETCH_REAL = results/prefetch_real/server.eps \
+PREFETCH_REAL = results/prefetch_real/servers.eps \
 								results/prefetch_real/barrier_wait_time.eps
 
 all: main.pdf
@@ -58,3 +58,6 @@ clean:
 	rm -f *~ tex/*~ tex/*.aux
 	find ./results/ -name *.eps -exec rm {} \;
 	find ./retults/ -name *.tex -exec rm {} \;
+
+slides:
+	pdflatex --output-format=pdf presentation.tex
