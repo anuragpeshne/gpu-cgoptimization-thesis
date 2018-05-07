@@ -106,3 +106,12 @@ small and it increases it. If the request hits prefetch cache or there is miss
 on both of caches then the algorithm leaves the size unchanged. To determine if
 the cache size is too large, the eviction cache is observed and if eviction cache
 receives no hits then the size of cache is decremented.
+
+In SIA, blocks which are needed to be prefetched can be predicted with more accuracy
+than memory blocks. Further exact sequence in which blocks are needed is also known.
+This makes prefetching in SIA free of few of the problems faced in general memory
+block prefetching discussed in above section. Similar to the problems faced in general
+memory prefetching, it is difficult to predict how many blocks to prefetch. But
+once block is prefetched and computed on, the block can be safely evicted from
+memory. The problem of how many blocks to prefetch is related to how much memory
+should be allocated for prefetching.
