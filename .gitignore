@@ -13,3 +13,8 @@
 *.lof
 *.lot
 *.eps
+*.4tc
+*.xref
+*.nav
+*.snm
+*.vrb

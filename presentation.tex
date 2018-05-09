@@ -2,9 +2,12 @@
 \setbeamertemplate{navigation symbols}{}%remove navigation symbols
 \mode<presentation>{}
 
+\usepackage{listings}
+
 %% preamble
-\title{Enhancements to Looping Constructs Using Prefetching and GPU}
+\title{Enhancements to Looping Constructs Using Prefetching and Exploiting GPU}
 \author{Anurag Peshne}
+\date{15 May 2018}
 
 \begin{document}
 %% title frame
@@ -16,11 +19,99 @@
 \begin{frame}{Contents}
   \pause
   \begin{itemize}
-    \item 2 Enhancements
+  \item Super Instruction Architecture (SIA)
     \pause
-    \item Implementation
+  \item 2 Enhancements
     \pause
-    \item Results, Conclusion
+    \begin{itemize}
+    \item Prefetching
+      \pause
+    \item Exploiting GPU
+      \pause
+    \end{itemize}
+  \item Experiments
+    \pause
+  \item Conclusion
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{SIA}
+  \begin{itemize}
+    \pause
+  \item Parallel Programming Environment.
+    \pause
+  \item Engineered to solve very large computation problems expressed in terms of
+    operation on multidimensional arrays.
+    \begin{itemize}
+      \pause
+    \item These arrays can be too large to hold in memory of a single node.
+      \pause
+    \item Need to be broken into smaller blocks.
+    \end{itemize}
+    \pause
+  \item Algorithms are expressed in terms of blocks or multidimensional arrays
+    rather than individual floating point numbers:
+    \begin{lstlisting}[]
+      do i
+        do j
+          x = a[i,j] * b[i,j]
+        enddo j
+      enddo i
+    \end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{SIA}
+  \begin{itemize}
+    \pause
+  \item SIMD: can execute instructions in parallel over multiple processors.
+    \pause
+  \item Can be deployed and scaled on multiple nodes in high performance computing cluster.
+    \pause
+  \item Can support arrays larger than combined memory of all nodes in cluster by
+    swapping chunks that are not \textit{hot} on hard drive.
+    \pause
+  \item Participating nodes in cluster are divided into Servers and Workers:
+    \begin{itemize}
+      \pause
+    \item Servers deal with swapping the blocks and serving the request for blocks
+      by workers.
+    \item Workers do the actual computation. They request for specific block when
+      needed.
+    \end{itemize}
+    \pause
+  \item SIA consists of:
+    \begin{itemize}
+      \pause
+    \item Super Instruction Assembly Language (SIAL)
+      \pause
+    \item SIA Runtime
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{SIAL}
+  \begin{itemize}
+    \pause
+  \item Domain Specific Language
+    \pause
+  \item Support for Blocks as first class citizen.
+    \pause
+  \item Intended to be used by domain programmer.
+    % High level, easy for domain programmer to code using it.
+    \pause
+  \item Dynamically Interpreted.
+    \pause
+  \item \texttt{do} and \texttt{pardo}
+    \pause
+  \item Super Instructions can be defined using C, C++, Fortran
+    \pause
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{SIAL Interpreter}
+  \begin{itemize}
+      \item Dynamic Interpreter.
   \end{itemize}
 \end{frame}
 
