@@ -1,8 +1,12 @@
-\documentclass[pdf]{beamer}
+\documentclass{beamer}
+\usepackage{pgfpages}
+\setbeameroption{show notes on second screen}
+
 \setbeamertemplate{navigation symbols}{}%remove navigation symbols
 \mode<presentation>{}
 
 \usepackage{listings}
+\usepackage{algpseudocode}
 
 %% preamble
 \title{Enhancements to Looping Constructs Using Prefetching and Exploiting GPU}
@@ -17,10 +21,13 @@
 
 %% normal frame
 \begin{frame}{Contents}
+  \note[item]{Agenda for today.}
   \pause
   \begin{itemize}
+    \note[item]{First some background, what is SIA, how it works.}
   \item Super Instruction Architecture (SIA)
     \pause
+    \note[item]{What we did.}
   \item 2 Enhancements
     \pause
     \begin{itemize}
@@ -29,9 +36,11 @@
     \item Exploiting GPU
       \pause
     \end{itemize}
+    \note[item]{The experiments carried out to evaluate the work}
   \item Experiments
     \pause
   \item Conclusion
+    \note[item]{And finally, the conclusions}
   \end{itemize}
 \end{frame}
 
@@ -42,12 +51,6 @@
     \pause
   \item Engineered to solve very large computation problems expressed in terms of
     operation on multidimensional arrays.
-    \begin{itemize}
-      \pause
-    \item These arrays can be too large to hold in memory of a single node.
-      \pause
-    \item Need to be broken into smaller blocks.
-    \end{itemize}
     \pause
   \item Algorithms are expressed in terms of blocks or multidimensional arrays
     rather than individual floating point numbers:
@@ -58,6 +61,8 @@
         enddo j
       enddo i
     \end{lstlisting}
+    \pause
+  \item \textit{Super} Instructions acting upon \textit{Super} Numbers.
   \end{itemize}
 \end{frame}
 
@@ -65,6 +70,7 @@
   \begin{itemize}
     \pause
   \item SIMD: can execute instructions in parallel over multiple processors.
+    \note[item]{Blocks of same array distributed on different workers}
     \pause
   \item Can be deployed and scaled on multiple nodes in high performance computing cluster.
     \pause
@@ -76,8 +82,9 @@
       \pause
     \item Servers deal with swapping the blocks and serving the request for blocks
       by workers.
-    \item Workers do the actual computation. They request for specific block when
-      needed.
+      \pause
+    \item Workers do the actual computation.
+      \note[item]{They request for specific block when needed.}
     \end{itemize}
     \pause
   \item SIA consists of:
@@ -98,21 +105,79 @@
   \item Support for Blocks as first class citizen.
     \pause
   \item Intended to be used by domain programmer.
-    % High level, easy for domain programmer to code using it.
+    \note[item]{High level, easy for domain programmer to code using it.}
     \pause
   \item Dynamically Interpreted.
+    \note[item]{Interpreter can do tricks like executing on GPU if available or falling back to CPU if not}
     \pause
   \item \texttt{do} and \texttt{pardo}
     \pause
   \item Super Instructions can be defined using C, C++, Fortran
     \pause
+    or CUDA.
+    \note[item]{easy to port to CUDA}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{SIAL Interpreter}
+\begin{frame}{Looping Constructs}
   \begin{itemize}
-      \item Dynamic Interpreter.
+  \item \texttt{do}, \texttt{pardo}
+    \note[item]{One of the most important constructs in language}
+    \pause
+  \item 2 Enhancements:
+    \begin{itemize}
+    \item Prefetching
+    \item Exploiting GPU
+    \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Prefetching}
+%\hline
+\begin{algorithmic}[1]
+%\caption{An example of typical workflow in SIAL}
+\Loop
+\State $GET\ A[i, j]$\Comment{Non Blocking}
+\State $GET\ B[j, k]$
+\State $t\_result[j, k] \gets A[i, j] \times B[j, k]$\Comment{Compute bound}
+\State $CALL\ compute\_fun(t\_result[j, k])$
+\State $PUT\ AB[i, k] \gets t\_result[i, k]$\Comment{Blocking Network bound}
+\EndLoop
+%\hline
+\end{algorithmic}
+\note[item]{Blocks at line 4: contraction.}
+\note[item]{Compute resources wasted during network transfer, same in last line.
+  PUT is blocking}
+\note[item]{Network resources wasted during computing}
+\end{frame}
+
+\begin{frame}{Prefetching}
+  \begin{itemize}
+  \item Similar to h/w prefetching:
+    \note[item]{Explain h/w prefetching: how processor prefetches block of memory
+      in anticipation that it will be needed}
+    \begin{itemize}
+      \pause
+    \item Moving from slower memory to faster memory.
+      \note[item]{RAM to cache memory; SIA: server memory to local client memory}
+      \pause
+    \item Need to guess what to prefetch \pause and how much to prefetch.
+    \end{itemize}
+
+    \pause
+  \item Not exactly similar:
+    \begin{itemize}
+    \item In h/w there is anticipation, in SIA we \textit{know} precisely what to
+      prefetch.
+      \pause
+    \item We know when to evict from cache.
+      \note[item]{h/w may keep some blocks in memory in anticipation that it might
+        be needed again}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Prefetching Implementation}
 \end{frame}
 
 \end{document}
