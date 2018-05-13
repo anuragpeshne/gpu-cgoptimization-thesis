@@ -304,4 +304,120 @@
   \end{figure}
 \end{frame}
 
+\begin{frame}{Hit Ratio}
+  \note[item]{To study the effectiveness of the prefetching, \texttt{hit\_ratio},
+    another metric is introduced.}
+  \pause
+  \[
+    \texttt{hit\_ratio} = \frac{number~of~times~no~blocking~required}{total~number~of~times~data~accessed}
+  \]
+  \note[item]{The \texttt{hit\_ratio} represents the number of times prefetching
+    was successful to hide network transfer cost.}
+\end{frame}
+
+\begin{frame}{Prefetching Experiments: Index Length}
+  \note[item]{Index length is the length of range of indices: when looping on
+    \texttt{i}, it goes from 2 to 5 or 2 to 10}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/index_length/hitratio}}
+    \caption{Index Range Length v/s \texttt{hit\_ratio}}
+  \end{figure}
+  \note[item]{Several things to note: the lowest hit ratio is 0.65, because...}
+  \note[item]{as the lenght of range of indices increase, the prefetching kicks in}
+  \note[item]{eventually flattens out}
+\end{frame}
+
+\begin{frame}{Prefetching Experiments: First Iteration}
+  \note[item]{Side effect of prefetching: with prefetching, the first request becomes
+    heavy}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/index_length/p_first_mean}}
+    \caption{Index Range v/s \texttt{wait\_time\_} per iteration}
+  \end{figure}
+  \note[item]{As prefetching kicks in, the first request becomes costlier}
+  \note[item]{note mean is reducing}
+  \note[item]{looking other way round, prefetching is kicking in}
+\end{frame}
+
+\begin{frame}{Prefetching Experiments: Mean}
+  \note[item]{Overal wait time by \texttt{GET}}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/index_length/p_np_mean}}
+    \caption{Index Range v/s \texttt{wait\_time\_} per iteration in Prefetched and no Prefetched Loop}
+  \end{figure}
+  \note[item]{Prefetching helps!}
+\end{frame}
+
+\begin{frame}{Prefetching Experiments: Block Size First Iteration}
+  \note[item]{How block size affects first iteration}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size/first_wait_time}}
+    \caption{Block Size v/s \texttt{wait\_time\_} for first iteration}
+  \end{figure}
+  \note[item]{block size affects first iteration}
+\end{frame}
+
+\begin{frame}{Prefetching Experiments: Block Size Mean}
+  \note[item]{How block size affects overall time}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size/avg_wait_time}}
+    \caption{Block Size v/s Mean \texttt{wait\_time\_} for Prefetched and No Prefetch Loop}
+  \end{figure}
+  \note[item]{Prefetching is paying off, 'Prefetch' time not so much affected}
+\end{frame}
+
+\begin{frame}{Prefetching: Putting it all together}
+  \note[item]{Just to look at whole picture}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size/avg_all}}
+    \caption{Block Size v/s Mean \texttt{wait\_time\_} for Prefetched and No Prefetch Loop}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/look_ahead/first_wait_time}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+
+  \note[item]{\texttt{wait\_time\_} for the first request grows linearly with the
+    number of blocks to prefetch}
+  \note[item]{Thus the number of blocks to prefetch cannot be set at very high
+    number unless the length of index range is known to be large}
+\end{frame}
+
+\begin{frame}{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{This time to overall mean \texttt{wait\_time}}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/look_ahead/avg_wait_time}}
+    \caption{Number of Block Prefetched v/s mean \texttt{wait\_time\_}}
+  \end{figure}
+  \note[item]{First sharp decrease as prefetching kicks in then increase due to
+    costly first iteration}
+\end{frame}
+
+\begin{frame}{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{now lets look at this number v/s hit ratio}
+  \pause
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/look_ahead/hit_ratio}}
+    \caption{Number of Block Prefetched v/s Hit Ratio for first request}
+    \label{fig:look_ahead_hit_ratio}
+  \end{figure}
+  \note[item]{Hit ratio saturates after hitting a critical amount. There is no
+    much use after that to increase number of blocks to prefetch.}
+  \note[item]{This explains the rise in mean \texttt{wait\_time\_} as
+    \texttt{wait\_time\_} for first request grows and the number of blocks
+    available without blocking stays constant.}
+\end{frame}
+
 \end{document}
