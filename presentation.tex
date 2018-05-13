@@ -5,6 +5,8 @@
 \setbeamertemplate{navigation symbols}{}%remove navigation symbols
 \mode<presentation>{}
 
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes.multipart,chains,arrows,matrix,fit}
 \usepackage{listings}
 \usepackage{algpseudocode}
 
@@ -132,7 +134,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Prefetching}
+\begin{frame}[label=prefetchcode]{Prefetching}
 %\hline
 \begin{algorithmic}[1]
 %\caption{An example of typical workflow in SIAL}
@@ -149,6 +151,10 @@
 \note[item]{Compute resources wasted during network transfer, same in last line.
   PUT is blocking}
 \note[item]{Network resources wasted during computing}
+% Notes for 2 occurrence of this slide
+\note[item]{------------------------------------------------------------------}
+\note[item]{So for example, here \texttt{GET} on line 2 can prefetch independently
+  of \texttt{GET} on line 3.}
 \end{frame}
 
 \begin{frame}{Prefetching}
@@ -178,6 +184,124 @@
 \end{frame}
 
 \begin{frame}{Prefetching Implementation}
+  \begin{itemize}
+  \item Before prefetching:
+    \begin{itemize}
+    \item Get values of indices
+    \item increment according to the loop
+    \item Update values of indices
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Prefetching Implementation}
+\begin{figure}
+  \centering
+
+  \tikzstyle{table}=[
+  matrix of nodes,
+  row sep=-\pgflinewidth,
+  column sep=-\pgflinewidth,
+  nodes={rectangle,draw=black,text width=12ex,align=center},
+  text depth=0.25ex,
+  text height=1.5ex,
+  nodes in empty cells]
+  \begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=6,
+      draw, rectangle split horizontal}, >=stealth, start chain]
+
+    \node[list,on chain] (A) {};
+    \note[item]{Here we first calculate the set of indices}
+    \pause
+    \node[list,on chain] (B) {};
+    \note[item]{Then calculate next set using previous set, before actually iterating over the loop}
+    \pause
+    \node[list,on chain] (C) {};
+    \note[item]{And so on...}
+    \pause
+    \node[on chain,draw,inner sep=6pt] (D) {};
+    \draw (D.north east) -- (D.south west);
+    \draw (D.north west) -- (D.south east);
+    \draw[*->] let \p1 = (A.six), \p2 = (A.center) in (\x1,\y2) -- (B);
+    \draw[*->] let \p1 = (B.six), \p2 = (B.center) in (\x1,\y2) -- (C);
+    \draw[*->] let \p1 = (C.six), \p2 = (C.center) in (\x1,\y2) -- (D);
+
+    \note[item]{Creating list of indices}
+    \pause
+    \matrix (map) [table,below=of A]
+    {
+      LineNumber & Reference  \\
+      101        &            \\
+      102        &            \\
+      \vdots     & \vdots     \\
+    };
+
+    \note[item]{Save which set of indices is prefetched by each \texttt{GET} in the loop}
+    \pause
+    \draw[*->] (map-2-2.center) to[out=0, in=270] (B.south);
+    \pause
+    \draw[*->] (map-3-2.center) to[out=0, in=270] (C.south);
+  \end{tikzpicture}
+\end{figure}
+\end{frame}
+
+\againframe{prefetchcode}
+
+\begin{frame}{Prefetching Mechanism}
+  \begin{itemize}
+  \item Function \texttt{update\_indices} divided into 3 functions:
+    \begin{itemize}
+      \pause
+    \item \texttt{peek\_indices}
+      \note[item]{returns set of indices, internally taking care of maintaining
+        and generating next indices lazily if required}
+      \pause
+    \item \texttt{prefetch\_indices}
+      \note[item]{remembers the state of each \texttt{GET} and automatically returns
+        next set of indices for each \texttt{GET}}
+      \pause
+    \item \texttt{update}
+      \note[item]{pops the first element in the list and updates the interpreter
+        state}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Prefetching Mechanism}
+  \begin{figure}[h] %place figure "here"
+    \centering
+    \begin{tikzpicture}[
+      list/.style={rectangle split, rectangle split parts=7,
+        draw, rectangle split horizontal},
+      function/.style={rectangle, draw,align=center},
+      >=stealth, start chain]
+
+      \node[list,on chain] (A) {};
+      \node[list,on chain] (B) {};
+      \node[list,on chain] (C) {};
+      \node[on chain,draw,inner sep=6pt] (D) {};
+      \draw (D.north east) -- (D.south west);
+      \draw (D.north west) -- (D.south east);
+      \draw[*->] let \p1 = (A.seven), \p2 = (A.center) in (\x1,\y2) -- (B);
+      \draw[*->] let \p1 = (B.seven), \p2 = (B.center) in (\x1,\y2) -- (C);
+      \draw[*->] let \p1 = (C.seven), \p2 = (C.center) in (\x1,\y2) -- (D);
+
+      \note[item]{We have same list from last time}
+      \pause
+      \node[function, below=of A]        (update)   {\texttt{update}};
+      \node[function, right=of update]   (prefetch) {\texttt{prefetch\_indices}};
+      \node[function, right=of prefetch] (peek)     {\texttt{peek\_indices}};
+
+      \draw[->]                (update.north)   -- (A.south);
+      \draw[densely dotted,->] (prefetch.north) -- (A.south);
+      \draw[densely dotted,->] (prefetch.north) -- (B.south);
+      \draw[densely dotted,->] (prefetch.north) -- (C.south);
+      \draw[->]                (peek.north)     -- (C.south);
+
+      \note[item]{\texttt{peek\_indices} produced, \texttt{prefetch\_indices} is
+        free to roam along the list, \texttt{update} consumes a set of indices from
+        the list.}
+    \end{tikzpicture}
+  \end{figure}
 \end{frame}
 
 \end{document}
