@@ -22,7 +22,7 @@
 \end{frame}
 
 %% normal frame
-\begin{frame}{Contents}
+\begin{frame}\frametitle{Contents}
   \note[item]{Agenda for today.}
   \pause
   \begin{itemize}
@@ -46,7 +46,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{SIA}
+\begin{frame}[fragile]\frametitle{SIA}
   \begin{itemize}
     \pause
   \item Parallel Programming Environment.
@@ -68,7 +68,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{SIA}
+\begin{frame}\frametitle{SIA}
   \begin{itemize}
     \pause
   \item SIMD: can execute instructions in parallel over multiple processors.
@@ -99,7 +99,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{SIAL}
+\begin{frame}\frametitle{SIAL}
   \begin{itemize}
     \pause
   \item Domain Specific Language
@@ -121,7 +121,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Looping Constructs}
+\begin{frame}\frametitle{Looping Constructs}
   \begin{itemize}
   \item \texttt{do}, \texttt{pardo}
     \note[item]{One of the most important constructs in language}
@@ -134,7 +134,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[label=prefetchcode]{Prefetching}
+\begin{frame}[label=prefetchcode]\frametitle{Prefetching}
 %\hline
 \begin{algorithmic}[1]
 %\caption{An example of typical workflow in SIAL}
@@ -157,7 +157,7 @@
   of \texttt{GET} on line 3.}
 \end{frame}
 
-\begin{frame}{Prefetching}
+\begin{frame}\frametitle{Prefetching}
   \begin{itemize}
   \item Similar to h/w prefetching:
     \note[item]{Explain h/w prefetching: how processor prefetches block of memory
@@ -183,7 +183,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Prefetching Implementation}
+\begin{frame}\frametitle{Prefetching Implementation}
   \begin{itemize}
   \item Before prefetching:
     \begin{itemize}
@@ -194,7 +194,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Prefetching Implementation}
+\begin{frame}[fragile]\frametitle{Prefetching Implementation}
 \begin{figure}
   \centering
 
@@ -246,7 +246,7 @@
 
 \againframe{prefetchcode}
 
-\begin{frame}{Prefetching Mechanism}
+\begin{frame}\frametitle{Prefetching Mechanism}
   \begin{itemize}
   \item Function \texttt{update\_indices} divided into 3 functions:
     \begin{itemize}
@@ -266,7 +266,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Prefetching Mechanism}
+\begin{frame}\frametitle{Prefetching Mechanism}
   \begin{figure}[h] %place figure "here"
     \centering
     \begin{tikzpicture}[
@@ -304,7 +304,7 @@
   \end{figure}
 \end{frame}
 
-\begin{frame}{Hit Ratio}
+\begin{frame}\frametitle{Hit Ratio}
   \note[item]{To study the effectiveness of the prefetching, \texttt{hit\_ratio},
     another metric is introduced.}
   \pause
@@ -315,7 +315,7 @@
     was successful to hide network transfer cost.}
 \end{frame}
 
-\begin{frame}{Prefetching Experiments: Index Length}
+\begin{frame}\frametitle{Prefetching Experiments: Index Length}
   \note[item]{Index length is the length of range of indices: when looping on
     \texttt{i}, it goes from 2 to 5 or 2 to 10}
   \pause
@@ -328,7 +328,7 @@
   \note[item]{eventually flattens out}
 \end{frame}
 
-\begin{frame}{Prefetching Experiments: First Iteration}
+\begin{frame}\frametitle{Prefetching Experiments: First Iteration}
   \note[item]{Side effect of prefetching: with prefetching, the first request becomes
     heavy}
   \pause
@@ -341,7 +341,7 @@
   \note[item]{looking other way round, prefetching is kicking in}
 \end{frame}
 
-\begin{frame}{Prefetching Experiments: Mean}
+\begin{frame}\frametitle{Prefetching Experiments: Mean}
   \note[item]{Overal wait time by \texttt{GET}}
   \pause
   \begin{figure}[h]
@@ -351,7 +351,7 @@
   \note[item]{Prefetching helps!}
 \end{frame}
 
-\begin{frame}{Prefetching Experiments: Block Size First Iteration}
+\begin{frame}\frametitle{Prefetching Experiments: Block Size First Iteration}
   \note[item]{How block size affects first iteration}
   \pause
   \begin{figure}[h]
@@ -361,7 +361,7 @@
   \note[item]{block size affects first iteration}
 \end{frame}
 
-\begin{frame}{Prefetching Experiments: Block Size Mean}
+\begin{frame}\frametitle{Prefetching Experiments: Block Size Mean}
   \note[item]{How block size affects overall time}
   \pause
   \begin{figure}[h]
@@ -371,7 +371,7 @@
   \note[item]{Prefetching is paying off, 'Prefetch' time not so much affected}
 \end{frame}
 
-\begin{frame}{Prefetching: Putting it all together}
+\begin{frame}\frametitle{Prefetching: Putting it all together}
   \note[item]{Just to look at whole picture}
   \pause
   \begin{figure}[h]
@@ -380,7 +380,7 @@
   \end{figure}
 \end{frame}
 
-\begin{frame}{Prefetching: Number of Blocks to Prefetch}
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
   \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
   \pause
   \begin{figure}[h]
@@ -394,7 +394,7 @@
     number unless the length of index range is known to be large}
 \end{frame}
 
-\begin{frame}{Prefetching: Number of Blocks to Prefetch}
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
   \note[item]{This time to overall mean \texttt{wait\_time}}
   \pause
   \begin{figure}[h]
@@ -405,7 +405,7 @@
     costly first iteration}
 \end{frame}
 
-\begin{frame}{Prefetching: Number of Blocks to Prefetch}
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
   \note[item]{now lets look at this number v/s hit ratio}
   \pause
   \begin{figure}[h]
@@ -420,4 +420,252 @@
     available without blocking stays constant.}
 \end{frame}
 
+\begin{frame}[fragile=singleslide]\frametitle{Exploiting GPU: ACESIII}
+\begin{lstlisting}
+gpu_begin
+gpu_put aoint(lambda,mu,sigma,nu) #allocate & copy
+DO j1
+    gpu_put LT2AOab1(mu,i1,nu,j1)
+    ...
+ENDDO j1
+...
+DO j
+    gpu_allocate Yab(mu,i,nu,j) # allocate temp
+    Yab(mu,i,nu,j) = aoint(lambda,mu,sigma,nu)*LTAOab(lambda,i,sigma,j)
+    gpu_free Yab(mu,i,nu,j) #free
+    ...
+    gpu_get LT2AOab1(mu,i1,nu,j1)
+    gpu_free LTAOab(lambda,i1,sigma,j1)
+    ...
+gpu_free aoint(lambda,mu,sigma,nu)
+gpu_end
+\end{lstlisting}
+\note[item]{mark GPU region}
+\note[item]{allocate memory on GPU and copy CPU to GPU}
+\note[item]{free memory on GPU}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Automatic GPU Memory Synchronization}
+\begin{figure}[h] %place figure "here"
+  \centering
+
+  \tikzstyle{table}=[
+  matrix of nodes,
+  row sep=-\pgflinewidth,
+  column sep=-\pgflinewidth,
+  nodes={typetag}]
+  \begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=3,
+      draw, rectangle split horizontal,align=center}, >=stealth, start chain,
+    container/.style={draw=gray, inner sep=1ex},
+    typetag/.style={draw=none, anchor=west},
+    title/.style={draw=none, color=gray, inner sep=0pt}]
+
+    \matrix[table] (block)
+    {
+      |[title]|Block  &            \\
+      {BlockId}       & {$\dotsb$} \\
+      {BlockShape}    & {$\dotsb$} \\
+      {BlockSelector} & {$\dotsb$} \\
+      {Devices:}      & |[list]|   \\
+    };
+    \node[container, fit=(block)] {};
+
+    \pause
+    \matrix[table, below=of block] (CPU_device)
+    {
+      |[title]|Device\_Info    &            \\
+      {\texttt{data\_version}} & {$\dotsb$} \\
+      {\texttt{onDevice}}      & {$\dotsb$} \\
+      {\texttt{isDirty}}       & {$\dotsb$} \\
+      {\texttt{isAsync}}       & {$\dotsb$} \\
+      {\texttt{data}}          & {}         \\
+    };
+    \node[container, fit=(CPU_device)] {};
+    \draw[*->] let \p1 = (block-5-2.one), \p2 = (block-5-2.center) in (\x1,\y2) -- (CPU_device);
+
+    \matrix[table, right=of CPU_device] (GPU_device)
+    {
+      |[title]|Device\_Info    &            \\
+      {\texttt{data\_version}} & {$\dotsb$} \\
+      {\texttt{onDevice}}      & {$\dotsb$} \\
+      {\texttt{isDirty}}       & {$\dotsb$} \\
+      {\texttt{isAsync}}       & {$\dotsb$} \\
+      {\texttt{data}}          & {}         \\
+    };
+    \node[container, fit=(GPU_device)] {};
+    \draw[*->] let \p1 = (block-5-2.second), \p2 = (block-5-2.center) in (\x1,\y2) -- (GPU_device);
+    \pause
+
+    \node[inner sep=0pt, below=of CPU_device] (cpu-mem)
+    {\includegraphics[width=.10\textwidth]{images/cpu-mem.jpg}};
+
+    \node[inner sep=0pt, right=of cpu-mem] (gpu-mem)
+    {\includegraphics[width=.10\textwidth]{images/gpu-card.png}};
+
+    \draw[*->] (CPU_device-6-2.center) -- (cpu-mem);
+    \draw[*->] (GPU_device-6-2.center) -- (gpu-mem);
+  \end{tikzpicture}
+  \caption{\texttt{Block} and \texttt{Device\_Info} structure}\label{fig:Device_Info_Structure}
+\end{figure}
+\note[item]{To understand the memory synchronization, let's see the block structure}
+\note[item]{Instead of directly storing pointer to memory location, another layer
+  of indirection is introduced}
+\note[item]{this allows support for multiple devices}
+\note[item]{each device has version number}
+\note[item]{whenever device updates the block, increases its version number}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Block Synchronization}
+  \begin{algorithmic}[1]
+    \Function{Block::get\_data}{deviceid}
+    \State $latest\_device \gets this.get\_latest\_device()$
+    \If{$latest\_device.data\_version > this.devices[deviceid].data\_version$}
+    \State {$memcpy(latest\_device.data,\ this.devices[deviceid].data)$}
+    \EndIf
+    \State \Return $this.devices[deviceid].data$
+    \EndFunction
+    % \hline
+  \end{algorithmic}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Optimizing Block Copy}
+  \begin{itemize}
+  \item \texttt{A[i,j] = B[j,k]}
+    \begin{itemize}
+      \pause
+    \item A is going to be read - no need to be updated
+      \pause
+    \item B is going to be read - update
+    \end{itemize}
+    \pause
+  \item \texttt{C[i,j] += 2}
+    \begin{itemize}
+      \pause
+    \item C is begin updated - update
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Memory Pinning}
+  \begin{figure}[h] %place figure "here"
+    \begin{tikzpicture}[
+      container/.style={draw=gray, inner sep=5mm},
+      typetag/.style={draw=black, anchor=west, inner sep=2mm, text width=3cm},
+      title/.style={draw=none, color=gray, inner sep=0pt}]
+
+      \node[title]   (gpu-title)     at (0, 5) {GPU};
+      \node[typetag] (gpu-ram)       at (0, 4) {DRAM};
+      \node[container, fit=(gpu-title)(gpu-ram)]{};
+
+      \pause
+      \node[title]   (cpu-title)     at (0, 2) {CPU};
+      \node[typetag] (pinned)        at (0, 1) {Temporary Pinned Memory};
+      \node[typetag] (main-pageable) at (4, 1) {Pageable Memory};
+      \node[container, fit=(cpu-title)(main-pageable)(pinned)] {};
+
+      \pause
+      \draw[draw=black, solid, line width=1mm, fill=black,
+      preaction={-triangle 90, thin, draw, shorten >=-1mm}] (main-pageable) -- (pinned.east);
+      \pause
+      \draw[draw=black, solid, line width=1mm, fill=black,
+      preaction={-triangle 90, thin, draw, shorten >=-1mm}] (pinned)        -- (gpu-ram.south);
+    \end{tikzpicture}
+    \caption{\texttt{memcpy} w/o memory pinning}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pinned Memory}
+  \begin{figure}[h] %place figure "here"
+    \begin{tikzpicture}[
+      container/.style={draw=gray, inner sep=5mm},
+      typetag/.style={draw=black, anchor=west, inner sep=2mm},
+      title/.style={draw=none, color=gray, inner sep=0pt}]
+
+      \node[title]   (gpu-title)     at (0, 5) {GPU};
+      \node[typetag] (gpu-ram)       at (0.7, 4) {DRAM};
+      \node[title]   (cpu-title)     at (0, 2) {CPU};
+      \node[typetag] (pinned)        at (0, 1) {Pinned Memory};
+
+      \node[container, fit=(gpu-title)(gpu-ram)] {};
+      \node[container, fit=(cpu-title)(pinned)]  {};
+
+      \pause
+
+      \draw[draw=black, solid, line width=1mm, fill=black,
+      preaction={-triangle 90, thin, draw, shorten >=-1mm}] (pinned) -- (gpu-ram.south);
+    \end{tikzpicture}
+    \caption{\texttt{memcpy} with memory pinning}\label{fig:w_mem_pin}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{GPU Inter Node Communication}
+  \begin{figure}[h] %place figure "here"
+  \begin{tikzpicture}[
+    container/.style={draw=gray, inner sep=5mm},
+    typetag/.style={draw=black, anchor=west, inner sep=2mm, text width=1.5cm},
+    title/.style={draw=none, color=gray, inner sep=0pt},
+    thickarrow/.style={->, draw=black, thick, line width=1mm, shorten <= 2pt,
+      shorten >= 2pt},
+    thickblue/.style={<-, draw=blue, thick, line width=1mm, shorten <= 2pt,
+      shorten >= 2pt, bend right=45},
+    thickorange/.style={<-, draw=orange, thick, line width=1mm, shorten <= 2pt,
+      shorten >= 2pt, bend right=10}]
+
+    \node[title]   (gpu-title1)     at (0, 5) {SRC GPU};
+    \node[typetag] (gpu-ram1)       at (0, 4) {DRAM};
+    \node[title]   (cpu-title1)     at (0, 2) {SRC CPU};
+    \node[typetag] (pinned1)        at (0, 1) {Pinned Memory};
+    \node[typetag] (main-pageable1) at (2.5, 1) {Pageable Memory};
+    \node[typetag] (mpi-buff1)      at (5, 1) {MPI Buffer}
+      edge[thickblue] (pinned1);
+
+    \node[title]   (gpu-title2)     at (14, 5) {DEST GPU};
+    \node[typetag] (gpu-ram2)       at (14, 4) {DRAM}
+      edge[thickorange] (gpu-ram1);
+    \node[title]   (cpu-title2)     at (9, 2) {DEST CPU};
+    \node[typetag] (mpi-buff2)      at (9, 1) {MPI Buffer};
+    \node[typetag] (main-pageable2) at (11.5, 1) {Pageable Memory};
+    \node[typetag] (pinned2)        at (14, 1) {Pinned Memory}
+      edge[thickblue] (mpi-buff2);
+
+    \node[container, fit=(gpu-title1)(gpu-ram1)]                           {};
+    \node[container, fit=(cpu-title1)(main-pageable1)(pinned1)(mpi-buff1)] {};
+
+    \node[container, fit=(gpu-title2)(gpu-ram2)]                           {};
+    \node[container, fit=(cpu-title2)(main-pageable2)(pinned2)(mpi-buff2)] {};
+
+    % Black arrows for src
+    \draw[thickarrow] (gpu-ram1.south)      -- (pinned1.north);
+    \draw[thickarrow] (pinned1.east)        -- (main-pageable1.west);
+    \draw[thickarrow] (main-pageable1.east) -- (mpi-buff1.west);
+
+    % Black arrow for network transfer
+    \draw[thickarrow] (mpi-buff1.east)      -- (mpi-buff2.west);
+
+    % Black arrows for dest
+    \draw[thickarrow] (mpi-buff2.east)      -- (main-pageable2.west);
+    \draw[thickarrow] (main-pageable2.east) -- (pinned2.west);
+    \draw[thickarrow] (pinned2.north)       -- (gpu-ram2.south);
+
+    % Legend
+    \node[draw=none] (l-cuda-arrow) at (0, -1) {}
+      edge[thickarrow, draw=orange] (1, -1);
+    \node[draw=none, text=black, right=of l-cuda-arrow] {\footnotesize RDMA Transfers using CUDA-Aware MPI};
+    \node[draw=none] (l-pinned-arrow) at (0, -1.5) {}
+      edge[thickarrow, draw=blue]  (1, -1.5);
+    \node[draw=none, text=black, right=of l-pinned-arrow] {\footnotesize DMA Transfers using Pinned Memory};
+    \node[draw=none] (l-none-arrow) at (0, -2) {}
+      edge[thickarrow]  (1, -2);
+    \node[draw=none, text=black, right=of l-none-arrow] {\footnotesize Normal Transfer};
+    %\draw[thickarrow] (pinned1.north)   to[out=90, in=90] (mpi-buff1.north);
+    %\draw[thickarrow] (mpi-buff2.north) to[out=90, in=90] (pinned2.north);
+  \end{tikzpicture}
+  \caption{RDMA, DMA and normal transmission between two nodes with GPU}\label{fig:gpu_buff_transfer}
+\end{figure}
+\end{frame}
 \end{document}
