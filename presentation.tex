@@ -342,7 +342,7 @@
 \end{frame}
 
 \begin{frame}\frametitle{Prefetching Experiments: Mean}
-  \note[item]{Overal wait time by \texttt{GET}}
+  \note[item]{Overall wait time by \texttt{GET}}
   \pause
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/index_length/p_np_mean}}
@@ -411,7 +411,6 @@
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/look_ahead/hit_ratio}}
     \caption{Number of Block Prefetched v/s Hit Ratio for first request}
-    \label{fig:look_ahead_hit_ratio}
   \end{figure}
   \note[item]{Hit ratio saturates after hitting a critical amount. There is no
     much use after that to increase number of blocks to prefetch.}
@@ -505,7 +504,7 @@ gpu_end
     \draw[*->] (CPU_device-6-2.center) -- (cpu-mem);
     \draw[*->] (GPU_device-6-2.center) -- (gpu-mem);
   \end{tikzpicture}
-  \caption{\texttt{Block} and \texttt{Device\_Info} structure}\label{fig:Device_Info_Structure}
+  \caption{\texttt{Block} and \texttt{Device\_Info} structure}
 \end{figure}
 \note[item]{To understand the memory synchronization, let's see the block structure}
 \note[item]{Instead of directly storing pointer to memory location, another layer
@@ -598,74 +597,81 @@ gpu_end
       \draw[draw=black, solid, line width=1mm, fill=black,
       preaction={-triangle 90, thin, draw, shorten >=-1mm}] (pinned) -- (gpu-ram.south);
     \end{tikzpicture}
-    \caption{\texttt{memcpy} with memory pinning}\label{fig:w_mem_pin}
+    \caption{\texttt{memcpy} with memory pinning}
   \end{figure}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{GPU Inter Node Communication}
   \begin{figure}[h] %place figure "here"
-  \begin{tikzpicture}[
-    container/.style={draw=gray, inner sep=5mm},
-    typetag/.style={draw=black, anchor=west, inner sep=2mm, text width=1.5cm},
-    title/.style={draw=none, color=gray, inner sep=0pt},
-    thickarrow/.style={->, draw=black, thick, line width=1mm, shorten <= 2pt,
-      shorten >= 2pt},
-    thickblue/.style={<-, draw=blue, thick, line width=1mm, shorten <= 2pt,
-      shorten >= 2pt, bend right=45},
-    thickorange/.style={<-, draw=orange, thick, line width=1mm, shorten <= 2pt,
-      shorten >= 2pt, bend right=10}]
-
-    \node[title]   (gpu-title1)     at (0, 5) {SRC GPU};
-    \node[typetag] (gpu-ram1)       at (0, 4) {DRAM};
-    \node[title]   (cpu-title1)     at (0, 2) {SRC CPU};
-    \node[typetag] (pinned1)        at (0, 1) {Pinned Memory};
-    \node[typetag] (main-pageable1) at (2.5, 1) {Pageable Memory};
-    \node[typetag] (mpi-buff1)      at (5, 1) {MPI Buffer}
-      edge[thickblue] (pinned1);
-
-    \node[title]   (gpu-title2)     at (14, 5) {DEST GPU};
-    \node[typetag] (gpu-ram2)       at (14, 4) {DRAM}
-      edge[thickorange] (gpu-ram1);
-    \node[title]   (cpu-title2)     at (9, 2) {DEST CPU};
-    \node[typetag] (mpi-buff2)      at (9, 1) {MPI Buffer};
-    \node[typetag] (main-pageable2) at (11.5, 1) {Pageable Memory};
-    \node[typetag] (pinned2)        at (14, 1) {Pinned Memory}
-      edge[thickblue] (mpi-buff2);
-
-    \node[container, fit=(gpu-title1)(gpu-ram1)]                           {};
-    \node[container, fit=(cpu-title1)(main-pageable1)(pinned1)(mpi-buff1)] {};
-
-    \node[container, fit=(gpu-title2)(gpu-ram2)]                           {};
-    \node[container, fit=(cpu-title2)(main-pageable2)(pinned2)(mpi-buff2)] {};
-
-    % Black arrows for src
-    \draw[thickarrow] (gpu-ram1.south)      -- (pinned1.north);
-    \draw[thickarrow] (pinned1.east)        -- (main-pageable1.west);
-    \draw[thickarrow] (main-pageable1.east) -- (mpi-buff1.west);
-
-    % Black arrow for network transfer
-    \draw[thickarrow] (mpi-buff1.east)      -- (mpi-buff2.west);
-
-    % Black arrows for dest
-    \draw[thickarrow] (mpi-buff2.east)      -- (main-pageable2.west);
-    \draw[thickarrow] (main-pageable2.east) -- (pinned2.west);
-    \draw[thickarrow] (pinned2.north)       -- (gpu-ram2.south);
-
-    % Legend
-    \node[draw=none] (l-cuda-arrow) at (0, -1) {}
-      edge[thickarrow, draw=orange] (1, -1);
-    \node[draw=none, text=black, right=of l-cuda-arrow] {\footnotesize RDMA Transfers using CUDA-Aware MPI};
-    \node[draw=none] (l-pinned-arrow) at (0, -1.5) {}
-      edge[thickarrow, draw=blue]  (1, -1.5);
-    \node[draw=none, text=black, right=of l-pinned-arrow] {\footnotesize DMA Transfers using Pinned Memory};
-    \node[draw=none] (l-none-arrow) at (0, -2) {}
-      edge[thickarrow]  (1, -2);
-    \node[draw=none, text=black, right=of l-none-arrow] {\footnotesize Normal Transfer};
-    %\draw[thickarrow] (pinned1.north)   to[out=90, in=90] (mpi-buff1.north);
-    %\draw[thickarrow] (mpi-buff2.north) to[out=90, in=90] (pinned2.north);
-  \end{tikzpicture}
-  \caption{RDMA, DMA and normal transmission between two nodes with GPU}\label{fig:gpu_buff_transfer}
-\end{figure}
+    \includegraphics[width=\textwidth]{images/2gpu_comm.png}
+  \end{figure}
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{GPU Inter Node Communication}
+  \begin{figure}[h] %place figure "here"
+    \includegraphics[width=\textwidth]{images/1gpu_comm.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Copy Speed}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/block_copy/pin_vs_nopin}}
+    \caption{Time taken to transfer block to GPU for \textit{pinned} and \textit{non pinned} blocks}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Optimized Transfer}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/optimized_block_transfer/rccsd_rhf}}
+    \caption{Optimized v/s Unoptimized Block Transfers for \texttt{rccsd\_rhf.sialx}}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Memory Pinning Overhead}
+  \note[item]{alloc}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/alloc}}
+    \caption{Pinned and non Pinned memory allocation}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Memory Pinning Overhead}
+  \note[item]{free}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/free}}
+    \caption{Pinned and non Pinned memory de-allocation}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{RDMA}
+  \note[item]{\texttt{GET}}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/rdma/get}}
+    \caption{GPU and CPU buffer passed to \texttt{GET}}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{RDMA}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/rdma/put}}
+    \caption{GPU and CPU buffer passed to \texttt{PUT}}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Overall Transfer}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/rdma/total_transfer}}
+    \caption{Total MPI transfer compared to CUDA Aware MPI transfer}
+  \end{figure}
+\end{frame}
+
 \end{document}

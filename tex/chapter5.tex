@@ -636,13 +636,13 @@ use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
 
     \node[title]   (gpu-title1)     at (0, 5) {Worker GPU};
     \node[typetag] (gpu-ram1)       at (0, 4) {DRAM};
-    \node[title]   (cpu-title1)     at (0, 2) {Worker CPU};
+    \node[title]   (cpu-title1)     at (0, 0) {Worker CPU};
     \node[typetag] (pinned1)        at (0, 1) {Pinned Memory};
     \node[typetag] (main-pageable1) at (2.5, 1) {Pageable Memory};
     \node[typetag] (mpi-buff1)      at (5, 1) {MPI Buffer}
       edge[thickblue] (pinned1);
 
-    \node[title]   (cpu-title2)     at (9, 2) {Server CPU};
+    \node[title]   (cpu-title2)     at (9, 0) {Server CPU};
     \node[typetag] (mpi-buff2)      at (9, 1) {MPI Buffer}
       edge[thickorange] (gpu-ram1);
     \node[typetag] (main-pageable2) at (11.5, 1) {Pageable Memory};
@@ -664,14 +664,14 @@ use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
     \draw[thickarrow] (mpi-buff2.east)      -- (main-pageable2.west);
 
     % Legend
-    \node[draw=none] (l-cuda-arrow) at (0, -1) {}
-      edge[thickarrow, draw=orange] (1, -1);
+    \node[draw=none] (l-cuda-arrow) at (0, -1.5) {}
+      edge[thickarrow, draw=orange] (1, -1.5);
     \node[draw=none, text=black, right=of l-cuda-arrow] {\footnotesize RDMA Transfers using CUDA-Aware MPI};
-    \node[draw=none] (l-pinned-arrow) at (0, -1.5) {}
-      edge[thickarrow, draw=blue]  (1, -1.5);
+    \node[draw=none] (l-pinned-arrow) at (0, -2) {}
+      edge[thickarrow, draw=blue]  (1, -2);
     \node[draw=none, text=black, right=of l-pinned-arrow] {\footnotesize DMA Transfers using Pinned Memory};
-    \node[draw=none] (l-none-arrow) at (0, -2) {}
-      edge[thickarrow]  (1, -2);
+    \node[draw=none] (l-none-arrow) at (0, -2.5) {}
+      edge[thickarrow]  (1, -2.5);
     \node[draw=none, text=black, right=of l-none-arrow] {\footnotesize Normal Transfer};
     %\draw[thickarrow] (pinned1.north)   to[out=90, in=90] (mpi-buff1.north);
     %\draw[thickarrow] (mpi-buff2.north) to[out=90, in=90] (pinned2.north);
