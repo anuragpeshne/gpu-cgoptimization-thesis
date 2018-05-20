@@ -8,16 +8,28 @@ and design of GPU implementation.
 The Super Instruction Architecture is a special purpose, domain agnostic,
 parallel programming framework which is engineered for solving very large
 computation expressed in terms of multi-dimensional arrays and super
-instructions to operate on them. Since these multi-dimensional arrays can be too
+instructions to operate on them. This is different from conventional programming
+languages where in computation is described in terms of individual floating point
+number and operations which work on these individual numbers. For better performance
+and higher utlization of resources these individual numbers should be aggregated.
+This adds considerable complexity to programs since now the programmer has be careful
+of the index arithmetic. Algorithms in SIA can be directly expressed in terms of
+blocks. This has multiple performance advantages: moving data in terms
+of blocks is more efficient since it will have less overhead per individual number
+and since transfering these blocks will take significant time, runtime can overlap
+computation and network operation.
+
+Since these multi-dimensional arrays can be too
 large to hold in physical memory of a single processor, they are broken into
 blocks or super numbers. These super numbers are input to special instructions
-written to operate on blocks instead of floating point numbers and hence called
-as super instructions.
+written to operate on blocks instead of floating point numbers and hence these
+instructions are called as super instructions.
 
 SIA can execute instructions on the blocks in parallel on multiple processor. To
 facilitate movement of blocks among parallel execution units, server-client
 architecture is used. SIA provides SIAL, a block oriented domain specific
-language (DSL), which can be used to formulate problems of any domain and a way
+language (DSL), which can be used to formulate problems of any domain by providing
+support for expressing algorithms using blocks and a way
 to write super instructions which are domain specific in an optimized way. The
 following sections describe details of working of server client architecture,
 SIAL and constructs in it.
@@ -102,7 +114,7 @@ memory is accessed.
 
 \section{Executing Super Instructions on GPU}
 There are two ways in which GPU are exploited in SIA to obtain high concurrency.
-First the super instructions can be written in close to device hardware Cuda
+First the super instructions can be written in close to device hardware CUDA
 programming language. These instructions can make use of low level hardware
 features and domain knowledge to fine tune the implementation. Secondly some of
 the general purpose block operations such as matrix multiplication, addition,

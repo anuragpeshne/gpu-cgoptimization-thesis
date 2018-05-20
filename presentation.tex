@@ -421,6 +421,7 @@
 \end{frame}
 
 \begin{frame}[fragile=singleslide]\frametitle{Exploiting GPU: ACESIII}
+  \pause
 \begin{lstlisting}
 gpu_begin
 gpu_put aoint(lambda,mu,sigma,nu) #allocate & copy
@@ -446,6 +447,7 @@ gpu_end
 \end{frame}
 
 \begin{frame}[fragile]\frametitle{Automatic GPU Memory Synchronization}
+  \pause
 \begin{figure}[h] %place figure "here"
   \centering
 
@@ -531,6 +533,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Optimizing Block Copy}
+  \pause
   \begin{itemize}
   \item \texttt{A[i,j] = B[j,k]}
     \begin{itemize}
@@ -604,6 +607,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{GPU Inter Node Communication}
+  \pause
   \begin{figure}[h] %place figure "here"
     \includegraphics[width=\textwidth]{images/2gpu_comm.png}
   \end{figure}
@@ -611,6 +615,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{GPU Inter Node Communication}
+  \pause
   \begin{figure}[h] %place figure "here"
     \includegraphics[width=\textwidth]{images/1gpu_comm.png}
   \end{figure}
@@ -618,6 +623,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Copy Speed}
+  \pause
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/mempin/block_copy/pin_vs_nopin}}
     \caption{Time taken to transfer block to GPU for \textit{pinned} and \textit{non pinned} blocks}
@@ -626,6 +632,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Optimized Transfer}
+  \pause
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/optimized_block_transfer/rccsd_rhf}}
     \caption{Optimized v/s Unoptimized Block Transfers for \texttt{rccsd\_rhf.sialx}}
@@ -634,6 +641,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Memory Pinning Overhead}
+  \pause
   \note[item]{alloc}
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/alloc}}
@@ -643,6 +651,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Memory Pinning Overhead}
+  \pause
   \note[item]{free}
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/free}}
@@ -652,6 +661,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{RDMA}
+  \pause
   \note[item]{\texttt{GET}}
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/mempin/rdma/get}}
@@ -661,6 +671,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{RDMA}
+  \pause
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/mempin/rdma/put}}
     \caption{GPU and CPU buffer passed to \texttt{PUT}}
@@ -669,6 +680,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Overall Transfer}
+  \pause
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/mempin/rdma/total_transfer}}
     \caption{Total MPI transfer compared to CUDA Aware MPI transfer}
@@ -677,6 +689,7 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Caching Non Pageable Blocks}
+  \pause
   \begin{table}[h]
     \centering
     \begin{tabular}{l<{\onslide<2->} | r<{\onslide<3->} | r<{\onslide<4->} | r<{\onslide}}

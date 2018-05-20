@@ -10,7 +10,7 @@ multidimensional arrays rather than individual floating point numbers. This thes
 presents two ideas to enhance the looping constructs in SIAL.
 
 \section{Introduction to Issues with Working with GPUs}
-In ACESIII, the previous version of ACES, programmer had to explicitly deal with managing
+In ACESIII, the previous version of ACES, programmer had to deal with explicitly managing
 the memory transfer between GPU and CPU and marking regions well suited for execution
 on GPU. In ACES4, managing memory transfer is done automatically by the runtime.
 This is implemented by tracking block changes using version numbers.
@@ -20,7 +20,7 @@ is well suited for execution on GPU. Transferring data between GPU and CPU is
 expensive and can dominate the total time spent in computation. Hence this is not
 a trivial decision to make since the programmer has to minimize time spent in
 total memory transfers. This in turn depends on various factors such as
-size of the block and number of instructions in the code block supported on GPU. Judging
+size of the block and number of instructions in the code block executed on GPU. Judging
 based on size of block is itself difficult because it depends on the type of GPU available
 at runtime. Larger blocks need more time to transfer between GPU and CPU, but at
 same time the difference in time taken to operate on blocks by GPU and CPU grows
@@ -35,10 +35,10 @@ In SIAL, looping constructs are the only way to work with individual blocks.
 Typical work~flow of SIAL includes requesting a block of larger array from server,
 processing the block, compute resulting block and send it back to the server. Though
 the operation of requesting block from server is non blocking, subsequent operations
-in the loop block until Message Passing Interface (MPI) transfer is completed. To amortize the cost of network
+in the loop block until Message Passing Interface (MPI) transfer is completed. To reduce the overall cost of network
 transfer, prefetching has been implemented which does the transfer concurrently
 with the block processing. By prefetching the anticipated blocks that would be
-needed in next iteration of loop, the wait~time for block can be reduced and
+needed in next iteration of loop, the wait~time for a block can be reduced and
 in some cases completely eliminated.
 
 \section{Organization of the Thesis}
@@ -46,8 +46,7 @@ Chapter 2 presents related literature regarding efforts made to exploit GPU in
 SIA as well as other programming models and the technique of prefetching to hide
 latency in accessing data. Then an introduction to background of this thesis,
 including architecture and implementation of SIA and ACES4, is presented in chapter~3.
-Chapter 4 describes the problem and solution of optimizing use of GPU to execute SIAL
-code; the design and implementation of eager-pushing of blocks and dynamic
-determination of suitable code block for execution on GPU is presented in
-chapter 5. Chapter 6 states the results of the benchmarks and experiments. And
+Chapter 4 describes the technique of prefetching implemented in SIA. Chapter 5
+presents the problem and solution of optimizing use of GPU to execute SIAL
+code. Chapter 6 states the results of the benchmarks and experiments. And
 finally, chapter 7 presents conclusion of this thesis and future works.
