@@ -64,8 +64,13 @@
         enddo j
       enddo i
     \end{lstlisting}
+    \note[item]{It is more efficient to move numbers in blocks rather than individual
+      blocks}
+    \note[item]{Runtime can also schedule other things while transfering is in progress}
     \pause
   \item \textit{Super} Instructions acting upon \textit{Super} Numbers.
+    \note[item]{Super Instructions work on block, looping on block handled automatically}
+    \note[item]{This also relieves programmer from error prone index calculation}
   \end{itemize}
 \end{frame}
 
@@ -104,6 +109,8 @@
   \begin{itemize}
     \pause
   \item Domain Specific Language
+    \note[item]{Separation of concern: domain programmer deal with domain logic,
+      runtime handles scheduling, executing in parallel, choosing optimization etc}
     \pause
   \item Support for Blocks as first class citizen.
     \pause
@@ -118,6 +125,8 @@
   \item Super Instructions can be defined using C, C++, Fortran
     \pause
     or CUDA.
+    \note[item]{Programmer can define customized super instruction which are domain
+      specific}
     \note[item]{easy to port to CUDA}
   \end{itemize}
 \end{frame}
@@ -706,6 +715,43 @@ gpu_end
     \caption{Page Locked Cached v/s Page Locked Uncached v/s Non Page Locked allocation
       and deallocation times}
   \end{table}
+\end{frame}
+
+\begin{frame}[]
+  \frametitle{Conclusion: Prefetching}
+  \begin{itemize}
+    \pause
+  \item Prefetching makes first iteration expensive
+    \pause
+  \item Larger indices range can make up for it
+    \pause
+  \item Hit Ratio can be used as a metric to measure effectiveness of Prefetching
+    \pause
+  \item Prefetching helpful only when \texttt{wait\_time} is made up of network wait
+    time
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[]
+  \frametitle{Conclusion: GPU}
+  \begin{itemize}
+    \pause
+  \item GPU can speedup computation on bigger block size
+    \pause
+  \item Tranferring Blocks between GPU and CPU memory is expensive
+    \begin{itemize}
+      \pause
+    \item Memory Pinning can improve the speed by invoking DMA
+    \end{itemize}
+    \pause
+  \item Page Locking (Memory Pinning) is expensive
+    \begin{itemize}
+      \pause
+    \item Page Locked blocks can be cached
+      \pause
+    \item SIA blocks usage is predictable, effective caching algorithm can be devised
+    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \end{document}
