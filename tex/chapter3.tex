@@ -1,29 +1,33 @@
 \chapter{BACKGROUND: SUPER INSTRUCTION ARCHITECTURE} \label{background}
 
 This chapter introduces the SIA, ACES4, an implementation of SIA, block based
-programming, the design of worker and server, SIAL, parallel looping constructs
+programming, the design of workers and servers, SIAL, parallel looping constructs
 and design of GPU implementation.
 
 \section{SIA}
 The Super Instruction Architecture is a special purpose, domain agnostic,
 parallel programming framework which is engineered for solving very large
-computation expressed in terms of multi-dimensional arrays and super
-instructions to operate on them. This is different from conventional programming
+computation. SIA expresses the computation in terms of multi-dimensional arrays and
+instructions to operate on them. This way of expressing is different from conventional programming
 languages where in computation is described in terms of individual floating point
-number and operations which work on these individual numbers. For better performance
-and higher utlization of resources these individual numbers should be aggregated.
-This adds considerable complexity to programs since now the programmer has be careful
-of the index arithmetic. Algorithms in SIA can be directly expressed in terms of
-blocks. This has multiple performance advantages: moving data in terms
-of blocks is more efficient since it will have less overhead per individual number
-and since transfering these blocks will take significant time, runtime can overlap
-computation and network operation.
+number and operations which work on these individual numbers. Aggregating
+individual numbers into blocks results in better performance and higher utlization
+of resources. However, this adds considerable complexity to programs since now
+the programmer has be careful of the index arithmetic and designing algorithms to loop
+over entire the blocks. Algorithms in SIA can be directly expressed in terms of
+blocks. This gives the performance benefits of using block and at the same time relieves
+programmer from error prone work of dealing with indices and looping. Expressing
+computation in terms of block has multiple performance advantages: moving data in terms
+of blocks is more efficient since it has less overhead per individual number
+and runtime can overlap computation and network operation since transfering these
+blocks will take significant time, resulting in better overall utilization of resources.
 
 Since these multi-dimensional arrays can be too
 large to hold in physical memory of a single processor, they are broken into
 blocks or super numbers. These super numbers are input to special instructions
 written to operate on blocks instead of floating point numbers and hence these
-instructions are called as super instructions.
+instructions are called as super instructions. Section~\ref{siaarch} describes how
+these blocks are managed among participating processors.
 
 SIA can execute instructions on the blocks in parallel on multiple processor. To
 facilitate movement of blocks among parallel execution units, server-client
@@ -34,13 +38,13 @@ to write super instructions which are domain specific in an optimized way. The
 following sections describe details of working of server client architecture,
 SIAL and constructs in it.
 
-\section{Architecture of SIA}
+\section{Architecture of SIA}\label{siaarch}
 SIA can execute instructions in parallel over multiple processors. It can be
 deployed and scaled on multiple nodes in a high performance computing cluster
 using MPI for inter process communication. Since the
 multidimensional arrays involved in the calculations can be extremely large for
 memory of a single processor, SIA divides the arrays into chunks of
-manageable size. These chunks can be distributed to different processors and the
+manageable size. These chunks are distributed to different processors and the
 processors can work on the chunks concurrently.
 
 SIA supports arrays of size greater than combined memory of all processors
@@ -49,10 +53,10 @@ not \textit{hot}, that is the chunks which are not going to be used soon, on
 larger, although slower, memory on hard drives. This swapping of blocks is automatic
 and transparent to the programmer. To facilitate the movement of data among
 processing units and swapping out blocks to hard drives, SIA divides available
-processors into two groups, workers and servers --- workers are responsible for
-actual execution of instructions on the blocks, while servers make sure blocks
-are served to and from workers. The division of number of servers versus number
-of workers is chosen by SIA but can be overridden by passing command line
+processors into two groups, workers and servers --- the workers are responsible for
+actual execution of instructions on the blocks, while the servers make sure blocks
+are served to and from the workers. The division of number of the servers versus number
+of the workers is chosen by SIA but can be overridden by passing command line
 arguments.
 
 \section{SIAL}
@@ -129,12 +133,17 @@ size of input and output.
 \section{Overview of the ACES}
 ACES4 is an implementation of SIA for chemical computation. It has been executed
 on a variety of architectures, but is especially optimized to enable
-calculations on leadership class supercomputers. The chemical computation done
-using ACES4 uses data of high dimension. A typical calculation in this domain
+calculations on leadership class supercomputers. Using ACES4, computational scientists
+try to find approximate solutions to Schrödinger’s equation using Coupled cluster
+methods. There exists other methods to calculate approximate solutions but Coupled
+cluster methods, although expensive computationally, are one of the most accurate method.
+The chemical computation done using ACES4 uses data of high dimension. A typical calculation in this domain
 takes as input the geometry of a molecular system and a choice of single
 particle orbitals as basis to expand the many-electron quantum-mechanical wave
 function. The complex algorithms which produce properties of the molecular
 system can easily require arrays of double precision floating point of size
 several hundred Gigabytes. Of these arrays, at least three need rapid access and
 are usually stored in RAM, the rest that are used less frequently can be stored
-on disk.
+on disk. SIA architecture is very suitable for these kind of calculations since
+the workers can work on parts of array concurrently and the servers can swap out
+less frequently used arrays to disk.

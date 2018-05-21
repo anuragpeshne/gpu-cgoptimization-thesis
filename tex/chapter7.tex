@@ -5,8 +5,8 @@ prefetching to data blocks in Super Instruction Architecture. Other improves
 the utlization of GPU to execute Super Instructions on GPU and make way to support
 other compute devices in future.
 
-Though prefetching makes subsequent requests to server efficient by reducing or
-eliminating \texttt{wait\_time}, it makes the first request to server expensive.
+Though prefetching makes subsequent requests to a server efficient by reducing or
+eliminating \texttt{wait\_time}, it makes the first request to the server expensive.
 Thus to make up for it, the length of range of indices should be long enough. Hit
 ratio, as defined in section~\ref{sec:hit_ratio}, can be used as a metric to evaluate
 the performance of prefetching. As seen in section~\ref{sec:bp_molecule}, prefetching
@@ -30,7 +30,7 @@ super instructions on GPU and a way to easily port user defined super instructio
 to GPU; By exploiting the asynchronous memory synchronization between GPU memory
 and main memory by looking ahead for instruction which needs the memory
 to be transferred and initiating the asynchronous transfer as soon as data is ready.
-And exploring the feasibility of having access to GPU on servers and implementing
+And exploring the feasibility of having access to GPU on the servers and implementing
 RDMA to transfer memory blocks between workers and servers. Lastly, implementing
 advanced caching mechanism for page locked memory blocks can be worked upon to have
 more memory efficient caching mechanism.

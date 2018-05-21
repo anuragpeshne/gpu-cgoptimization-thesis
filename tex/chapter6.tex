@@ -126,10 +126,10 @@ after 6 since no significant improvement is achieved by increasing the index ran
 length.
 
 It is observed that as the runtime requests for multiple blocks for prefetching,
-the first request to server takes longer as number of index range increases. This
+the first request to the server takes longer as number of index range increases. This
 side effect can be explained using the preceding observation about \texttt{hit\_ratio}.
 Since the increase in index range length activates prefetching the first request
-to server becomes costlier. This is presented in figure~\ref{fig:p_first_mean}.
+to the server becomes costlier. This is presented in figure~\ref{fig:p_first_mean}.
 \begin{figure}[h]
   \input{results/index_length/p_first_mean}
   \caption{Index Range v/s \texttt{wait\_time\_} per iteration}
@@ -137,7 +137,7 @@ to server becomes costlier. This is presented in figure~\ref{fig:p_first_mean}.
 \end{figure}
 
 It can be concluded from previous observation that prefetching increases the time
-for the first request to server. Thus to compensate for the high cost of first
+for the first request to the server. Thus to compensate for the high cost of first
 iteration by offsetting it in subsequent iterations the length of index range to
 should be sufficient enough. The mean time taken per iteration is plotted against
 the length of index range in figure~\ref{fig:p_np_mean}.
@@ -197,7 +197,7 @@ prefetching compensates for it and keeps the mean \texttt{wait\_time\_} lower th
 without prefetching subsequent blocks.
 
 \subsection{Number of Blocks to Prefetch}
-As stated in previous sections, prefetching affects the first request to server
+As stated in previous sections, prefetching affects the first request to the server
 and the size of the block also affects the first request. To observe effect of
 number of blocks to prefetch on the initial request, the number of blocks were
 varied and plotted against mean \texttt{wait\_time\_} for first request. This is
@@ -226,7 +226,7 @@ For the case when the number of block prefetched is 0, which is in the case of n
 prefetching the mean \texttt{wait\_time\_} is highest. It drops sharply as the
 number of blocks to prefetch increases and then it grows again as increase in number
 of blocks to prefetch increases the \texttt{wait\_time\_} for first request to
-server.
+the server.
 
 As the number of blocks to prefetched is increased, more blocks are available for
 runtime without blocking. This is presented in figure~\ref{fig:look_ahead_hit_ratio}
