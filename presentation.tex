@@ -631,15 +631,6 @@ gpu_end
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Copy Speed}
-  \pause
-  \begin{figure}[h]
-    \resizebox{.9\linewidth}{!}{\input{results/mempin/block_copy/pin_vs_nopin}}
-    \caption{Time taken to transfer block to GPU for \textit{pinned} and \textit{non pinned} blocks}
-  \end{figure}
-\end{frame}
-
-\begin{frame}[fragile]
   \frametitle{Optimized Transfer}
   \pause
   \begin{figure}[h]
@@ -649,22 +640,11 @@ gpu_end
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Memory Pinning Overhead}
+  \frametitle{Copy Speed}
   \pause
-  \note[item]{alloc}
   \begin{figure}[h]
-    \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/alloc}}
-    \caption{Pinned and non Pinned memory allocation}
-  \end{figure}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Memory Pinning Overhead}
-  \pause
-  \note[item]{free}
-  \begin{figure}[h]
-    \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/free}}
-    \caption{Pinned and non Pinned memory de-allocation}
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/block_copy/pin_vs_nopin}}
+    \caption{Time taken to transfer block to GPU for \textit{pinned} and \textit{non pinned} blocks}
   \end{figure}
 \end{frame}
 
@@ -695,10 +675,75 @@ gpu_end
     \caption{Total MPI transfer compared to CUDA Aware MPI transfer}
   \end{figure}
 \end{frame}
+\begin{frame}[fragile]
+  \frametitle{Memory Pinning Overhead}
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{l<{\onslide<2->} | l<{\onslide<3->} | l<{\onslide}}
+      \hline
+      Block Size & Pinned Memory Alloc & Non Pinned Memory Alloc \\
+      \hline
+      225        & 3.59733e-05         & 9.35048e-07             \\
+      400        & 1.99117e-05         & 4.13507e-07             \\
+      625        & 2.71294e-05         & 2.93367e-06             \\
+      900        & 1.76281e-05         & 5.90459e-07             \\
+      1225       & 2.44398e-05         & 6.18398e-07             \\
+      1600       & 1.55177e-05         & 2.54251e-06             \\
+      2025       & 2.82563e-05         & 3.18140e-06             \\
+      2500       & 2.04109e-05         & 3.00072e-06             \\
+      3025       & 1.91461e-05         & 3.29316e-06             \\
+      \hline
+    \end{tabular}
+    \caption{Block Size against Page locked and non page locked memory allocation}
+  \end{table}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Memory Pinning Overhead}
+  \pause
+  \note[item]{alloc}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/alloc}}
+    \caption{Pinned and non Pinned memory allocation}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Memory Pinning Overhead}
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{l<{\onslide<2->} | l<{\onslide<3->} | l<{\onslide}}
+      \hline
+      Block Size & Pinned Memory Free & Non Pinned Memory Free \\
+      \hline
+      225        & 2.78205e-05        & 4.19095e-07            \\
+      400        & 2.54586e-05        & 4.04194e-07            \\
+      625        & 2.88431e-05        & 5.94184e-07            \\
+      900        & 3.09199e-05        & 4.95464e-07            \\
+      1225       & 2.51215e-05        & 2.44007e-07            \\
+      1600       & 2.58479e-05        & 2.98023e-07            \\
+      2025       & 2.80552e-05        & 3.98606e-07            \\
+      2500       & 3.52804e-05        & 6.81728e-07            \\
+      3025       & 2.70978e-05        & 2.64496e-07            \\
+      \hline
+    \end{tabular}
+    \caption{Block size against Page locked and non page locked memory deallocation}
+    \label{tab:mempin_free}
+  \end{table}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Memory Pinning Overhead}
+  \pause
+  \note[item]{free}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/free}}
+    \caption{Pinned and non Pinned memory de-allocation}
+  \end{figure}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Caching Non Pageable Blocks}
-  \pause
   \begin{table}[h]
     \centering
     \begin{tabular}{l<{\onslide<2->} | r<{\onslide<3->} | r<{\onslide<4->} | r<{\onslide}}
@@ -732,7 +777,7 @@ gpu_end
   \end{itemize}
 \end{frame}
 
-\begin{frame}[]
+\begin{frame}[fragile]
   \frametitle{Conclusion: GPU}
   \begin{itemize}
     \pause
@@ -742,6 +787,8 @@ gpu_end
     \begin{itemize}
       \pause
     \item Memory Pinning can improve the speed by invoking DMA
+      \pause
+      \item DMA is also invoked when transfering using MPI if memory is page locked.
     \end{itemize}
     \pause
   \item Page Locking (Memory Pinning) is expensive
