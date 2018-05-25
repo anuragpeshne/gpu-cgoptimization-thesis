@@ -3,6 +3,7 @@
 \setbeameroption{show notes on second screen}
 
 \setbeamertemplate{navigation symbols}{}%remove navigation symbols
+\setbeamertemplate{footline}[frame number]
 \mode<presentation>{}
 
 \usepackage{tikz}
@@ -430,7 +431,6 @@
 \end{frame}
 
 \begin{frame}[fragile=singleslide]\frametitle{Exploiting GPU: ACESIII}
-  \pause
 \begin{lstlisting}
 gpu_begin
 gpu_put aoint(lambda,mu,sigma,nu) #allocate & copy
@@ -700,7 +700,6 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Memory Pinning Overhead}
-  \pause
   \note[item]{alloc}
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/alloc}}
@@ -734,7 +733,6 @@ gpu_end
 
 \begin{frame}[fragile]
   \frametitle{Memory Pinning Overhead}
-  \pause
   \note[item]{free}
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/mempin/overhead/free}}
