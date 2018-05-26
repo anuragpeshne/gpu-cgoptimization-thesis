@@ -217,7 +217,10 @@
   text depth=0.25ex,
   text height=1.5ex,
   nodes in empty cells]
-  \begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=6,
+  \begin{tikzpicture}[
+    scale=0.8,
+    every node/.style={transform shape},
+    list/.style={rectangle split, rectangle split parts=6,
       draw, rectangle split horizontal}, >=stealth, start chain]
 
     \node[list,on chain] (A) {};
@@ -281,6 +284,8 @@
   \begin{figure}[h] %place figure "here"
     \centering
     \begin{tikzpicture}[
+      scale=0.65,
+      every node/.style={transform shape},
       list/.style={rectangle split, rectangle split parts=7,
         draw, rectangle split horizontal},
       function/.style={rectangle, draw,align=center},
