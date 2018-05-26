@@ -1,23 +1,23 @@
 \chapter{CONCLUSION AND FUTURE WORK}\label{conclusion}
 Two approaches to enhance the looping constructs and improve the runtime efficiency
-of SIAL interpreter is presented in this thesis. One applies old technique of
+of SIAL interpreter is presented in this thesis. One applies an old technique of
 prefetching to data blocks in Super Instruction Architecture. Other improves
-the utlization of GPU to execute Super Instructions on GPU and make way to support
+the utilization of GPU to execute Super Instructions on GPU and make way to support
 other compute devices in future.
 
 Though prefetching makes subsequent requests to a server efficient by reducing or
 eliminating \texttt{wait\_time}, it makes the first request to the server expensive.
-Thus to make up for it, the length of range of indices should be long enough. Hit
+Thus to make up for it, the length of the range of indices should be long enough. Hit
 ratio, as defined in section~\ref{sec:hit_ratio}, can be used as a metric to evaluate
 the performance of prefetching. As seen in section~\ref{sec:bp_molecule}, prefetching
 helps in reducing overall \texttt{wait\_time} when most of the \texttt{wait\_time}
-is due to blocking for data block transfer over network.
+is due to blocking for data block transfer over the network.
 
-Future work includes exploiting the provision to dynamically vary number of blocks
-to prefetch to strike a balance between high cost of initial request and relatively
+Future work includes exploiting the provision to dynamically vary the number of blocks
+to prefetch to strike a balance between high cost of the initial request and relatively
 cheap subsequent requests.
 
-Executing Super Instructions on GPU can speedup the computation for bigger block
+Executing Super Instructions on GPU can speed up the computation for bigger block
 sizes. Transferring blocks between GPU and main memory is expensive but it can be
 avoided or reduced by directly collecting to or sending blocks from GPU memory
 buffers and reducing the transfers using other techniques. Page locked memory
@@ -32,5 +32,5 @@ and main memory by looking ahead for instruction which needs the memory
 to be transferred and initiating the asynchronous transfer as soon as data is ready.
 And exploring the feasibility of having access to GPU on the servers and implementing
 RDMA to transfer memory blocks between workers and servers. Lastly, implementing
-advanced caching mechanism for page locked memory blocks can be worked upon to have
+an advanced caching mechanism for page locked memory blocks can be worked upon to have
 more memory efficient caching mechanism.

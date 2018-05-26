@@ -3,26 +3,26 @@
 We discuss work done by others in using GPU for scientific calculations using
 several methods such as directive based GPU programming models, using CUDA in
 higher level programming language and use of GPU in previous versions of ACES
-and work done using in prefetching to hide latency in accessing data. We also look
-at work done in general idea of prefetching such as non blocking fetch operation,
-techniques used to determine optimal prefetching parameters such as number of
+and the work done using in prefetching to hide latency in accessing data. We also look
+at work done in general idea of prefetching such as nonblocking fetch operation,
+techniques used to determine optimal prefetching parameters such as the number of
 blocks to prefetch, prefetch cache size.
 
 \section{GPGPU}
-This section discuss previous work done on General Purpose computing on Graphics
+This section discusses previous work done on General Purpose computing on Graphics
 Processing Units.
 
 \subsection{Directive Based GPU programming}
-There are several attempts in area of directive based programming models. These
+There are several attempts in the area of directive-based programming models. These
 attempts include OpenACC~\cite{openacc}, OpenMP for
 accelerator~\cite{openmpforaccelerators}, and less updated attempts including
 OpenMPC~\cite{openmpc} and hiCuda~\cite{hicuda}. The approach taken by these models
-is to make a implementation GPU ready by placing directives which make
-execution of loops parallel. In contrast, SIA exploits coarse grained
+is to make an implementation GPU ready by placing directives which make
+execution of loops parallel. In contrast, SIA exploits coarse-grained
 concurrency using super instructions and super numbers or blocks by executing
-super instruction on GPU. These super instructions in turn exploit fine grained
+the super instruction on GPU. These super instructions, in turn, exploit fine-grained
 concurrency and can make use of above models to make an existing CPU implementation
-GPU ready by inserting suitable directives or have a completely rewritten low level
+GPU ready by inserting suitable directives or have a completely rewritten low-level
 CUDA implementation. Thus these models work \textit{with} the previously mentioned
 models rather than against them.
 
@@ -34,31 +34,31 @@ GPU in a highly optimized form. These implementations have hardware specific
 optimizations, and are not generic enough to remain effective as new hardware
 development takes place.
 
-One of the implementation of contraction operators on a GPU by
+One of the implementations of contraction operators on a GPU by
 Ma~et~al.~\cite{Ma2013} generates CUDA code to directly implement the contractions
 by optimizing for the particular order of indices in the contractions. This, as
-compared to using permutations and then two dimensional matrix-matrix multiplication
+compared to using permutations and then two-dimensional matrix-matrix multiplication
 as implemented in SIA, should achieve better performance for a contraction. These
 specialized CUDA contraction implementations were added to NWChem, a computational
 chemistry package, and considerable speedups are reported for CCSD(T) calculation
 on CPU/GPU hybrid systems. Such optimized operators can be incorporated into SIA
-and be provided as built in block super instruction for contraction.
+and be provided as built-in block super instruction for contraction.
 
-\subsection{GPU Programming in Other High Level Programming Languages}
-Several attempts for support for GPU in general purpose high level programming
+\subsection{GPU Programming in Other High-Level Programming Languages}
+Several attempts for support for GPU in general purpose high-level programming
 languages have been made. A few examples include PyCUDA~\cite{pycuda2011},
-jCUDA~\cite{jcuda2009} and Chapel~\cite{chapelgpu}. These toolkits gives an interface
-to GPU from high level programming languages such as Python and Java but
-programmer still needs to deal with low level GPU book keeping such as memory
-management and defining kernels. Whereas in SIA, once the superinstructions are
-defined, runtime can jump between GPU and CPU implementation transparently to
+jCUDA~\cite{jcuda2009} and Chapel~\cite{chapelgpu}. These toolkits give an interface
+to GPU from high-level programming languages such as Python and Java but
+programmer still needs to deal with low-level GPU bookkeeping such as memory
+management and defining kernels. Whereas in SIA, once the super instructions are
+defined, the runtime can jump between GPU and CPU implementation transparently to
 the domain programmer, the runtime takes care of memory management and GPU
-implementations of common operations on blocks are build into the runtime.
+implementations of common operations on blocks are built into the runtime.
 
 \subsection{GPU in Previous Versions of ACES}
 There has been work done previously to exploit GPU in Super Instruction
 Architecture by Jindal~et~al~\cite{Jindal2016} in ACESIII. This implementation
-required programmer to mark a block of code to be executed on GPU using
+required the programmer to mark a block of code to be executed on GPU using
 directives \texttt{gpu\_on} and \texttt{gpu\_off} and manually manage memory
 transfer to and from GPU. Executing operations on small blocks on GPU can
 actually be slower than executing on CPU due to time spent in memory transfer and
@@ -69,20 +69,20 @@ of executing it on GPU becomes significant.
 
 \section{Prefetching}
 Prefetching is an old technique~\cite{anacker68}\cite{Smith1982}\cite{Vanderwiel2000}
-used to get data up in memory hierarchy before they are actually needed by processor
-with the aim to hide the data access latency due to difference in speed to access
-data. A variety of approaches, including hardware prefetching and caching, compiler
-techniques, pre-execution and runtime execution, have been implemented in high
-performance computing.
+used to get data up in memory hierarchy before they are actually needed by the processor
+with the aim to hide the data access latency due to the difference in speed to access
+data. A variety of approaches, including hardware prefetching, and caching, compiler
+techniques, pre-execution and runtime execution, have been implemented in
+high-performance computing.
 
 Hardware prefetching techniques including techniques such as transferring separate
 cache blocks~\cite{Smith1978} were implemented much before software techniques were
-implemented. Porterfield~\cite{Porterfield1989} introduced idea of software prefetching
+implemented. Porterfield~\cite{Porterfield1989} introduced the idea of software prefetching
 using special instruction to preload values into the cache without blocking the
 computation. Using this instruction the compiler can inform the cache over 100
 cycles before a load is required.
 
-Prefetching is also exploited in area of disk IO apart from feeding processor cache
+Prefetching is also exploited in the area of disk IO apart from feeding processor cache
 from memory. Patterson et al~\cite{Patterson1994} implemented informed prefetching
 mechanism for IO intensive application to exploit highly parallel IO systems. The
 mechanism depends on disclosure of future access dynamically.
@@ -97,21 +97,21 @@ prefetched blocks. If the prefetch efficiency exceeds a threshold then K is
 incremented and decremented if it drops below a lower threshold. The value of K
 can reach 0, effectively disabling prefetching.
 
-There had been work done by Bhatia et al~\cite{Bhatia2010} to determine size of
-cache to maximize hit rate in a sequential prefetching scheme. In this work, an
+There had been work done by Bhatia et al~\cite{Bhatia2010} to determine the size of
+the cache to maximize hit rate in a sequential prefetching scheme. In this work, an
 online algorithm is devised which saves the blocks evicted from prefetch cache
 into another cache, \textit{evicted cache}. If the incoming request is satisfied
-by evicted cache, according to the algorithm the size of prefetch cache is too
-small and it increases it. If the request hits prefetch cache or there is miss
+by the evicted cache, according to the algorithm the size of prefetch cache is too
+small and it increases it. If the request hits prefetch cache or there is a miss
 on both of caches then the algorithm leaves the size unchanged. To determine if
 the cache size is too large, the eviction cache is observed and if eviction cache
 receives no hits then the size of cache is decremented.
 
 In SIA, blocks which are needed to be prefetched can be predicted with more accuracy
-than memory blocks. Further exact sequence in which blocks are needed is also known.
+than memory blocks. Further, the exact sequence in which blocks are needed is also known.
 This makes prefetching in SIA free of few of the problems faced in general memory
 block prefetching discussed in above section. Similar to the problems faced in general
 memory prefetching, it is difficult to predict how many blocks to prefetch. But
-once block is prefetched and computed on, the block can be safely evicted from
+once the block is prefetched and computed on, the block can be safely evicted from
 memory. The problem of how many blocks to prefetch is related to how much memory
 should be allocated for prefetching.

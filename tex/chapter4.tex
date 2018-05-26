@@ -4,8 +4,8 @@ This chapter presents the idea of prefetching block data from a server to hide t
 network transfer time.
 
 \section{Background}\label{prefetchingbackground}
-To process a large array which cannot fit into memory of a single node, a typical
-workflow in SIAL consists of requesting a block of array from a server in a
+To process a large array which cannot fit into the memory of a single node, a typical
+workflow in SIAL consists of requesting a block of an array from a server in a
 \texttt{pardo} looping construct by each participating worker. After processing
 it, the resulting block is sent back to the server. This common pattern can be
 summarized as single or multiple network bound operation surrounding one or more
@@ -32,41 +32,41 @@ compute bound operations.
 It is clear from the pseudocode that the computing resources are wasted while
 waiting for the data to be ready. To improve the wait time of the compute
 operation, non-blocking MPI call \texttt{MPI\_Irecv} was exploited to prefetch
-the blocks from servers over network.
+the blocks from servers over the network.
 
 \section{Implementation of Prefetching}
 
 \subsection{pardo Loop Implementation}
 While the \texttt{do} loop which iterates over the indices one by one in SIAL is
-simple, there are multiple implementation of \texttt{pardo} loop, which differ
-in the distribution of indices and thus distribution of blocks over workers:
+simple, there are multiple implementations of \texttt{pardo} loop, which differ
+in the distribution of indices and thus the distribution of blocks over workers:
 \begin{itemize}
-\item \texttt{SequentialPardoLoop}: it behaves similar to a simple do loop,
-  except this loop can loop over multiple indices.
+\item \texttt{SequentialPardoLoop}: it behaves similarly to a simple do loop,
+  except this loop, can loop over multiple indices.
 \item \texttt{StaticTaskAllocParallelPardoLoop}: the indices for this loop are
   determined statically by distributing the block over workers in a cyclic fashion.
 \item \texttt{BalancedTaskAllocParallelPardoLoop}: to support symmetric arrays,
   SIAL has \texttt{where} construct in loops which prunes the iteration based on
-  some programmer defined condition. Due to such pruning there is a non zero
+  some programmer-defined condition. Due to such pruning, there is a non zero
   probability that all of the iterations are assigned to one particular worker.
   This loop evaluates the \texttt{where} clauses and distributes the valid iteration
   over workers in a balanced way.
-\item \texttt{FragLoopManager} and its sub classes: SIAL supports large sparse
+\item \texttt{FragLoopManager} and its subclasses: SIAL supports large sparse
   arrays. To loop over them efficiently SIAL has various implementations of
-  fragmented pardo loops. These loops have knowledge of internal structure of the
-  sparse arrays and thus can skip over rows and columns having non useful values.
+  fragmented pardo loops. These loops have knowledge of the internal structure of the
+  sparse arrays and thus can skip over rows and columns having no useful values.
 \end{itemize}
 Due to so many varieties of implementation of \texttt{pardo} looping construct
 and to support future implementations of indices generation schemes, it is
 important to keep the mechanism of prefetching separate from indices generation.
-For this a lazy prefetching mechanism was implemented which will probe for indices
-as needed dynamically. A lazy implementation would also give freedom to vary number
+For this, a lazy prefetching mechanism was implemented which will probe for indices
+as needed dynamically. A lazy implementation would also give freedom to vary the number
 of prefetched blocks at runtime.
 
 \subsection{Lazy Indices Probing}
 Each class implementing \texttt{pardo} have a function \texttt{update} which
-calculates the values of set of indices and populates interpreter state. This
-state is used by interpreter to calculate blocks using array and index values.
+calculates the values of the set of indices and populates the interpreter state. This
+state is used by interpreter to calculate blocks using an array and index values.
 
 %\hline
 \begin{algorithm}  {$update\_indices() \rightarrow bool$}
@@ -101,9 +101,9 @@ into multiple procedures:
 
 \begin{itemize}
 \item \texttt{get\_next\_indices} produces set of \textit{next} indices purely
-  based on indices passed as parameter rather than getting directly from interpreter
-  state. This allows us to produce series of indices independent of state of
-  interpreter.
+  based on indices passed as a parameter rather than getting directly from interpreter
+  state. This allows us to produce series of indices independent of the state of
+  the interpreter.
   \begin{algorithm}  {get\_next\_indices([index]) $\rightarrow$ [index]}
     \singlespacing
 
@@ -121,10 +121,10 @@ into multiple procedures:
   \end{algorithm}
 
 \item \texttt{peek\_indices} returns set of indices and internally takes care of
-  maintaining and creating list of indices \textit{lazily}. It calls the procedure
+  maintaining and creating a list of indices \textit{lazily}. It calls the procedure
   \texttt{get\_next\_indices} to produce next set of indices by passing the last
-  set of indices in the list as needed. It increases the length of list by 1 if
-  the set of indices requested for is last one in the list and there are more indices
+  set of indices in the list as needed. It increases the length of the list by 1 if
+  the set of indices requested for is the last one on the list and there are more indices
   in the loop.
 
   \begin{algorithm}  {peek\_indices(IndexList::iterator) $\rightarrow$ [index], IndexList::iterator}
@@ -147,9 +147,9 @@ into multiple procedures:
     \end{algorithmic}
   \end{algorithm}
 
-\item \texttt{prefetch\_indices} remembers the last set of indices returned to each
+\item \texttt{prefetch\_indices} remember the last set of indices returned to each
   \texttt{GET} statement and returns the next set of indices on call. It remembers
-  by mapping the position of indices in list to \texttt{line numbers} of each
+  by mapping the position of indices in the list to \texttt{line numbers} of each
   \texttt{GET}. This makes varying the number of prefetched blocks for each
   \texttt{GET} possible.
 
@@ -207,12 +207,12 @@ into multiple procedures:
       \draw[*->] (map-2-2.center) to[out=0, in=270] (B.south);
       \draw[*->] (map-3-2.center) to[out=0, in=270] (C.south);
     \end{tikzpicture}
-    \caption{\texttt{prefetch\_indices} saves mapping of line number to position in list} \label{fig:prefetch_indices map}
+    \caption{\texttt{prefetch\_indices} saves mapping of line number to position in the list} \label{fig:prefetch_indices map}
   \end{figure}
 
 \item \texttt{update} is now changed to simply pop the first set of indices from
   the list and update interpreter state so that other modules can find the value
-  of current indices. This decreases the length of list by 1.
+  of current indices. This decreases the length of the list by 1.
   \begin{algorithm}  {update\_indices() $\rightarrow$ bool}
     \singlespacing
 

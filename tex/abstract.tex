@@ -4,25 +4,25 @@
   engineered to work on large blocks of floating point numbers. Looping constructs
   \texttt{do} and \texttt{pardo} are one of the most important constructs in Super
   Instruction Assembly Language (SIAL) since they allow the programmer to work
-  with individual block. To improve the runtime performance of the looping constructs
+  with an individual block. To improve the runtime performance of the looping constructs
   two techniques are used: improving GPU utilization and using prefetching to
   hide network latency.\\
 
   In previous versions, the domain programmer was needed to manually transfer blocks between main memory
   and GPU memory and to mark parts of SIAL code to be executed on GPU. Copying data
-  between GPU memory and main memory is costly and have high impact on overall
+  between GPU memory and main memory is costly and have a high impact on overall
   performance of GPU execution. Automatic memory management is provided
   and various techniques are implemented to reduce and in some cases eliminate
   GPU memory and main memory transfer cost.\\
 
-  There is a common code pattern in SIAL to request block of data followed by
+  There is a common code pattern in SIAL to request a block of data followed by
   computation on that block. This pattern makes inefficient use of network resource
-  and compute resource since one remains under utilized when other is used.
-  Deterministic request of blocks have been exploited
+  and compute resource since one remains underutilized when other is used.
+  Deterministic request of blocks has been exploited
   to implement prefetching to optimally utilize network resources during the time
   compute resources have blocked the control flow.\\
 
-  Various experiments have been conducted to evaluate effect of change of various
+  Various experiments have been conducted to evaluate the effect of change of various
   parameters on GPU utilization, prefetching, \texttt{wait\_time} and overall
   computation time.
 \end{abstract}

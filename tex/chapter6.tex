@@ -1,10 +1,10 @@
 \chapter{EXPERIMENTS AND RESULTS}\label{results}
 
-This thesis present a few of the possible performance optimizations on looping
+This thesis presents a few of the possible performance optimizations on looping
 constructs for SIA. These optimizations primarily aimed to reduce the network
 operation cost and computing cost. This section describes series of experiments
 conducted by varying input parameters such as block size as well as the optimization
-parameters such as number of blocks to prefetch and its effects on the performance
+parameters such as the number of blocks to prefetch and its effects on the performance
 of the system.
 
 \section{Environment}
@@ -93,18 +93,18 @@ parameters and tradeoffs involved in the selection of the parameters.
 \subsection{\texttt{hit\_ratio}}\label{sec:hit_ratio}
 To understand the performance of the prefetching mechanism a new metric is introduced.
 Prefetch \texttt{hit\_ratio} is defined as the ratio of the number of times the
-SIA runtime did not have to block for a certain data block to be ready and total
+SIA runtime did not have to block for a certain data block to be ready and the total
 number of times the data block is accessed:
 \[
   \texttt{hit\_ratio} = \frac{number~of~times~no~blocking~required}{total~number~of~times~data~accessed}
 \]
 The \texttt{hit\_ratio} represents the number of times prefetching was successful
 to hide network transfer cost. In the following experiments \texttt{hit\_ratio}
-will be used where appropriate to measure effectiveness of parameters in prefetching.
+will be used where appropriate to measure the effectiveness of parameters in prefetching.
 
 \subsection{Index Length}
 The length of indices is the length of the range of indices involved in the loop.
-The length of indices can have high impact on prefetching. To study this relation
+The length of indices can have a high impact on prefetching. To study this relation
 between index length and prefetching, \texttt{hit\_ratio} is observed by varying
 the range of indices. This is presented in figure~\ref{fig:hitratio}.
 \begin{figure}[h]
@@ -117,16 +117,16 @@ Note that the runtime has to block for data only first time it accesses a block.
 Subsequent accesses do not need any blocking since the data is ready. Hence the
 \texttt{hit\_ratio} with no prefetching is non zero.
 
-If a index spans only 1 then there is no scope for the runtime to do prefetching.
+If an index spans only 1 then there is no scope for the runtime to do prefetching.
 This is evident from the plot when index length is 1, the \texttt{hit\_ratio} with
-prefetching is equal to with no prefetching. As range of index length increased,
+prefetching is equal to with no prefetching. As the range of index length increased,
 prefetching gets working. This can be easily observed from exponential growth in
-\texttt{hit\_ratio}. And eventually the curve for \texttt{hit\_ratio} flattens out
+\texttt{hit\_ratio}. And eventually, the curve for \texttt{hit\_ratio} flattens out
 after 6 since no significant improvement is achieved by increasing the index range
 length.
 
 It is observed that as the runtime requests for multiple blocks for prefetching,
-the first request to the server takes longer as number of index range increases. This
+the first request to the server takes longer as the number of index range increases. This
 side effect can be explained using the preceding observation about \texttt{hit\_ratio}.
 Since the increase in index range length activates prefetching the first request
 to the server becomes costlier. This is presented in figure~\ref{fig:p_first_mean}.
@@ -137,8 +137,8 @@ to the server becomes costlier. This is presented in figure~\ref{fig:p_first_mea
 \end{figure}
 
 It can be concluded from previous observation that prefetching increases the time
-for the first request to the server. Thus to compensate for the high cost of first
-iteration by offsetting it in subsequent iterations the length of index range to
+for the first request to the server. Thus to compensate for the high cost of the first
+iteration by offsetting it in subsequent iterations the length of the index range to
 should be sufficient enough. The mean time taken per iteration is plotted against
 the length of index range in figure~\ref{fig:p_np_mean}.
 
@@ -149,16 +149,16 @@ the length of index range in figure~\ref{fig:p_np_mean}.
 \end{figure}
 
 The length of index should be around 5 to decrease the \texttt{wait\_time\_}
-by factor of 2. The mean \texttt{wait\_time} per iteration with prefetching can
+by a factor of 2. The mean \texttt{wait\_time} per iteration with prefetching can
 reduce up to 3 times as compared to with no prefetching if the length of index
 length is greater than 9.
 
 \subsection{Block Size}
-Since the time to transfer block over network is related to size of the block, the
+Since the time to transfer block over the network is related to the size of the block, the
 block size affects the first request made during prefetching. Along with the first
 request, multiple requests for prefetching subsequent blocks are made. This makes
 the \texttt{wait\_time\_} for first call sensitive to block size. This is evident
-from the graph plotting Block Size against mean \texttt{wait\_time} for first
+from the graph plotting Block Size against mean \texttt{wait\_time} for the first
 iteration in figure~\ref{fig:first_wait_time}.
 \begin{figure}[h]
   \input{results/block_size/first_wait_time}
@@ -166,9 +166,9 @@ iteration in figure~\ref{fig:first_wait_time}.
   \label{fig:first_wait_time}
 \end{figure}
 
-As the block size increases, \texttt{wait\_time\_} for first iteration for loops
+As the block size increases, \texttt{wait\_time\_} for the first iteration for loops
 with prefetch grows much faster than loops without prefetch. At block of size
-greater than 500 elements \texttt{wait\_time\_} for first iteration with prefetch
+greater than 500 elements \texttt{wait\_time\_} for the first iteration with prefetch
 is almost twice the corresponding \texttt{wait\_time\_} without prefetch.
 
 But once the first request for blocks is made, subsequent iterations are not affected
@@ -192,19 +192,19 @@ loops with and without prefetch are summarized in figure~\ref{fig:block_size_avg
   \label{fig:block_size_avg_all}
 \end{figure}
 
-Although the \texttt{wait\_time\_} for first iteration grows at the highest rate,
+Although the \texttt{wait\_time\_} for the first iteration grows at the highest rate,
 prefetching compensates for it and keeps the mean \texttt{wait\_time\_} lower than
 without prefetching subsequent blocks.
 
 \subsection{Number of Blocks to Prefetch}
 As stated in previous sections, prefetching affects the first request to the server
-and the size of the block also affects the first request. To observe effect of
-number of blocks to prefetch on the initial request, the number of blocks were
-varied and plotted against mean \texttt{wait\_time\_} for first request. This is
+and the size of the block also affects the first request. To observe the effect of
+the number of blocks to prefetch on the initial request, the number of blocks were
+varied and plotted against mean \texttt{wait\_time\_} for the first request. This is
 presented in figure~\ref{fig:look_ahead_first_wait_time}.
 \begin{figure}[h]
   \input{results/look_ahead/first_wait_time}
-  \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for the first request}
   \label{fig:look_ahead_first_wait_time}
 \end{figure}
 
@@ -213,7 +213,7 @@ grows linearly with the number of blocks to prefetch. Thus the number of blocks
 to prefetch cannot be set at very high number unless the length of index range is
 known to be large.
 
-To determine the effect of number of block to prefetch to prefetching, the number
+To determine the effect of the number of blocks to prefetch to prefetching, the number
 of blocks to prefetch was varied and is plotted against the mean \texttt{wait\_time\_}.
 This plot is presented in figure~\ref{fig:look_ahead_avg_wait_time}.
 \begin{figure}[h]
@@ -222,10 +222,10 @@ This plot is presented in figure~\ref{fig:look_ahead_avg_wait_time}.
   \label{fig:look_ahead_avg_wait_time}
 \end{figure}
 
-For the case when the number of block prefetched is 0, which is in the case of no
+For the case when the number of blocks prefetched is 0, which is in the case of no
 prefetching the mean \texttt{wait\_time\_} is highest. It drops sharply as the
-number of blocks to prefetch increases and then it grows again as increase in number
-of blocks to prefetch increases the \texttt{wait\_time\_} for first request to
+number of blocks to prefetch increases and then it grows again with an increase in the number
+of blocks to prefetch increases the \texttt{wait\_time\_} for the first request to
 the server.
 
 As the number of blocks to prefetched is increased, more blocks are available for
@@ -234,17 +234,17 @@ by plotting number of blocks to prefetch against \texttt{hit\_ratio}.
 
 \begin{figure}[h]
   \input{results/look_ahead/hit_ratio}
-  \caption{Number of Block Prefetched v/s Hit Ratio for first request}
+  \caption{Number of Block Prefetched v/s Hit Ratio for the first request}
   \label{fig:look_ahead_hit_ratio}
 \end{figure}
 
-Hit ratio saturates after hitting a critical amount. There is no much use after
-that to increase number of blocks to prefetch. This explains the rise in mean
-\texttt{wait\_time\_} as \texttt{wait\_time\_} for first request grows and the
+Hit ratio saturates after hitting a critical amount. After that increase, the number
+of blocks to prefetch has no effect. This explains the rise in mean
+\texttt{wait\_time\_} as \texttt{wait\_time\_} for the first request grows and the
 number of blocks available without blocking stays constant.
 
 \subsection{$C_{12}H_{10}(BP)$ Molecule}\label{sec:bp_molecule}
-To study the effect of prefetching on real world application, a job from ACES4 on
+To study the effect of prefetching on real-world application, a job from ACES4 on
 $C_{12}H_{10}$ molecule was executed. The total number of workers were 3 and number
 of servers were varied to study its effect on prefetching. This is plotted in
 figure~\ref{fig:prefetch_real}.
@@ -255,12 +255,12 @@ figure~\ref{fig:prefetch_real}.
   \label{fig:prefetch_real}
 \end{figure}
 
-As number of server increase the overall run time for programs with prefetching
-decreases. This is clear from figure~\ref{fig:prefetch_real}, as the difference
-in run time of programs without prefetch and prefetch increase. It is worth noticing
-that the only couple of programs show significant increase in difference while one
+With the increase in the number of servers, the overall runtime for programs with
+prefetching decreases. This is clear from figure~\ref{fig:prefetch_real}, as the difference
+in the runtime of programs without prefetch and prefetch increase. It is worth noticing
+that the only couple of programs show a significant increase in difference while one
 of the programs shows no difference in prefetching and no prefetching. To study
-why this is the case, total \texttt{wait\_time} of the programs is plotted in
+why this is the case, the total \texttt{wait\_time} for the programs is plotted in
 figure~\ref{fig:prefetch_real_barrier}.
 
 In the figure~\ref{fig:prefetch_real_barrier}, along with \texttt{wait\_time},
@@ -269,7 +269,7 @@ In the figure~\ref{fig:prefetch_real_barrier}, along with \texttt{wait\_time},
 and rest two have considerably less \texttt{barrier wait\_time} as compared to
 overall \texttt{wait\_time}. This explains why only two of the 3 programs showed
 significant improvement by prefetching since prefetching helps in reducing \texttt{wait\_time}
-for block to be transfered over the network. The program \texttt{sch\_rhf} did not
+for the block to be transferred over the network. The program \texttt{sch\_rhf} did not
 have much \texttt{wait\_time} for network transfer.
 
 \begin{figure}[h]
@@ -284,13 +284,13 @@ have much \texttt{wait\_time} for network transfer.
 \end{figure}
 \section{GPU}
 This section presents the experiments performed to benchmark the performance of
-using Graphic Processing Unit.
+using Graphics Processing Unit.
 \subsection{Memory Pinning}
 Many of the optimization of involves page locking the host memory so that GPU can
 bypass processor and access the memory directly. This section presents various
-operations which exploits page locked memory.
+operations which exploit page locked memory.
 \subsubsection{Copy Speed}
-GPU can access only page locked memory. Without explicit page locked memory, the
+GPU can access only page-locked memory. Without explicit page-locked memory, the
 GPU driver first copies the memory to a temporary page locked memory and then copies
 to GPU buffer. By explicitly page locking memory, saving one copy operation is expected.
 Figure~\ref{fig:mempin_block_copy} presents varying block size against time to
@@ -330,18 +330,18 @@ copy block.
     12960000   & 0.009527120 & 0.015224000 \\
     \hline
   \end{tabular}
-  \caption{Block size against time taken to copy data in page locked and non page locked memory}
+  \caption{Block size against time taken to copy data in page locked and non-page locked memory}
   \label{tab:mempin_block_copy}
 \end{table}
 
 It is evident from the plot and table~\ref{tab:mempin_block_copy} that explicit
-page locking only results in faster memory copy if the size of block is above
+page locking only results in faster memory copy if the size of the block is above
 1600 elements. After the size of block crosses a threshold the pinned blocks are
-copied almost twice as fast as compared to non pinned blocks.
+copied almost twice as fast as compared to non-pinned blocks.
 
 \subsection{Optimized Transfer}
 The block transfer optimization considers whether the block is requested with
-intention of being read or written. Hence to benchmark this optimization real world
+intention of being read or written. Hence to benchmark this optimization real-world
 test case is needed. Here \texttt{rccsd\_rhf.sialx} is used to investigate the
 number of transfers saved by exploiting the intent. This is presented in
 figure~\ref{fig:optimized_block_transfer}.
@@ -353,15 +353,15 @@ figure~\ref{fig:optimized_block_transfer}.
 \end{figure}
 
 \subsection{Memory Pinning Overhead}
-To benchmark the page lock memory allocation against non page locked memory allocation
+To benchmark the page lock memory allocation against non-page locked memory allocation
 such as allocated using \texttt{malloc} function call, two tests were done. The
 first test benchmarks allocation and second benchmarks the deallocation. These two
 operations are presented in figure~\ref{fig:mempin_alloc} and figure~\ref{fig:mempin_free}
-by plotting time taken by page locked operations against non page locked operations.
+by plotting time taken by page locked operations against non-page locked operations.
 
 \subsubsection{\texttt{alloc}}
 Table~\ref{tab:mempin_alloc} describes the time taken for page locked memory allocation
-and non page locked memory allocation.
+and non-page locked memory allocation.
 \begin{table}[h]
   \centering
   \begin{tabular}{l | l | l}
@@ -379,7 +379,7 @@ and non page locked memory allocation.
     3025       & 1.91461e-05         & 3.29316e-06             \\
     \hline
   \end{tabular}
-  \caption{Block Size against Page locked and non page locked memory allocation}
+  \caption{Block Size against Page locked and non-page locked memory allocation}
   \label{tab:mempin_alloc}
 \end{table}
 
@@ -389,15 +389,15 @@ and non page locked memory allocation.
   \label{fig:mempin_alloc}
 \end{figure}
 
-It is clear from table~\ref{tab:mempin_alloc} and figure~\ref{fig:mempin_alloc}
-that the time required to allocate both page locked and non page locked memory
+It is clear from the table~\ref{tab:mempin_alloc} and the figure~\ref{fig:mempin_alloc}
+that the time required to allocate both page locked and non-page locked memory
 is independent of the size of memory requested. But the allocating page locked
-memory can be around 10 to 100 times costlier than non page locked memory.
+memory can be around 10 to 100 times costlier than non-page locked memory.
 
 \subsubsection{\texttt{free}}
-Similar test was performed to benchmark page locked and non page locked memory
+A similar test was performed to benchmark page locked and non-page locked memory
 deallocation. Table~\ref{tab:mempin_free} describes the time taken by the deallocation
-operation against varying size of block.
+operation against the varying size of the block.
 
 \begin{table}[h]
   \centering
@@ -416,7 +416,7 @@ operation against varying size of block.
     3025       & 2.70978e-05        & 2.64496e-07            \\
     \hline
   \end{tabular}
-  \caption{Block size against Page locked and non page locked memory deallocation}
+  \caption{Block size against Page locked and non-page locked memory deallocation}
   \label{tab:mempin_free}
 \end{table}
 
@@ -426,13 +426,13 @@ operation against varying size of block.
   \label{fig:mempin_free}
 \end{figure}
 
-The results are similar to page locked and non page locked allocation, the time
-taken for page locked and non page locked memory deallocation is independent of
+The results are similar to page locked and non-page locked allocation, the time
+taken for page locked and non-page locked memory deallocation is independent of
 the size of the block. Page locked memory deallocation is around 100 times costlier
-than non page locked memory deallocation.
+than non-page locked memory deallocation.
 
 \subsection{RDMA}
-To benchmark RDMA, CUDA aware implementation of MPI was used. The size of block
+To benchmark RDMA, CUDA aware implementation of MPI was used. The size of the block
 was varied against CPU and GPU buffer passed to MPI transfer functions. The results
 for \texttt{GET} operation are presented in figure~\ref{fig:mempin_rdma_get}.
 
@@ -460,7 +460,7 @@ notice:
 There is not much of difference in time in \texttt{PUT} operation, as presented
 in figure~\ref{fig:mempin_rdma_put}. The time taken by passing main memory address,
 page locked main memory address and GPU memory address to MPI function varies slightly
-as size of block increases.
+as the size of block increases.
 
 \begin{figure}[h]
   \input{results/mempin/rdma/put}
@@ -469,10 +469,10 @@ as size of block increases.
 \end{figure}
 
 \subsubsection{Total Transfer}
-Even though there is not much improvement in speed if address of GPU memory is
+Even though there is not much improvement in speed if the address of GPU memory is
 passed to MPI function, by passing GPU address directly the complete operation
 can be executed on GPU without requiring the data to be copied to main memory. This
-saves two GPU memory and main memory copy operations and thus get substantial improvement
+saves two GPU memory and main memory copy operations and thus get a substantial improvement
 in speed of overall operation. The time spent on overall operation is plotted in
 figure~\ref{fig:mempin_rdma_total}.
 
@@ -488,8 +488,8 @@ for block sizes of around 3000.
 
 \subsection{Caching Page Locked Blocks}
 Caching page locked memory blocks is important since allocating page locked memory
-is 100 times costlier than non page locked memory. To test caching two parameters
-have been selected as most appropriate: hit ratio and time spend in allocation with
+is 100 times costlier than non-page locked memory. To test caching two parameters
+have been selected as most appropriate: hit ratio and time spent in allocation with
 and without caching.
 
 \textit{Hit Ratio} is simply the ratio of number of times allocation request was
@@ -499,7 +499,7 @@ was made.
   \texttt{hit\_ratio} = \frac{number~of~times~memory~allocation~request~fulfilled~by~cached~block}{total~number~of~memory~allocation~requests~made}
 \]
 
-Since the Hit Ratio does not depend on size of memory block requested for, rather
+Since the Hit Ratio does not depend on the size of memory block requested for, rather
 than depends on the pattern of allocation and deallocation, the hit ratio is calculated
 for real quantum chemistry calculation program. Table~\ref{tab:mempin_hitrate}
 presents the hit ratio for given calculation programs.
@@ -525,21 +525,21 @@ It is evident that cost of allocation of page locked memory is
 paid for only less than 20\% of the time for these programs.
 
 To study the effect of caching on actual allocation time, the time taken by actual
-allocation in the above mentioned programs is calculated for the cases when blocks
+allocation in the above-mentioned programs is calculated for the cases when blocks
 are cached and not cached. Time taken when page locking is not done altogether is
 also calculated to study the cost paid for page locking even after caching with
 respect to not page locking. The results are plotted in figure~\ref{fig:mempin_caching}.
 
 \begin{figure}[h]
   \input{results/mempin/caching/caching}
-  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non Page Locked allocation
+  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non-Page Locked allocation
   and deallocation times}
   \label{fig:mempin_caching}
 \end{figure}
 
 By caching the page locked memory blocks the allocation time is brought down by
-almost factor of 10. However this is still greater than allocation time spent in
-case of non page locked memory. This difference is difficult to plot, the numerical
+almost factor of 10. However, this is still greater than allocation time spent in
+case of non-page locked memory. This difference is difficult to plot, the numerical
 values of allocation time are presented in table~\ref{tab:mempin_caching}.
 
 \begin{table}[h]
@@ -555,11 +555,11 @@ values of allocation time are presented in table~\ref{tab:mempin_caching}.
     rccsdpt\_aab    & 0.0198253  & 0.00259629 & 4.97848e-05 \\
     \hline
   \end{tabular}
-  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non Page Locked allocation
+  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non-Page Locked allocation
   and deallocation times}
   \label{tab:mempin_caching}
 \end{table}
 
-The caching improves the time spend in allocation by factor of 10. However the time
-spent in non page locked memory allocation is still less than caching by factor
+The caching improves the time spent in allocation by a factor of 10. However the time
+spent in non-page locked memory allocation is still less than caching by a factor
 of 10 and in some cases around 100.
