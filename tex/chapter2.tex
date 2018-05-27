@@ -3,7 +3,7 @@
 We discuss work done by others in using GPU for scientific calculations using
 several methods such as directive based GPU programming models, using CUDA in
 higher level programming language and use of GPU in previous versions of ACES
-and the work done using in prefetching to hide latency in accessing data. We also look
+and the work done in using prefetching to hide latency in accessing data. We also look
 at work done in general idea of prefetching such as nonblocking fetch operation,
 techniques used to determine optimal prefetching parameters such as the number of
 blocks to prefetch, prefetch cache size.
@@ -42,7 +42,7 @@ as implemented in SIA, should achieve better performance for a contraction. Thes
 specialized CUDA contraction implementations were added to NWChem, a computational
 chemistry package, and considerable speedups are reported for CCSD(T) calculation
 on CPU/GPU hybrid systems. Such optimized operators can be incorporated into SIA
-and be provided as built-in block super instruction for contraction.
+and be provided as built-in super instruction for contraction.
 
 \subsection{GPU Programming in Other High-Level Programming Languages}
 Several attempts for support for GPU in general purpose high-level programming
@@ -50,22 +50,70 @@ languages have been made. A few examples include PyCUDA~\cite{pycuda2011},
 jCUDA~\cite{jcuda2009} and Chapel~\cite{chapelgpu}. These toolkits give an interface
 to GPU from high-level programming languages such as Python and Java but
 programmer still needs to deal with low-level GPU bookkeeping such as memory
-management and defining kernels. Whereas in SIA, once the super instructions are
-defined, the runtime can jump between GPU and CPU implementation transparently to
-the domain programmer, the runtime takes care of memory management and GPU
-implementations of common operations on blocks are built into the runtime.
+management and defining kernels. As described in section~\ref{relatedworkacesiiigpu},
+this is similar to ACESIII, wherein the programmer had to manually transfer memory
+between GPU and CPU. However, SIAL is a special purpose language and SIA runtime
+has information about block sizes and block operations. GPU implementation for
+some of the common block operations can defined into the language itself. With
+these implementation and the information about block, the runtime can jump between
+GPU and CPU implementation transparently to the domain programmer and takes care
+of memory management.
 
-\subsection{GPU in Previous Versions of ACES}
+\subsection{GPU in Previous Versions of ACES}\label{relatedworkacesiiigpu}
 There has been work done previously to exploit GPU in Super Instruction
 Architecture by Jindal~et~al~\cite{Jindal2016} in ACESIII. This implementation
 required the programmer to mark a block of code to be executed on GPU using
 directives \texttt{gpu\_on} and \texttt{gpu\_off} and manually manage memory
-transfer to and from GPU. Executing operations on small blocks on GPU can
+transfer to and from GPU. This puts the burden of managing memory and recognizing
+correct block of code suitable for execution on GPU, on the domain programmer.
+If non-suitable blocks of SIAL code is marked for executing on GPU, it can result
+in suboptimal use of resource. Executing operations on small blocks on GPU can
 actually be slower than executing on CPU due to time spent in memory transfer and
-insignificant gain in speed. Thus it is better to execute small blocks with 2
-indices on CPU and larger block with 4 and up indices on GPU. It was left to the
-SIAL programmer to take this call on which block is large enough so that benefit
-of executing it on GPU becomes significant.
+insignificant gain in speed. Thus it is better to execute small blocks on CPU and
+larger block on GPU. It can be a difficult decision for the SIAL programmer to decide
+if a block is large enough so that benefit of executing it on GPU becomes significant.
+
+\subsection{Optimizing GPU Memory Transfer}
+\subsubsection{Host Memory Transfer}
+GPU cannot work directly with pageable host memory. One of the key condition for
+effectively exploiting GPU is to optimally manage data transfer between host memory
+and GPU memory. This is true for any computation running on GPU and not just High
+Performance Computing computations. Work done by Fatica~\cite{Fatica:2009:ALC:1513895.1513901},
+in acceralating Linpack describes various ways for optimizing memory transfers. This
+implementation intercepts calls to DGEMM and DTRSM and executes them simultaneously
+on both GPUs and CPU cores. Memory allocated on host is pageable by default and GPU
+cannot access it. To achieve faster memory transfer the implementation uses fast
+\textit{PCI-E} transfers by page locking or \textit{pinning} the host memory. Using
+PCI-E transfer the speed improvement of 5 GB/s from 2 GB/s is reported.
+Kaldewey~et~al~\cite{Kaldewey:2012:GJP:2236584.2236592} describes similar technique
+to optimize memory transfer using common address space for CPU and GPU called as
+Unified Memory Addressing (UVA). This helps with memory transfers in two ways: it
+allows GPU to work with memory greater than available physical GPU memory and also relieves
+the programmer of the burden of managing two memory spaces. UVA requires that the
+host memory is page locked. Using UVA, sustained rate of 6.2 GB/s is reported.
+Host side memory page locking is common technique in both which enables DMA controller
+to access main memory at PCI-E speeds. This technique can be used to speed up the
+SIA block transfer. This can be built into the automatic memory synchronization
+so that it is transparent to the domain programmer.
+
+\subsubsection{Network Transfer}
+GPUs are often deployed in a cluster to accelerate computationally intensive
+general-purpose tasks. Still, for communication the GPUs need assistance from CPUs.
+This requires intermediate copies from the GPU memory to the host memory. To have
+a way around this inefficiency, NVIDIA has partnered with Mellanox to make GPUDirect
+RDMA available for InfiniBand clusters. Shainer~et~al~\cite{Shainer2011} introduces
+GPUDirect that enables GPUs to transfer data via InfiniBand without the  involvement
+of the CPU or buffer copies. Using GPUDirect RDMA, third party devices such as
+network adapters can access the GPU memory buffer directly, over PCI-E bus.
+Potluri~et~al~\cite{6687341} evaluated the GPUDirect RDMA for InfiniBand. They reported
+improvement in latency of MPI Send/MPI Recv by 69\% and 32\% for message size of
+4Byte and 128KByte and improvement in uni-directional bandwidth achieved using
+4KByte and 64KByte messages by 2x and 35\%, respectively.
+Although, GPUs are not allocated to the SIA servers, GPUDirect feature can still
+be exploited to bypass the worker CPUs and to push the GPU memory buffer to the network
+adapter. This can also be used to completely avoid host memory by collecting the
+SIA block in GPU memory, operating on it using GPU and sending it back bypassing
+CPU. This can help in reducing host and GPU memory transfers.
 
 \section{Prefetching}
 Prefetching is an old technique~\cite{anacker68}\cite{Smith1982}\cite{Vanderwiel2000}
