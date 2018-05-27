@@ -46,7 +46,7 @@ $(PREFETCH_REAL): results/prefetch_real/data.csv
 main.bbl: bib/References.bib
 	bibtex main
 
-main.pdf: $(TEX_FILES) main.bbl $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS) $(PREFETCH_REAL)
+main.pdf: $(TEX_FILES) $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS) $(PREFETCH_REAL)
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex

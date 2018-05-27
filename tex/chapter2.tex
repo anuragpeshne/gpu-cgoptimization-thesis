@@ -6,7 +6,7 @@ higher level programming language and use of GPU in previous versions of ACES
 and the work done in using prefetching to hide latency in accessing data. We also look
 at work done in general idea of prefetching such as nonblocking fetch operation,
 techniques used to determine optimal prefetching parameters such as the number of
-blocks to prefetch, prefetch cache size.
+blocks to prefetch and prefetch cache size.
 
 \section{GPGPU}
 This section discusses previous work done on General Purpose computing on Graphics
@@ -65,7 +65,7 @@ Architecture by Jindal~et~al~\cite{Jindal2016} in ACESIII. This implementation
 required the programmer to mark a block of code to be executed on GPU using
 directives \texttt{gpu\_on} and \texttt{gpu\_off} and manually manage memory
 transfer to and from GPU. This puts the burden of managing memory and recognizing
-correct block of code suitable for execution on GPU, on the domain programmer.
+the correct block of code suitable for execution on GPU, on the domain programmer.
 If non-suitable blocks of SIAL code is marked for executing on GPU, it can result
 in suboptimal use of resource. Executing operations on small blocks on GPU can
 actually be slower than executing on CPU due to time spent in memory transfer and
@@ -79,7 +79,7 @@ GPU cannot work directly with pageable host memory. One of the key condition for
 effectively exploiting GPU is to optimally manage data transfer between host memory
 and GPU memory. This is true for any computation running on GPU and not just High
 Performance Computing computations. Work done by Fatica~\cite{Fatica:2009:ALC:1513895.1513901},
-in acceralating Linpack describes various ways for optimizing memory transfers. This
+in accelerating Linpack describes various ways for optimizing memory transfers. This
 implementation intercepts calls to DGEMM and DTRSM and executes them simultaneously
 on both GPUs and CPU cores. Memory allocated on host is pageable by default and GPU
 cannot access it. To achieve faster memory transfer the implementation uses fast
@@ -91,20 +91,20 @@ Unified Memory Addressing (UVA). This helps with memory transfers in two ways: i
 allows GPU to work with memory greater than available physical GPU memory and also relieves
 the programmer of the burden of managing two memory spaces. UVA requires that the
 host memory is page locked. Using UVA, sustained rate of 6.2 GB/s is reported.
-Host side memory page locking is common technique in both which enables DMA controller
+Host side memory page locking is a common technique in both which enables DMA controller
 to access main memory at PCI-E speeds. This technique can be used to speed up the
 SIA block transfer. This can be built into the automatic memory synchronization
 so that it is transparent to the domain programmer.
 
 \subsubsection{Network Transfer}
 GPUs are often deployed in a cluster to accelerate computationally intensive
-general-purpose tasks. Still, for communication the GPUs need assistance from CPUs.
+general-purpose tasks. Still, for communication the GPUs need assistance from the CPUs.
 This requires intermediate copies from the GPU memory to the host memory. To have
 a way around this inefficiency, NVIDIA has partnered with Mellanox to make GPUDirect
 RDMA available for InfiniBand clusters. Shainer~et~al~\cite{Shainer2011} introduces
 GPUDirect that enables GPUs to transfer data via InfiniBand without the  involvement
-of the CPU or buffer copies. Using GPUDirect RDMA, third party devices such as
-network adapters can access the GPU memory buffer directly, over PCI-E bus.
+of the CPU or buffer copies. Using GPUDirect RDMA, third-party devices such as
+network adapters can access the GPU memory buffer directly, over the PCI-E bus.
 Potluri~et~al~\cite{6687341} evaluated the GPUDirect RDMA for InfiniBand. They reported
 improvement in latency of MPI Send/MPI Recv by 69\% and 32\% for message size of
 4Byte and 128KByte and improvement in uni-directional bandwidth achieved using
@@ -153,7 +153,7 @@ by the evicted cache, according to the algorithm the size of prefetch cache is t
 small and it increases it. If the request hits prefetch cache or there is a miss
 on both of caches then the algorithm leaves the size unchanged. To determine if
 the cache size is too large, the eviction cache is observed and if eviction cache
-receives no hits then the size of cache is decremented.
+receives no hits then the size of the cache is decremented.
 
 In SIA, blocks which are needed to be prefetched can be predicted with more accuracy
 than memory blocks. Further, the exact sequence in which blocks are needed is also known.
