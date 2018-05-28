@@ -22,11 +22,11 @@ Still, there is a need for the SIAL programmer to decide which portion of the SI
 is suited for execution on GPU. Transferring data between GPU and main memory is
 expensive, and can dominate the overall time spent in computation. Hence, marking
 which block of code is suitable for execution on GPU is not
-a trivial decision. This, also depends on various factors such as
-the size of the blocks involved and the super instructions in the code block marked
+a trivial decision. Time taken for transfering data depends on various factors such as
+the size of the blocks involved and the super instructions in the code-block, marked
 for execution on GPU.
 Larger blocks need more time to transfer between GPU and main memory, but at the
-same time, the speed improvement obtained by GPU operating on blocks grows
+same time, the speed improvement obtained by execution on GPU grows
 exponentially with the size of the block. Lastly, same SIAL programs are used to
 calculate different results by supplying different data files. It is possible that,
 for the same program, the overall time required for execution on GPU be greater
@@ -42,18 +42,18 @@ processing the block, computing resulting block and sending it back to a server.
 the operation of requesting block is nonblocking, subsequent operations
 which operate on the block, will wait until Message Passing Interface (MPI)
 transfer is completed. To reduce the overall cost of network
-transfer, prefetching has been implemented which does the transfer concurrently
-with the block processing. By prefetching the blocks that are anticipated for
+transfer, prefetching of blocks has been implemented, which does the transfer concurrently
+with the block processing. By prefetching the blocks that are anticipated in
 the next iteration of the loop, the wait~time for a block to be ready
 can be reduced and in some cases completely eliminated.
 
 \section{Organization of the Thesis}
 Chapter 2 presents literature study of the work done in use of GPU for general purpose
 computing, efficient GPU memory transfer, and the technique of prefetching to hide
-latency in accessing data. Then a background of this thesis, including architecture
+latency in accessing the data. Then a background of this thesis, including architecture
 and implementation of SIA and ACES4, is presented in chapter~3.
-Chapter 4 describes the technique of block prefetching that is implemented in SIA. Chapter 5
-presents the optimized use of GPU to execute SIAL code. Chapter 6 states the
+Chapter 4 describes the technique of block prefetching implemented in SIA. Chapter 5
+presents the optimizations done for efficient GPU memory transfer. Chapter 6 states the
 results of the benchmarks and experiments. And
 finally, chapter 7 concludes this thesis by presenting the conclusion and scope
 of future works.
