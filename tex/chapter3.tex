@@ -5,7 +5,7 @@ programming, the design of workers and servers, SIAL, parallel looping construct
 and design of GPU implementation.
 
 \section{SIA}
-The Super Instruction Architecture is a special purpose, domain agnostic,
+The SIA is a special purpose, domain agnostic,
 parallel programming framework which is engineered for solving very large
 computation. SIA expresses the computation in terms of multi-dimensional arrays and
 instructions to operate on them. This way of expressing is different from conventional programming
@@ -44,7 +44,7 @@ deployed and scaled on multiple nodes in a high performance computing cluster
 using MPI for interprocess communication. Since the
 multidimensional arrays involved in the calculations can be extremely large for
 the memory of a single processor, SIA divides the arrays into chunks of
-manageable size. These chunks are distributed to different processors and the
+manageable sizes. These chunks are distributed to different processors and the
 processors can work on the chunks concurrently.
 
 SIA supports arrays of size greater than the combined memory of all processors
@@ -73,7 +73,7 @@ programs like general purpose programming language, also provides special parall
 to define domain-specific block operation or \textit{super instruction}. The
 parallel looping construct, \texttt{pardo}, loops over multiple indices and
 distributes blocks to different processors. This construct is of special
-interest to us since the optimizations done using GPU are mostly done in the
+interest to us since the optimizations done using GPUs are mostly done in the
 interpretation of this looping construct.
 
 As mentioned above, domain experts can write their own domain-specific
@@ -117,7 +117,7 @@ for each memory and then updating the memory based upon the version numbers when
 memory is accessed.
 
 \section{Executing Super Instructions on GPU}
-There are two ways in which GPU are exploited in SIA to obtain high concurrency.
+There are two ways in which GPUs are exploited in SIA to obtain high concurrency.
 First, the super instructions can be written in close to device hardware CUDA
 programming language. These instructions can make use of low-level hardware
 features and domain knowledge to fine-tune the implementation. Secondly, some of

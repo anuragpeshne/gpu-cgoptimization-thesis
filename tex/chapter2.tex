@@ -17,13 +17,13 @@ There are several attempts in the area of directive-based programming models. Th
 attempts include OpenACC~\cite{openacc}, OpenMP for
 accelerator~\cite{openmpforaccelerators}, and less updated attempts including
 OpenMPC~\cite{openmpc} and hiCuda~\cite{hicuda}. The approach taken by these models
-is to make an implementation GPU ready by placing directives which make
+is to make an implementation GPU-ready by placing directives which make
 execution of loops parallel. In contrast, SIA exploits coarse-grained
 concurrency using super instructions and super numbers or blocks by executing
 the super instruction on GPU. These super instructions, in turn, exploit fine-grained
 concurrency and can make use of above models to make an existing CPU implementation
-GPU ready by inserting suitable directives or have a completely rewritten low-level
-CUDA implementation. Thus these models work \textit{with} the previously mentioned
+GPU-ready by inserting suitable directives or have a completely rewritten low-level
+CUDA implementation. Thus, these models work \textit{with} the previously mentioned
 models rather than against them.
 
 \subsection{GPU in Computational Chemistry}
@@ -54,22 +54,22 @@ management and defining kernels. As described in section~\ref{relatedworkacesiii
 this is similar to ACESIII, wherein the programmer had to manually transfer memory
 between GPU and CPU. However, SIAL is a special purpose language and SIA runtime
 has information about block sizes and block operations. GPU implementation for
-some of the common block operations can defined into the language itself. With
-these implementation and the information about block, the runtime can jump between
+some of the common block operations can be defined into the language itself. With
+these implementations and the information about block, the runtime can jump between
 GPU and CPU implementation transparently to the domain programmer and takes care
 of memory management.
 
 \subsection{GPU in Previous Versions of ACES}\label{relatedworkacesiiigpu}
-There has been work done previously to exploit GPU in Super Instruction
-Architecture by Jindal~et~al~\cite{Jindal2016} in ACESIII. This implementation
+There has been work done previously to exploit GPU in SIA
+by Jindal~et~al~\cite{Jindal2016} in ACESIII. This implementation
 required the programmer to mark a block of code to be executed on GPU using
 directives \texttt{gpu\_on} and \texttt{gpu\_off} and manually manage memory
-transfer to and from GPU. This puts the burden of managing memory and recognizing
-the correct block of code suitable for execution on GPU, on the domain programmer.
+transfer to and from GPU. This puts a burden of managing memory and recognizing
+the correct block of code suitable for execution on GPU on the domain programmer.
 If non-suitable blocks of SIAL code is marked for executing on GPU, it can result
 in suboptimal use of resource. Executing operations on small blocks on GPU can
 actually be slower than executing on CPU due to time spent in memory transfer and
-insignificant gain in speed. Thus it is better to execute small blocks on CPU and
+insignificant gain in speed. Thus, it is better to execute small blocks on CPU and
 larger block on GPU. It can be a difficult decision for the SIAL programmer to decide
 if a block is large enough so that benefit of executing it on GPU becomes significant.
 
@@ -82,7 +82,7 @@ Performance Computing computations. Work done by Fatica~\cite{Fatica:2009:ALC:15
 in accelerating Linpack describes various ways for optimizing memory transfers. This
 implementation intercepts calls to DGEMM and DTRSM and executes them simultaneously
 on both GPUs and CPU cores. Memory allocated on host is pageable by default and GPU
-cannot access it. To achieve faster memory transfer the implementation uses fast
+cannot access it. To achieve faster memory transfer, the implementation uses fast
 \textit{PCI-E} transfers by page locking or \textit{pinning} the host memory. Using
 PCI-E transfer the speed improvement of 5 GB/s from 2 GB/s is reported.
 Kaldewey~et~al~\cite{Kaldewey:2012:GJP:2236584.2236592} describes similar technique
@@ -105,7 +105,7 @@ RDMA available for InfiniBand clusters. Shainer~et~al~\cite{Shainer2011} introdu
 GPUDirect that enables GPUs to transfer data via InfiniBand without the  involvement
 of the CPU or buffer copies. Using GPUDirect RDMA, third-party devices such as
 network adapters can access the GPU memory buffer directly, over the PCI-E bus.
-Potluri~et~al~\cite{6687341} evaluated the GPUDirect RDMA for InfiniBand. They reported
+Potluri~et~al~\cite{Potluri:2013:EIM:2570457.2571010} evaluated the GPUDirect RDMA for InfiniBand. They reported
 improvement in latency of MPI Send/MPI Recv by 69\% and 32\% for message size of
 4Byte and 128KByte and improvement in uni-directional bandwidth achieved using
 4KByte and 64KByte messages by 2x and 35\%, respectively.
@@ -127,7 +127,7 @@ Hardware prefetching techniques including techniques such as transferring separa
 cache blocks~\cite{Smith1978} were implemented much before software techniques were
 implemented. Porterfield~\cite{Porterfield1989} introduced the idea of software prefetching
 using special instruction to preload values into the cache without blocking the
-computation. Using this instruction the compiler can inform the cache over 100
+computation. Using this instruction, the compiler can inform the cache over 100
 cycles before a load is required.
 
 Prefetching is also exploited in the area of disk IO apart from feeding processor cache
@@ -138,7 +138,7 @@ mechanism depends on disclosure of future access dynamically.
 Dahlgren and Stenström~\cite{Dahlgren1993} developed an algorithm to determine the
 number of memory blocks to prefetch. They proposed
 \textit{adaptive sequential prefetching} policy, which allows the number of blocks
-to prefetch, K to vary during runtime of the program to reflect spatial locality
+to prefetch, K, to vary during runtime of the program to reflect spatial locality
 shown by the program. K is varied by calculating \textit{prefetch efficiency} metric
 which is defined as the ratio of useful prefetched blocks to the total number of
 prefetched blocks. If the prefetch efficiency exceeds a threshold then K is

@@ -202,8 +202,8 @@ the latest version of data can be embedded into \texttt{get\_data(device)}:
 \section{Optimizing Block Copying}
 An enormous cost has to be paid~\cite{Bakkum2010}\cite{memorytransferoverhead}
 for transferring memory to GPU as compared to the time taken for actual computation
-on GPU. Hence to have significant speed gains by executing on GPU over executing
-on CPU, it is necessary to minimize time spent on block transfers. This has been
+on GPU. Hence, to have significant speed gains by executing on GPU over executing
+on CPU, it is necessary to minimize the time spent on block transfers. This has been
 achieved by deploying multiple optimizations that are explained in this section.
 
 \subsection{Reducing Block Transfers}
@@ -236,7 +236,7 @@ The algorithm presented in~\ref{alg:get_data} can be split into
 \end{algorithm}
 
 Now, with this change, the runtime can decide whether synchronizing block contents
-is necessary. If the synchronization is needed it can call
+is necessary. If the synchronization is needed, it can call
 \texttt{block->update\_data(device)->get\_data(device)}
 as in case of a block read or update. If no synchronization is needed, as in case
 of a block being written, the runtime can simply get the pointer on device memory by calling
@@ -275,7 +275,7 @@ to GPU device memory.
   \caption{\texttt{memcpy} w/o memory pinning}\label{fig:wo_mem_pin}
 \end{figure}
 
-Due to this copying of data to first a temporary page-locked memory, extra time
+Due to this copying of data to a temporary page-locked memory, extra time
 is spent in a redundant copy operation. To overcome this, the host memory can directly
 be allocated in pinned memory. For this CUDA gives API \texttt{cudaMallocHost()},
 \texttt{cudaHostAlloc()} to allocate memory and \texttt{cudaFreeHost()} to deallocate
@@ -307,7 +307,7 @@ Apart from saving a redundant copy operation, memory page locking also helps in
 reducing time to copy because when memory is page locked, the GPU can invoke Direct
 Memory Access (DMA)
 controller~\cite{dmatransfer}\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs}
-to transfer memory bypassing the CPU. This results in around
+to transfer memory, bypassing the CPU. This results in around
 twice~\cite{datatransferoptimization} the bandwidth between host and GPU.
 
 \subsubsection{Asynchronous \texttt{memcpy}}
@@ -328,7 +328,7 @@ developed to reuse the already page locked memory pages.
 
 \subsubsection{Reusing Page Locked Memory Pages}
 The problem of caching page locked memory pages is similar to the problem of dynamic
-allocation of memory which is handled by Operating System. Extensive work~\cite{Wilson1995}
+allocation of memory which is handled by Operating System (OS). Extensive work~\cite{Wilson1995}
 is done in solving the problems involved in efficiently allocating memory dynamically such
 as external and internal fragmentation along with minimizing the time taken to find
 a suitable block of memory. Caching and serving page locked memory blocks
@@ -350,10 +350,10 @@ sizes are unpinned and returned to OS and then a new block is requested. If ther
 are no blocks in \texttt{free\_list} and block size is greater than free memory
 then the system is out of memory and exception is thrown.
 
-The other map serves as reverse lookup, presented in figure~\ref{fig:reverse_lookup}
+The other map serves as reverse lookup, presented in figure~\ref{fig:reverse_lookup},
 from pointer to size of the block. This reverse lookup is essential when a block is
 returned to be deallocated to know the actual size of the a block since when a block is requested, the caching mechanism
-returns block of equal or greater size. Hence the size of the requested block cannot
+returns a block of equal or greater size. Hence, the size of the requested block cannot
 be used to calculate the size of the block allocated to populate \texttt{free\_list}.
 
 \begin{figure}[h]
@@ -484,7 +484,7 @@ stored in the module \texttt{gpu\_super\_instructions} that initializes and
 maintains the GPU state. The number of streams created is configurable and currently
 is set to 2 since current generation of GPU devices have 2 DMA controllers. Each
 \texttt{Device\_Info} object stores \texttt{gpu\_stream\_id} which is set when a
-copy operation on \texttt{Block} object is initiated. At same time a bit
+copy operation on \texttt{Block} object is initiated. At the same time, a bit
 \texttt{isAsync} is set to denote that the \texttt{Block} object has pending
 asynchronous operations. Before de-referencing the memory pointer, runtime should
 wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchronize}.
@@ -512,11 +512,11 @@ wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchroniz
 \end{algorithm}
 
 \section{GPU Buffers in Internode Communication}
-SIAL makes it possible to work on extremely large arrays by dividing the array into
+SIAL makes it possible to work on extremely large arrays, by dividing the array into
 multiple blocks and then server distributing the blocks to workers. Workers and
 Server nodes communicate using highly optimized MPI library. Since GPU have their
 own memory, using GPU for computation in a multinode environment can add an
-additional layer of communication between GPU and network cards. In this section
+additional layer of communication between GPU and network cards. In this section,
 optimizations for this communication are presented.
 
 \subsection{Background}
@@ -526,14 +526,14 @@ between host memory (main memory) and GPU memory are discussed. Additionally, wh
 MPI is used for internode communication, the data buffers to send are staged
 to MPI buffers automatically by MPI. To send a buffer allocated on GPU using MPI,
 it first has to be copied to main memory so that its pointer can be passed to
-MPI functions like \texttt{MPI\_Send}/\texttt{MPI\_Recv}. Thus when GPU is used
-along with MPI to send an unpinned memory buffer, in all there will 3 memory copy
+MPI functions like \texttt{MPI\_Send}/\texttt{MPI\_Recv}. Thus, when GPU is used
+along with MPI to send an unpinned memory buffer, in all there will be 3 memory copy
 operations and 6 in total if we consider memory operations on the destination node.
 These operations are represented in Figure~\ref{fig:gpu_buff_transfer} by black arrows.
 
 \subsection{MPI Transfers Using DMA}
 After page locking a memory buffer, the CUDA driver and network fabric driver can
-share it. Thus two sets of copy operations can be saved by requesting page locked
+share it. Thus, two sets of copy operations can be saved by requesting page locked
 buffers. This transfer is represented in Figure~\ref{fig:gpu_buff_transfer} by blue
 arrows. It is worth noting that though this saves a couple of copy operations, the
 buffers still are managed through CPU memory and thus are limited by the CPU
@@ -545,7 +545,7 @@ presented next.
 \subsection{MPI Transfers Using RDMA}
 The intermediate copying operations to host memory can be avoided further by
 taking advantage of RDMA. RDMA is a technique using
-which the GPU can send buffers from GPU memory to network adapter without staging
+which the GPU can send buffers from GPU memory to network adapter, without staging
 through host memory. OpenMPI supports RDMA~\cite{openmpi-cudaaware} and thus all
 the extra copy operations can be avoided.
 Further RDMA transfers work independent of the CPU and thus it not only saves
@@ -555,7 +555,7 @@ This is conceptually represented in Figure~\ref{fig:gpu_buff_transfer} using ora
 arrows which denotes one transfer from source GPU memory to destination GPU memory.
 However, the servers in SIA are not allocated GPU since servers are not responsible
 for any heavy calculation of blocks. They just manage blocks from workers and
-swap \textit{inactive} blocks to disk. Hence a more accurate representation of
+swap \textit{inactive} blocks to disk. Hence, a more accurate representation of
 the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
 
 \begin{figure}[h] %place figure "here"

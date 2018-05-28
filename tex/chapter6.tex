@@ -91,7 +91,7 @@ This section presents several experiments conducted to investigate the optimal
 parameters and tradeoffs involved in the selection of the parameters.
 
 \subsection{\texttt{hit\_ratio}}\label{sec:hit_ratio}
-To understand the performance of the prefetching mechanism a new metric is introduced.
+To understand the performance of the prefetching mechanism, a new metric is introduced.
 Prefetch \texttt{hit\_ratio} is defined as the ratio of the number of times the
 SIA runtime did not have to block for a certain data block to be ready and the total
 number of times the data block is accessed:
@@ -100,7 +100,7 @@ number of times the data block is accessed:
 \]
 The \texttt{hit\_ratio} represents the number of times prefetching was successful
 to hide network transfer cost. In the following experiments \texttt{hit\_ratio}
-will be used where appropriate to measure the effectiveness of parameters in prefetching.
+will be used to measure the effectiveness of parameters in prefetching.
 
 \subsection{Index Length}
 The length of indices is the length of the range of indices involved in the loop.
@@ -114,7 +114,7 @@ the range of indices. This is presented in figure~\ref{fig:hitratio}.
 \end{figure}
 
 Note that the runtime has to block for data only first time it accesses a block.
-Subsequent accesses do not need any blocking since the data is ready. Hence the
+Subsequent accesses do not need any blocking since the data is ready. Hence, the
 \texttt{hit\_ratio} with no prefetching is non zero.
 
 If an index spans only 1 then there is no scope for the runtime to do prefetching.
@@ -128,7 +128,7 @@ length.
 It is observed that as the runtime requests for multiple blocks for prefetching,
 the first request to the server takes longer as the number of index range increases. This
 side effect can be explained using the preceding observation about \texttt{hit\_ratio}.
-Since the increase in index range length activates prefetching the first request
+Since the increase in index range length activates prefetching, the first request
 to the server becomes costlier. This is presented in figure~\ref{fig:p_first_mean}.
 \begin{figure}[h]
   \input{results/index_length/p_first_mean}
@@ -150,7 +150,7 @@ the length of index range in figure~\ref{fig:p_np_mean}.
 
 The length of index should be around 5 to decrease the \texttt{wait\_time\_}
 by a factor of 2. The mean \texttt{wait\_time} per iteration with prefetching can
-reduce up to 3 times as compared to with no prefetching if the length of index
+reduce up to 3 times as compared to with no prefetching, if the length of index
 length is greater than 9.
 
 \subsection{Block Size}
@@ -168,7 +168,7 @@ iteration in figure~\ref{fig:first_wait_time}.
 
 As the block size increases, \texttt{wait\_time\_} for the first iteration for loops
 with prefetch grows much faster than loops without prefetch. At block of size
-greater than 500 elements \texttt{wait\_time\_} for the first iteration with prefetch
+greater than 500 elements, \texttt{wait\_time\_} for the first iteration with prefetch
 is almost twice the corresponding \texttt{wait\_time\_} without prefetch.
 
 But once the first request for blocks is made, subsequent iterations are not affected
@@ -336,13 +336,13 @@ copy block.
 
 It is evident from the plot and table~\ref{tab:mempin_block_copy} that explicit
 page locking only results in faster memory copy if the size of the block is above
-1600 elements. After the size of block crosses a threshold the pinned blocks are
+1600 elements. After the size of block crosses a threshold, the pinned blocks are
 copied almost twice as fast as compared to non-pinned blocks.
 
 \subsection{Optimized Transfer}
 The block transfer optimization considers whether the block is requested with
-intention of being read or written. Hence to benchmark this optimization real-world
-test case is needed. Here \texttt{rccsd\_rhf.sialx} is used to investigate the
+intention of being read or written. Hence, to benchmark this optimization, real-world
+test case is needed. Here, \texttt{rccsd\_rhf.sialx} is used to investigate the
 number of transfers saved by exploiting the intent. This is presented in
 figure~\ref{fig:optimized_block_transfer}.
 
@@ -449,7 +449,7 @@ followed by passing page locked main memory address to MPI and passing GPU memor
 address to CUDA Aware MPI implementation. Here, there are two important things to
 notice:
 \begin{enumerate}
-\item If CUDA aware MPI implementation is used then DMA is used for transferring
+\item If CUDA aware MPI implementation is used, then DMA is used for transferring
   data from network fabric to GPU buffers directly.
 \item It seems that just by page locking main memory, even without using GPU, DMA
   is invoked by MPI implementation for transfer of data from network fabric to
@@ -488,7 +488,7 @@ for block sizes of around 3000.
 
 \subsection{Caching Page Locked Blocks}
 Caching page locked memory blocks is important since allocating page locked memory
-is 100 times costlier than non-page locked memory. To test caching two parameters
+is 100 times costlier than non-page locked memory. To test caching, two parameters
 have been selected as most appropriate: hit ratio and time spent in allocation with
 and without caching.
 
@@ -537,7 +537,7 @@ respect to not page locking. The results are plotted in figure~\ref{fig:mempin_c
   \label{fig:mempin_caching}
 \end{figure}
 
-By caching the page locked memory blocks the allocation time is brought down by
+By caching the page locked memory blocks, the allocation time is brought down by
 almost factor of 10. However, this is still greater than allocation time spent in
 case of non-page locked memory. This difference is difficult to plot, the numerical
 values of allocation time are presented in table~\ref{tab:mempin_caching}.

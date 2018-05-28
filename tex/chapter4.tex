@@ -41,7 +41,7 @@ While the \texttt{do} loop which iterates over the indices one by one in SIAL is
 simple, there are multiple implementations of \texttt{pardo} loop, which differ
 in the distribution of indices and thus the distribution of blocks over workers:
 \begin{itemize}
-\item \texttt{SequentialPardoLoop}: it behaves similarly to a simple do loop,
+\item \texttt{SequentialPardoLoop}: it behaves similar to a simple do loop,
   except this loop, can loop over multiple indices.
 \item \texttt{StaticTaskAllocParallelPardoLoop}: the indices for this loop are
   determined statically by distributing the block over workers in a cyclic fashion.
