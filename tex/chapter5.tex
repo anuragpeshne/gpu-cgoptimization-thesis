@@ -239,7 +239,7 @@ The algorithm presented in~\ref{alg:get_data} can be split into
 
 With this change, the runtime can decide whether synchronizing block contents
 is necessary. If the synchronization is needed, it can call
-\texttt{block->update\_data(device)->get\_data(device)}
+\texttt{block\-->update\_data(device)\-->get\_data(device)}
 which is the case with block read and update. If no synchronization is needed, as in case
 of a block being written, the runtime can simply get the pointer on device memory by calling
 \texttt{block->get\_data(device)}.
@@ -560,7 +560,7 @@ the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
 
 \begin{figure}[h] %place figure "here"
   \begin{tikzpicture}[
-    container/.style={draw=gray, inner sep=5mm},
+    container/.style={draw=gray, inner sep=3mm},
     typetag/.style={draw=black, anchor=west, inner sep=2mm, text width=1.5cm},
     title/.style={draw=none, color=gray, inner sep=0pt},
     thickarrow/.style={->, draw=black, thick, line width=1mm, shorten <= 2pt,
@@ -572,19 +572,19 @@ the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
 
     \node[title]   (gpu-title1)     at (0, 5) {SRC GPU};
     \node[typetag] (gpu-ram1)       at (0, 4) {DRAM};
-    \node[title]   (cpu-title1)     at (0, 2) {SRC CPU};
+    \node[title]   (cpu-title1)     at (0, 0) {SRC CPU};
     \node[typetag] (pinned1)        at (0, 1) {Pinned Memory};
     \node[typetag] (main-pageable1) at (2.5, 1) {Pageable Memory};
     \node[typetag] (fab-buff1)      at (5, 1) {Fabric Buffer}
     edge[thickblue] (pinned1);
 
-    \node[title]   (gpu-title2)     at (14, 5) {DEST GPU};
-    \node[typetag] (gpu-ram2)       at (14, 4) {DRAM}
+    \node[title]   (gpu-title2)     at (13, 5) {DEST GPU};
+    \node[typetag] (gpu-ram2)       at (13, 4) {DRAM}
       edge[thickorange] (gpu-ram1);
-    \node[title]   (cpu-title2)     at (9, 2) {DEST CPU};
-    \node[typetag] (main-pageable2) at (11.5, 1) {Pageable Memory};
-    \node[typetag] (fab-buff2)      at (9, 1) {Fabric Buffer};
-    \node[typetag] (pinned2)        at (14, 1) {Pinned Memory}
+    \node[title]   (cpu-title2)     at (9, 0) {DEST CPU};
+    \node[typetag] (main-pageable2) at (10.5, 1) {Pageable Memory};
+    \node[typetag] (fab-buff2)      at (8, 1) {Fabric Buffer};
+    \node[typetag] (pinned2)        at (13, 1) {Pinned Memory}
       edge[thickblue] (fab-buff2);
 
     \node[container, fit=(gpu-title1)(gpu-ram1)]                           {};
@@ -624,7 +624,7 @@ the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
 
 \begin{figure}[h] %place figure "here"
   \begin{tikzpicture}[
-    container/.style={draw=gray, inner sep=5mm},
+    container/.style={draw=gray, inner sep=3mm},
     typetag/.style={draw=black, anchor=west, inner sep=2mm, text width=1.5cm},
     title/.style={draw=none, color=gray, inner sep=0pt},
     thickarrow/.style={->, draw=black, thick, line width=1mm, shorten <= 2pt,
@@ -643,9 +643,9 @@ the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
       edge[thickblue] (pinned1);
 
     \node[title]   (cpu-title2)     at (9, 0) {Server CPU};
-    \node[typetag] (fab-buff2)      at (9, 1) {Fabric Buffer}
+    \node[typetag] (fab-buff2)      at (8, 1) {Fabric Buffer}
       edge[thickorange] (gpu-ram1);
-    \node[typetag] (main-pageable2) at (11.5, 1) {Pageable Memory};
+    \node[typetag] (main-pageable2) at (10.5, 1) {Pageable Memory};
 
     \node[container, fit=(gpu-title1)(gpu-ram1)]                           {};
     \node[container, fit=(cpu-title1)(main-pageable1)(pinned1)(fab-buff1)] {};

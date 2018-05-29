@@ -16,7 +16,8 @@ node interconnect in HiperGator 2.
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | c}
+  \caption{HiperGator 2 Spec Sheet}
+  \begin{tabular}{l c}
     \hline
     Name        & Specifications  \\
     \hline
@@ -26,13 +27,13 @@ node interconnect in HiperGator 2.
     Max Speed   & 1,100 Teraflops \\
     \hline
   \end{tabular}
-  \caption{HiperGator 2 Spec Sheet}
   \label{tab:hpg2spec}
 \end{table}
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | c}
+  \caption{HiperGator 2 \textbf{Compute} Node}
+  \begin{tabular}{l c}
     \hline
     Name                       & Specification     \\
     \hline
@@ -46,13 +47,13 @@ node interconnect in HiperGator 2.
     Memory Frequency           & 2133 MHz DDR4     \\
     \hline
   \end{tabular}
-  \caption{HiperGator 2 \textbf{Compute} Node}
   \label{tab:hpgcomputespecs}
 \end{table}
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | c}
+  \caption{HiperGator 2 \textbf{GPU} Node}
+  \begin{tabular}{l c}
     \hline
     Name                       & Specification     \\
     \hline
@@ -67,13 +68,13 @@ node interconnect in HiperGator 2.
     Memory Frequency           & 2133 MHz DDR4     \\
     \hline
   \end{tabular}
-  \caption{HiperGator 2 \textbf{GPU} Node}
   \label{tab:hpggpuspecs}
 \end{table}
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | c}
+  \caption{HiperGator 2 Node interconnect specification}
+  \begin{tabular}{l c}
     \hline
     Name             & Specification                                 \\
     \hline
@@ -81,7 +82,6 @@ node interconnect in HiperGator 2.
     Core Switches    & 100 Gbit/s EDR InfiniBand standard            \\
     \hline
   \end{tabular}
-  \caption{HiperGator 2 Node interconnect specification}
   \label{tab:hpgconnectspecs}
 \end{table}
 
@@ -303,7 +303,8 @@ copy block.
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | l | l}
+  \caption{Block size against time taken to copy data in page locked and non-page locked memory}
+  \begin{tabular}{l l l}
     \hline
     Block Size & Pinned      & Not Pinned  \\
     \hline
@@ -329,7 +330,6 @@ copy block.
     12960000   & 0.009527120 & 0.015224000 \\
     \hline
   \end{tabular}
-  \caption{Block size against time taken to copy data in page locked and non-page locked memory}
   \label{tab:mempin_block_copy}
 \end{table}
 
@@ -363,7 +363,8 @@ Table~\ref{tab:mempin_alloc} describes the time taken for page locked memory all
 and non-page locked memory allocation.
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | l | l}
+  \caption{Block Size against Page locked and non-page locked memory allocation}
+  \begin{tabular}{l l l}
     \hline
     Block Size & Pinned Memory Alloc & Non Pinned Memory Alloc \\
     \hline
@@ -378,7 +379,6 @@ and non-page locked memory allocation.
     3025       & 1.91461e-05         & 3.29316e-06             \\
     \hline
   \end{tabular}
-  \caption{Block Size against Page locked and non-page locked memory allocation}
   \label{tab:mempin_alloc}
 \end{table}
 
@@ -400,7 +400,8 @@ operation against the varying size of the block.
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | l | l}
+  \caption{Block size against Page locked and non-page locked memory deallocation}
+  \begin{tabular}{l l l}
     \hline
     Block Size & Pinned Memory Free & Non Pinned Memory Free \\
     \hline
@@ -415,7 +416,6 @@ operation against the varying size of the block.
     3025       & 2.70978e-05        & 2.64496e-07            \\
     \hline
   \end{tabular}
-  \caption{Block size against Page locked and non-page locked memory deallocation}
   \label{tab:mempin_free}
 \end{table}
 
@@ -505,7 +505,8 @@ presents the hit ratio for given calculation programs.
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | r | r | r}
+  \caption{Page Locked Memory Blocks hit rate}
+  \begin{tabular}{l r r r}
     \hline
     File            & Hit   & Miss & Ratio      \\
     \hline
@@ -516,7 +517,6 @@ presents the hit ratio for given calculation programs.
     rccsdpt\_aab    & 15822 & 3696 & 0.81063634 \\
     \hline
   \end{tabular}
-  \caption{Page Locked Memory Blocks hit rate}
   \label{tab:mempin_hitrate}
 \end{table}
 
@@ -543,7 +543,9 @@ values of allocation time are presented in table~\ref{tab:mempin_caching}.
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{l | r | r | r}
+  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non-Page Locked allocation
+  and deallocation times}
+  \begin{tabular}{l r r r}
     \hline
     File            & Not Cached & Cached     & Unpinned    \\
     \hline
@@ -554,8 +556,6 @@ values of allocation time are presented in table~\ref{tab:mempin_caching}.
     rccsdpt\_aab    & 0.0198253  & 0.00259629 & 4.97848e-05 \\
     \hline
   \end{tabular}
-  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non-Page Locked allocation
-  and deallocation times}
   \label{tab:mempin_caching}
 \end{table}
 
