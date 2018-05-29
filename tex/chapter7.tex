@@ -1,7 +1,7 @@
 \chapter{CONCLUSION AND FUTURE WORK}\label{conclusion}
 Two approaches to enhance the looping constructs and improve the runtime efficiency
-of SIAL interpreter is presented in this thesis. One applies an old technique of
-prefetching to data blocks in Super Instruction Architecture. Other improves
+of SIAL interpreter are presented in this thesis. One applies the old technique of
+data block prefetching to SIA. Other improves
 the utilization of GPU to execute Super Instructions on GPU and make way to support
 other compute devices in future.
 
@@ -19,10 +19,10 @@ cheap subsequent requests.
 
 Executing Super Instructions on GPU can speed up the computation for bigger block
 sizes. Transferring blocks between GPU and main memory is expensive but it can be
-avoided or reduced by directly collecting to or sending blocks from GPU memory
-buffers and reducing the transfers using other techniques. Page locked memory
-can improve memory transfer speed by invoking DMA and bypassing CPU. But page locking
-memory is expensive as compared to simple dynamically allocated memory. Page locked
+avoided or reduced by directly collecting to or sending blocks from GPU memory.
+Page locked memory
+can improve memory transfer speed by invoking DMA and bypassing CPU. But page locked
+memory is expensive as compared to dynamically allocated memory. Page locked
 memory blocks can be cached and served with high cache hit ratio.
 
 Further improvement in utilization of GPU can be achieved by implementing more
@@ -30,7 +30,7 @@ super instructions on GPU and a way to easily port user defined super instructio
 to GPU; By exploiting the asynchronous memory synchronization between GPU memory
 and main memory by looking ahead for instruction which needs the memory
 to be transferred and initiating the asynchronous transfer as soon as data is ready.
-And exploring the feasibility of having access to GPU on the servers and implementing
+And exploring the feasibility of having access to GPU on servers and implementing
 RDMA to transfer memory blocks between workers and servers. Lastly, implementing
 an advanced caching mechanism for page locked memory blocks can be worked upon to have
-more memory efficient caching mechanism.
+more efficient caching mechanism.

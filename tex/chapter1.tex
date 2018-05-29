@@ -20,7 +20,7 @@ This is implemented by tracking changes to blocks by every compute device.
 
 Still, there is a need for the SIAL programmer to decide which portion of the SIAL code
 is suited for execution on GPU. Transferring data between GPU and main memory is
-expensive, and can dominate the overall time spent in computation. Hence, marking
+expensive\cite{datatransferoptimization}, and can dominate the overall time spent in computation. Hence, marking
 which block of code is suitable for execution on GPU is not
 a trivial decision. Time taken for transfering data depends on various factors such as
 the size of the blocks involved and the super instructions in the code-block, marked

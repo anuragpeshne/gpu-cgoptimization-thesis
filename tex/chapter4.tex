@@ -1,13 +1,13 @@
 \chapter{BLOCK PREFETCHING}\label{block prefetching}
 
-This chapter presents the idea of prefetching block data from a server to hide the
+This chapter presents the idea of prefetching data block from a server to hide the
 network transfer time.
 
 \section{Background}\label{prefetchingbackground}
-To process a large array which cannot fit into the memory of a single node, a typical
+To process a large array, which cannot fit into the memory of a single node, a typical
 workflow in SIAL consists of requesting a block of an array from a server in a
 \texttt{pardo} looping construct by each participating worker. After processing
-it, the resulting block is sent back to the server. This common pattern can be
+it, the resulting block is sent back to a server. This common pattern can be
 summarized as single or multiple network bound operation surrounding one or more
 compute bound operations.
 
@@ -21,7 +21,8 @@ compute bound operations.
 \Loop\Comment{SIAL do/pardo loop}
 \State $GET\ A[i, j]$\Comment{Request data from a server asynchronously}
 \State $GET\ B[j, k]$\Comment{Network bound}
-\State $t\_result[j, k] \gets A[i, j] \times B[j, k]$\Comment{Compute bound}
+\State $t\_result[i, k] \gets A[i, j] \times B[j, k]$\Comment{Wait for A, B to be ready}
+\State $s\_result \gets A[i, j] \times A[i, j]$\Comment{No need to wait for A}
 \State $CALL\ compute\_fun(t\_result[j, k])$\Comment{Compute bound}
 \State $PUT\ AB[i, k] \gets t\_result[i, k]$\Comment{Network bound}
 \EndLoop
@@ -37,6 +38,8 @@ the blocks from servers over the network.
 \section{Implementation of Prefetching}
 
 \subsection{pardo Loop Implementation}
+To determine which block should be prefetched, the runtime needs to predict
+the next block in the loop. This depends on what type of loop is being executed.
 While the \texttt{do} loop which iterates over the indices one by one in SIAL is
 simple, there are multiple implementations of \texttt{pardo} loop, which differ
 in the distribution of indices and thus the distribution of blocks over workers:
@@ -60,7 +63,7 @@ Due to so many varieties of implementation of \texttt{pardo} looping construct
 and to support future implementations of indices generation schemes, it is
 important to keep the mechanism of prefetching separate from indices generation.
 For this, a lazy prefetching mechanism was implemented which will probe for indices
-as needed dynamically. A lazy implementation would also give freedom to vary the number
+as needed, dynamically. A lazy implementation would also give freedom to vary the number
 of prefetched blocks at runtime.
 
 \subsection{Lazy Indices Probing}
@@ -148,8 +151,8 @@ into multiple procedures:
   \end{algorithm}
 
 \item \texttt{prefetch\_indices} remember the last set of indices returned to each
-  \texttt{GET} statement and returns the next set of indices on call. It remembers
-  by mapping the position of indices in the list to \texttt{line numbers} of each
+  \texttt{GET} statement and returns the next set of indices when it is called. It remembers
+  that by mapping the position of indices in the list to \texttt{line numbers} of each
   \texttt{GET}. This makes varying the number of prefetched blocks for each
   \texttt{GET} possible.
 

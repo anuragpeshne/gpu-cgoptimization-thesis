@@ -565,6 +565,8 @@ gpu_end
   \end{itemize}
 \end{frame}
 
+%  The peak bandwidth between the device memory and the GPU is much higher (144 GB/s on the NVIDIA Tesla C2050, for example) than the peak bandwidth between host memory and device memory (8 GB/s on PCIe x16 Gen2). This disparity means that your implementation of data transfers between the host and GPU devices can make or break your overall application performance.
+
 \begin{frame}[fragile]
   \frametitle{Memory Pinning}
   \begin{figure}[h] %place figure "here"

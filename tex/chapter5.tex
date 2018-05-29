@@ -1,6 +1,6 @@
 \chapter{EXPLOITING GPU}\label{exploitinggpu}
 \section{Background}
-The \texttt{do} and \texttt{pardo} looping constructs are one of the most important
+\texttt{do} and \texttt{pardo} looping constructs are one of the most important
 constructs in SIAL since they allow SIAL programmers to express operations on
 blocks. Using \texttt{pardo} construct the calculations can be done in parallel.
 SIAL runtime is responsible for the distribution of work over all the worker nodes.
@@ -13,7 +13,7 @@ to use GPU to speed up computation. In this work, the SIAL programmer had to dea
 with a lot of low-level GPU memory operations such as allocating memory on GPU,
 copying blocks to and from GPU and deallocating memory on GPU. Since not all
 calculations are suitable to be executed on GPU, the SIAL programmer had to mark
-regions of SIAL code suitable to be executed on GPU.
+regions of SIAL code suitable for execution on GPU.
 
 \begin{lstlisting}[caption={Code Fragment from ACESIII for CCSD calculation},
   label={lst:ACESIII_gpucode}]
@@ -66,15 +66,15 @@ GPU and main memory. The actual calculations are done by lines 13-27.
 
 \section{Runtime Memory Management}
 To manage the block memory and to automate the memory transfer between GPU and CPU,
-metadata about the state of memory was stored in the interpreter. The \texttt{Block} class
-which represents the super \textit{block} in the interpreter was modified to now store
+metadata about the state of memory is stored in the interpreter. The \texttt{Block} class
+which represents the SIA \textit{block} in the interpreter was modified to now store
 this metadata and pointer to the memory location in GPU and main memory in form of
 an object of another class \texttt{Device\_Info}.
 
-Due to this added layer, supporting multiple compute devices is now possible.
-The metadata includes whether the block data was \textit{dirty}, \textit{valid}
-and a \textbf{version number} which is incremented each time the block is changed
-by the compute device. This helps in keeping the GPU and main memory (CPU)
+Due to this additional layer, supporting multiple compute devices is now possible.
+The metadata includes flags for block data being \textit{dirty} and \textit{valid}.
+It also includes a field, \textbf{version number}, which is incremented each time the block is changed
+by the compute device. This helps in keeping memory of different compute devices
 synchronized.
 
 \begin{lstlisting}[caption={\texttt{Device\_Info} Class structure},
@@ -83,7 +83,6 @@ synchronized.
 class DeviceInfo {
   double* data_ptr_;
   unsigned int data_version_;
-  bool onDevice; // is block data on current device
   bool isDirty;  // is block data modified/dirty
   bool isAsync;  // are there any pending operations on device
 }
@@ -154,8 +153,8 @@ the class \texttt{Device\_Info} in C++ language.
   \caption{\texttt{Block} and \texttt{Device\_Info} structure}\label{fig:Device_Info_Structure}
 \end{figure}
 
-Using the metadata and specifically \texttt{data\_version\_}, the runtime can keep
-track of changes in data on different devices and find the device with the latest
+Using this metadata, specifically \texttt{data\_version\_}, the runtime can keep
+track of changes to data by different devices and find the device with the latest
 data by comparing version numbers:
 
 \begin{algorithm} {Block::get\_latest\_device() $\rightarrow$ Device\_Info}
@@ -178,7 +177,7 @@ data by comparing version numbers:
 \end{algorithm}
 
 After determining the device with latest version of data, the runtime can update
-other devices if needed. The only interfacing function exposed outside of
+other devices, if needed. The only interfacing function exposed outside of
 \texttt{Block} class is \texttt{get\_data(deviceid)} which returns a pointer to the memory
 location on device identified by \texttt{deviceid}. The logic to always return
 the latest version of data can be embedded into \texttt{get\_data(device)}:
@@ -191,6 +190,7 @@ the latest version of data can be embedded into \texttt{get\_data(device)}:
     \State $latest\_device \gets this.get\_latest\_device()$
     \If{$latest\_device.data\_version > this.devices[deviceid].data\_version$}
     \State {$memcpy(latest\_device.data,\ this.devices[deviceid].data)$}
+    \State {$this.devices[deviceid].data\_version \gets latest\_device.data\_version$}
     \EndIf
     \State \Return $this.devices[deviceid].data$
     \EndFunction
@@ -202,15 +202,16 @@ the latest version of data can be embedded into \texttt{get\_data(device)}:
 \section{Optimizing Block Copying}
 An enormous cost has to be paid~\cite{Bakkum2010}\cite{memorytransferoverhead}
 for transferring memory to GPU as compared to the time taken for actual computation
-on GPU. Hence, to have significant speed gains by executing on GPU over executing
-on CPU, it is necessary to minimize the time spent on block transfers. This has been
+on GPU. Hence, to have significant speed gains by executing on GPU over CPU,
+it is necessary to minimize the time spent on block transfers. This has been
 achieved by deploying multiple optimizations that are explained in this section.
 
 \subsection{Reducing Block Transfers}
+The first optimization includes saving unnecessary block synchronizations.
 The SIAL runtime has the information about the intent of each block request, whether
 the block is being requested to be read, updated or written. Using this information the
-number of synchronizations between devices can be reduced. The blocks which are
-going to be written need not be synchronized, however, the blocks requested for
+number of synchronizations between devices can be reduced. Blocks which are
+going to be written need not be synchronized, however, blocks requested for
 being read or updated need to be synchronized for the requested device.
 
 The algorithm presented in~\ref{alg:get_data} can be split into
@@ -228,6 +229,7 @@ The algorithm presented in~\ref{alg:get_data} can be split into
     \State $latest\_device \gets this.get\_latest\_device()$
     \If{$latest\_device.data\_version > this.devices[deviceid].data\_version$}
     \State {$memcpy(latest\_device.data,\ this.devices[deviceid].data)$}
+    \State {$this.devices[deviceid].data\_version \gets latest\_device.data\_version$}
     \EndIf
     \State \Return $this$
     \EndFunction
@@ -235,22 +237,22 @@ The algorithm presented in~\ref{alg:get_data} can be split into
   \end{algorithmic}
 \end{algorithm}
 
-Now, with this change, the runtime can decide whether synchronizing block contents
+With this change, the runtime can decide whether synchronizing block contents
 is necessary. If the synchronization is needed, it can call
 \texttt{block->update\_data(device)->get\_data(device)}
-as in case of a block read or update. If no synchronization is needed, as in case
+which is the case with block read and update. If no synchronization is needed, as in case
 of a block being written, the runtime can simply get the pointer on device memory by calling
 \texttt{block->get\_data(device)}.
 This change in the way of accessing and updating block data along with the information
 about the intent of the request can reduce several unnecessary synchronizations.
 
 \subsection{Memory Pinning}\label{memory_pinning}
-The memory allocated on CPU or main memory is pageable by default. The GPU cannot
+The memory allocated on CPU or main memory is pageable by default. GPUs cannot
 access data on such pageable host memory~\cite{datatransferoptimization}
-\cite{programmingguidecuda}. For this reason, when a memory copy operation is requested
-from host to the GPU, the CUDA driver first allocates a temporary \textbf{page locked},
-or \textit{pinned} memory on the host (main memory) and copies the host memory to the
-temporary pinned memory and then finally transfers the memory from pinned memory
+\cite{programmingguidecuda} directly. For this reason, when a memory copy operation is requested
+from a host to a GPU, the CUDA driver first allocates a temporary \textbf{page locked},
+or \textit{pinned}, memory on the host (main memory), copies the host memory to the
+temporary pinned memory and then finally transfers the data from pinned memory
 to GPU device memory.
 \begin{figure}[h] %place figure "here"
   \begin{tikzpicture}[
@@ -276,8 +278,8 @@ to GPU device memory.
 \end{figure}
 
 Due to this copying of data to a temporary page-locked memory, extra time
-is spent in a redundant copy operation. To overcome this, the host memory can directly
-be allocated in pinned memory. For this CUDA gives API \texttt{cudaMallocHost()},
+is spent in the redundant copy operation. To overcome this, page locked memory
+can directly be allocated on the host memory. For this CUDA gives API \texttt{cudaMallocHost()},
 \texttt{cudaHostAlloc()} to allocate memory and \texttt{cudaFreeHost()} to deallocate
 the memory. Using this technique the data flow presented in~\ref{fig:wo_mem_pin} is
 modified to flow presented in~\ref{fig:w_mem_pin}.
@@ -307,8 +309,8 @@ Apart from saving a redundant copy operation, memory page locking also helps in
 reducing time to copy because when memory is page locked, the GPU can invoke Direct
 Memory Access (DMA)
 controller~\cite{dmatransfer}\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs}
-to transfer memory, bypassing the CPU. This results in around
-twice~\cite{datatransferoptimization} the bandwidth between host and GPU.
+to transfer memory, bypassing the CPU. It is reported\cite{Kaldewey:2012:GJP:2236584.2236592}
+that, using this, GPU can read main memory at PCI-E speeds.
 
 \subsubsection{Asynchronous \texttt{memcpy}}
 Since CUDA controller can invoke DMA controller to copy memory if the host memory
@@ -324,37 +326,38 @@ by Boyer et al~\cite{Boyer2009}\cite{memory-management-overhead}\cite{pinned-tra
 have been reported. They reported memory allocation call \texttt{cudaMalloc} to
 be 30-40\% more expensive than \texttt{malloc} and \texttt{cudaHostMalloc} to be
 slower than \texttt{malloc} by a factor of 100. To overcome this, a caching scheme was
-developed to reuse the already page locked memory pages.
+developed to reuse the pinned memory pages.
 
-\subsubsection{Reusing Page Locked Memory Pages}
+\subsubsection{Reusing Pinned Memory Pages}
 The problem of caching page locked memory pages is similar to the problem of dynamic
-allocation of memory which is handled by Operating System (OS). Extensive work~\cite{Wilson1995}
-is done in solving the problems involved in efficiently allocating memory dynamically such
-as external and internal fragmentation along with minimizing the time taken to find
-a suitable block of memory. Caching and serving page locked memory blocks
-is similar to the dynamic memory allocation in the way that it needs to find suitable
-size memory block such that least space in form of internal fragmentation is wasted
-but it is different from dynamic allocation in the way that the memory blocks cannot
-be split or coalesced.
+allocation of memory, which is handled by Operating System (OS). Extensive work~\cite{Wilson1995}
+is done in solving the problems involved in efficiently allocating memory dynamically.
+The issues involve dealing with external and internal fragmentation while minimizing
+the time taken to find a suitable block of memory. Caching and serving page locked memory blocks
+is similar to dynamic memory allocation, it needs to find suitable size of
+memory block such that least space in form of internal fragmentation is wasted.
+But the memory blocks cannot be split or coalesced, like in dynamic allocation.
 
 \subsubsection{Implementation of Caching Mechanism}
-When a page locked block of memory is deleted, instead of un-pinning it and calling
+When a page locked block of memory is marked for deallocation, instead of un-pinning it and calling
 \texttt{delete[]} on it, it is saved in a list. Two maps are used for bookkeeping.
 One of it, \texttt{free\_list}, presented in figure~\ref{fig:free_list},
-maps the block size to a list of pointers to \texttt{double}. When a request for
-a block of memory is received this list is searched for a block of size equal to or
-greater than the size of block requested. If no such block exists then a new block
+maps the block size to a list of pointers. When a request for
+a block of memory is received, this list is searched for a block of size equal to or
+greater than the size of block requested. If no such block is found then a new block
 is created, pinned and returned. It is possible that there is not enough free
 memory in the system to allocate a new block, in that case, few blocks of smaller
-sizes are unpinned and returned to OS and then a new block is requested. If there
-are no blocks in \texttt{free\_list} and block size is greater than free memory
+sizes are unpinned and returned to OS. After there is enough free memory, a new,
+bigger, block is created. If there
+are no blocks in \texttt{free\_list} and requested block size is greater than free memory,
 then the system is out of memory and exception is thrown.
 
-The other map serves as reverse lookup, presented in figure~\ref{fig:reverse_lookup},
-from pointer to size of the block. This reverse lookup is essential when a block is
-returned to be deallocated to know the actual size of the a block since when a block is requested, the caching mechanism
-returns a block of equal or greater size. Hence, the size of the requested block cannot
-be used to calculate the size of the block allocated to populate \texttt{free\_list}.
+The other map serves as a reverse lookup, presented in figure~\ref{fig:reverse_lookup},
+from pointer to size of the block. This reverse lookup is essential, when a block is
+returned to be deallocated. The reverse lookup helps to know the actual size of the block
+since when a block is requested, the caching mechanism can return a block of greater
+size.  Hence, the size of the requested block cannot be used to calculate the size
+of the allocated block to populate \texttt{free\_list}.
 
 \begin{figure}[h]
   \centering
@@ -472,21 +475,22 @@ and CUDA driver might execute them concurrently.
 \subsubsection{Non Blocking Device Synchronization}\label{nonblockdevicesync}
 GPU streams were used to implement non blocking SIA block synchronization. Using
 multiple CUDA streams and page locked memory, DMA controllers can be invoked to
-transfer memory from host to GPU and vice-versa asynchronously to both CPU and GPU
-kernel execution engine. Current generation of GPU have two DMA
+transfer memory from host to GPU, and vice-versa, asynchronously to both CPU and GPU
+kernel execution engine. Current generation of GPUs have two DMA
 controllers~\cite{teslaspecs}\cite{teslakspecs} and one kernel execution engine.
 This means that the GPU can handle 2 asynchronous memory copying operation concurrently.
 These hardware features have been exploited by implementing asynchronous memory
 copying for block synchronization.
 
-To implement the non blocking synchronization, multiple streams are created and
-stored in the module \texttt{gpu\_super\_instructions} that initializes and
+To support non blocking synchronization, during runtime, multiple streams are created and
+stored in the module \texttt{gpu\_super\_instructions}. This is the same module
+that initializes and
 maintains the GPU state. The number of streams created is configurable and currently
 is set to 2 since current generation of GPU devices have 2 DMA controllers. Each
 \texttt{Device\_Info} object stores \texttt{gpu\_stream\_id} which is set when a
-copy operation on \texttt{Block} object is initiated. At the same time, a bit
-\texttt{isAsync} is set to denote that the \texttt{Block} object has pending
-asynchronous operations. Before de-referencing the memory pointer, runtime should
+copy operation on \texttt{Block} object is initiated. At the same time, the bit
+\texttt{isAsync} is set. This bit denotes that the \texttt{Block} object has pending
+asynchronous operations and before de-referencing the memory pointer, runtime should
 wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchronize}.
 
 \begin{algorithm} {Asynchronous Block Synchronization}
@@ -511,36 +515,31 @@ wait for the operation to finish by using CUDA call \texttt{cudaStreamSynchroniz
   \end{algorithmic}
 \end{algorithm}
 
-\section{GPU Buffers in Internode Communication}
+\section{Optimizing GPU Internode Communication}
 SIAL makes it possible to work on extremely large arrays, by dividing the array into
-multiple blocks and then server distributing the blocks to workers. Workers and
+multiple blocks. Servers distribute these blocks to workers and workers return
+resulting blocks back to servers. Workers and
 Server nodes communicate using highly optimized MPI library. Since GPU have their
 own memory, using GPU for computation in a multinode environment can add an
-additional layer of communication between GPU and network cards. In this section,
-optimizations for this communication are presented.
+additional layer of communication between workers and servers.
+In this section, optimizations for this communication are presented.
 
 \subsection{Background}
-GPU cards have their own memory on which the GPU can compute. In
-Section~\ref{memory_pinning} the techniques used for optimizing memory transfer
-between host memory (main memory) and GPU memory are discussed. Additionally, when
-MPI is used for internode communication, the data buffers to send are staged
-to MPI buffers automatically by MPI. To send a buffer allocated on GPU using MPI,
-it first has to be copied to main memory so that its pointer can be passed to
-MPI functions like \texttt{MPI\_Send}/\texttt{MPI\_Recv}. Thus, when GPU is used
-along with MPI to send an unpinned memory buffer, in all there will be 3 memory copy
-operations and 6 in total if we consider memory operations on the destination node.
-These operations are represented in Figure~\ref{fig:gpu_buff_transfer} by black arrows.
+Since GPUs have their own memory on which they compute, when a block is needed
+to be transfered to another node from GPU memory, it has to be copied to 3 different
+buffers: the block is first copied from GPU memory to temporary pinned memory, then
+to pageable memory and finally to pinned fabric buffer. This results in total
+7 copy operations, including 3 similar operations on other side, and a network
+transfer operation. These operations are represented in Figure~\ref{fig:gpu_buff_transfer}
+by black arrows.
 
 \subsection{MPI Transfers Using DMA}
-After page locking a memory buffer, the CUDA driver and network fabric driver can
-share it. Thus, two sets of copy operations can be saved by requesting page locked
+Section~\ref{memory_pinning} discusses memory pinning, which can be used for
+optimizing memory transfer between GPU memory and host memory. If the host memory
+is pinned, then the GPU and the network fabric can share~\cite{cudaawarempi} the pinned buffer.
+Thus, two sets of copy operations can be saved by requesting page locked
 buffers. This transfer is represented in Figure~\ref{fig:gpu_buff_transfer} by blue
-arrows. It is worth noting that though this saves a couple of copy operations, the
-buffers still are managed through CPU memory and thus are limited by the CPU
-memory bandwidth. SIA will make use of this when the buffers are page locked and
-software libraries \& hardware facilities are not present for Remote Direct Memory
-Access (RDMA) which is
-presented next.
+arrows.
 
 \subsection{MPI Transfers Using RDMA}
 The intermediate copying operations to host memory can be avoided further by
@@ -553,8 +552,9 @@ extra copy operations, the transfer is done over PCI-E and is independent
 of the CPU memory bandwidth and the memory bus traffic congestion.
 This is conceptually represented in Figure~\ref{fig:gpu_buff_transfer} using orange
 arrows which denotes one transfer from source GPU memory to destination GPU memory.
-However, the servers in SIA are not allocated GPU since servers are not responsible
-for any heavy calculation of blocks. They just manage blocks from workers and
+
+However, servers in SIA are not allocated GPU since servers are not responsible
+for any heavy calculation on blocks. They manage transfer of blocks from workers and
 swap \textit{inactive} blocks to disk. Hence, a more accurate representation of
 the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
 
@@ -576,15 +576,14 @@ the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
     \node[typetag] (pinned1)        at (0, 1) {Pinned Memory};
     \node[typetag] (main-pageable1) at (2.5, 1) {Pageable Memory};
     \node[typetag] (fab-buff1)      at (5, 1) {Fabric Buffer}
-    edge[thickblue] (pinned1)
-    edge[thickorange] (gpu-ram1);
+    edge[thickblue] (pinned1);
 
     \node[title]   (gpu-title2)     at (14, 5) {DEST GPU};
-    \node[typetag] (fab-buff2)      at (9, 1) {Fabric Buffer};
     \node[typetag] (gpu-ram2)       at (14, 4) {DRAM}
-      edge[thickorange] (fab-buff2);
+      edge[thickorange] (gpu-ram1);
     \node[title]   (cpu-title2)     at (9, 2) {DEST CPU};
     \node[typetag] (main-pageable2) at (11.5, 1) {Pageable Memory};
+    \node[typetag] (fab-buff2)      at (9, 1) {Fabric Buffer};
     \node[typetag] (pinned2)        at (14, 1) {Pinned Memory}
       edge[thickblue] (fab-buff2);
 
@@ -641,11 +640,11 @@ the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
     \node[typetag] (pinned1)        at (0, 1) {Pinned Memory};
     \node[typetag] (main-pageable1) at (2.5, 1) {Pageable Memory};
     \node[typetag] (fab-buff1)      at (5, 1) {Fabric Buffer}
-      edge[thickblue] (pinned1)
-      edge[thickorange] (gpu-ram1);
+      edge[thickblue] (pinned1);
 
     \node[title]   (cpu-title2)     at (9, 0) {Server CPU};
-    \node[typetag] (fab-buff2)      at (9, 1) {Fabric Buffer};
+    \node[typetag] (fab-buff2)      at (9, 1) {Fabric Buffer}
+      edge[thickorange] (gpu-ram1);
     \node[typetag] (main-pageable2) at (11.5, 1) {Pageable Memory};
 
     \node[container, fit=(gpu-title1)(gpu-ram1)]                           {};
