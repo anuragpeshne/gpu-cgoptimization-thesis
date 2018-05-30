@@ -1,17 +1,17 @@
 \chapter{RELATED WORK}\label{lit}
-We discuss work done by others on General Purpose computing on Graphics Processing
+In this chapter, prevous work done by others on General Purpose computing on Graphics Processing
 Units (GPGPU) as well as using GPU specifically for evaluating scientific calculations
-and using prefetching to hide latency in accessing data.
+and using prefetching to hide latency in accessing data, is discussed.
 
 \section{GPGPU}
-This section discusses previous work done on techniques such as porting existing
+This section discusses previous developments in porting existing
 code to GPU using directives, using CUDA directly to speed up scientific calculations and
 techniques to efficiently transfer data to GPU memory.
 
 \subsection{Directive Based GPU programming}
-There are several attempts made in the area of directive-based programming models. These
-attempts include OpenACC~\cite{openacc}, OpenMP for
-accelerator~\cite{openmpforaccelerators}, and less updated attempts including
+There have been several developments made in the area of directive-based programming models. These
+developments include OpenACC~\cite{openacc}, OpenMP for
+accelerator~\cite{openmpforaccelerators}, and less updated developments including
 OpenMPC~\cite{openmpc} and hiCuda~\cite{hicuda}. The approach taken by these models
 is to make an implementation GPU-ready by placing directives which make
 execution of loops parallel.
@@ -25,8 +25,8 @@ GPU-ready by inserting suitable directives or by having a completely rewritten l
 CUDA implementation.
 
 \subsection{GPU in Computational Chemistry}
-There are implementations of coupled cluster methods in computational chemistry
-on GPUs reported~\cite{bhaskar2013}\cite{deprince2011}\cite{maw2011}. In these
+Various implementations of coupled cluster methods in computational chemistry
+on GPUs have been reported~\cite{bhaskar2013}\cite{deprince2011}\cite{maw2011}. In these
 implementations, a specific algorithm was selected and then implemented on a
 GPU in a highly optimized form. These implementations have hardware specific
 optimizations, and are not generic enough to remain effective as new hardware
@@ -38,37 +38,37 @@ by optimizing for the particular order of indices in the contractions. This, as
 compared to using permutations and then two-dimensional matrix-matrix multiplication
 as implemented in SIA, should achieve better performance for a contraction. These
 specialized CUDA contraction implementations were added to NWChem, a computational
-chemistry package, and considerable speedups are reported for CCSD(T) calculation
+chemistry package, and considerable speedups were reported for CCSD(T) calculation
 on CPU/GPU hybrid systems. Such optimized operators can be incorporated into SIA
-and be provided as built-in super instruction for contraction.
+as built-in super instruction for contraction.
 
 \subsection{GPU Programming in Other High-Level Programming Languages}
-Several attempts for support for GPU in general purpose high-level programming
-languages have been made. A few examples include PyCUDA~\cite{pycuda2011},
-jCUDA~\cite{jcuda2009} and Chapel~\cite{chapelgpu}. These toolkits give an interface
-to GPU from high-level programming languages such as Python and Java but
+Several attempts have been made to support GPU in general purpose high-level programming
+languages. A few examples include PyCUDA~\cite{pycuda2011},
+jCUDA~\cite{jcuda2009} and Chapel~\cite{chapelgpu}. These toolkits provide an interface
+to GPU from high-level programming languages such as Python and Java, but the
 programmer still needs to deal with low-level GPU bookkeeping such as memory
 management and defining kernels. As described in section~\ref{relatedworkacesiiigpu},
-this is similar to ACESIII, wherein the programmer had to manually transfer memory
+this is similar to ACESIII, where the programmer has to manually transfer memory
 between GPU and CPU. However, SIAL is a special purpose language and SIA runtime
 has information about block sizes and block operations. GPU implementation for
 some of the common block operations can be defined into the language itself. With
-these implementations and the information about block, the runtime can jump between
-GPU and CPU implementation transparently to the domain programmer along with taking
+such implementations and availability of the information about block, the runtime can jump between
+GPU and CPU implementation, transparently to the domain programmer, along with taking
 care of memory management.
 
 \subsection{GPU in Previous Versions of ACES}\label{relatedworkacesiiigpu}
-There has been work done previously to exploit GPU in SIA
-by Jindal~et~al~\cite{Jindal2016} in ACESIII. This implementation
+There have been work done to exploit GPU in previous version of ACES, ACESIII,
+by Jindal~et~al~\cite{Jindal2016}. This implementation
 required the programmer to mark a block of code to be executed on GPU using
 directives \texttt{gpu\_on} and \texttt{gpu\_off} and manually manage memory
 transfer to and from GPU. This puts a burden of managing memory and recognizing
 suitable suitable block of code for execution on GPU on the domain programmer.
 If a block of SIAL code that is not suitable for execution on GPU is marked, it can result
-in suboptimal use of resources. Executing operations on small blocks on GPU can
+in suboptimal use of resources. Executing operations using small blocks on GPU can
 be slower than executing on CPU due to time spent in memory transfer and
 insignificant gain in speed by execution. It can be a difficult decision for the
-SIAL programmer to decide if a block is large enough so that benefit of executing
+SIAL programmer to determine if a block is large enough so that benefit of executing
 it on GPU becomes significant.
 
 \subsection{Optimizing GPU Memory Transfer}
@@ -76,30 +76,29 @@ it on GPU becomes significant.
 GPU cannot work directly with pageable host memory. One of the key condition for
 effectively exploiting GPU is to optimally manage data transfer between host memory
 and GPU memory. This is true for any computation running on GPU and not just High
-Performance Computing computations. Work done by Fatica~\cite{Fatica:2009:ALC:1513895.1513901},
-in accelerating Linpack describes various ways for optimizing memory transfers. This
+Performance Computing computations. The work done by Fatica~\cite{Fatica:2009:ALC:1513895.1513901},
+in accelerating LINPACK describes various ways for optimizing memory transfers. Their
 implementation intercepts calls to \texttt{DGEMM} and \texttt{DTRSM} and executes them simultaneously
-on both GPU and CPU cores. Memory allocated on host is pageable by default and GPU
-cannot access it. To achieve faster memory transfer, the implementation uses fast
+on both GPUs and CPU cores. To achieve faster memory transfer, the implementation uses fast
 \textit{PCI-E} transfers by page locking or \textit{pinning} the host memory. Using
-PCI-E transfer the speed improvement of 5 GB/s from 2 GB/s is reported.
+PCI-E transfer, they observed a speed improvement of 5 GB/s from 2 GB/s.
 Kaldewey~et~al~\cite{Kaldewey:2012:GJP:2236584.2236592} describes similar technique
-to optimize memory transfer using common address space for CPU and GPU, called as
+to optimize memory transfer using common address space for CPU and GPU, known as
 Unified Virtual Addressing (UVA). This helps memory transfers in two ways: it
 allows GPU to work with memory greater than available physical GPU memory and also relieves
-the programmer of the burden of managing two memory spaces. UVA requires that the
-host memory is page locked. Using UVA, sustained rate of 6.2 GB/s is reported.
+the programmer from the burden of managing two memory spaces. UVA requires that the
+host memory is page locked. Using UVA, sustained rate of 6.2 GB/s has been reported in their work.
 Host memory page locking is a common technique in both of the works, which enables GPU DMA controller
 to access main memory at PCI-E speeds. This technique can be used to speed up the
-SIA block transfers. This can be incorporated into the automatic memory synchronization
-so that it is transparent to the domain programmer.
+SIA block transfers. This can be incorporated into an automatic memory synchronization module
+such that it becomes transparent to the domain programmer.
 
 \subsubsection{Network Transfer}
 GPUs are often deployed in a cluster to accelerate computationally intensive
-general-purpose tasks. Still, for communication the GPUs need assistance from the CPUs.
+general-purpose tasks. Still, for communication with other nodes, the GPUs need assistance from the CPUs.
 This requires intermediate copies from the GPU memory to the host memory. To have
 a way around this inefficiency, there has been work done to make GPUDirect Remote
-Direct Memory Access (RDMA) available for InfiniBand clusters. Shainer~et~al~\cite{Shainer2011} introduces
+Direct Memory Access (RDMA) available for InfiniBand clusters. Shainer~et~al~\cite{Shainer2011} introduced
 GPUDirect that enables GPUs to transfer data via InfiniBand without involvement
 of the CPU or need of any buffer copies. Using GPUDirect RDMA, third-party devices such as
 network adapters can access the GPU memory buffer directly, over the PCI-E bus.
@@ -122,12 +121,12 @@ Prefetching is an old technique~\cite{anacker68}\cite{Smith1982}\cite{Vanderwiel
 used to get data up in memory hierarchy before it is actually needed by the processor.
 The main aim behind prefetching is to hide the data access latency due to the difference in speed to access
 data. A variety of approaches, including hardware prefetching, and caching, compiler
-techniques, pre-execution and runtime execution, have been implemented in
+techniques, pre-execution and runtime execution, have been implemented in field of
 high performance computing.
 
 Hardware prefetching techniques, which includes transferring separate
-cache blocks~\cite{Smith1978}, were implemented much before software techniques were
-implemented. Porterfield~\cite{Porterfield1989} introduced the idea of software prefetching
+cache blocks~\cite{Smith1978}, were implemented much before software techniques became
+available. Porterfield~\cite{Porterfield1989} introduced the idea of software prefetching
 using special instruction to preload values into the cache without blocking the
 computation. Using this instruction, the compiler can inform the cache over 100
 cycles before a load is required. Asynchronous MPI message can be used to request
@@ -162,18 +161,18 @@ online algorithm is devised which saves the blocks evicted from prefetch cache
 into another cache, \textit{evicted cache}. If the incoming request is satisfied
 by the evicted cache, according to the algorithm the size of prefetch cache is too
 small and it increases it. If the request hits prefetch cache or there is a miss
-on both of caches then the algorithm leaves the size unchanged. To determine if
-the cache size is too large, the eviction cache is observed and if eviction cache
-receives no hits then the size of the cache is decremented. In SIA, once a
+on both of caches then the algorithm leaves the size unchanged. In order to determine if
+the cache size is too large, the eviction cache is observed and if it does not
+receives any hits then the size of the cache is decremented. In SIA, once a
 iteration of a loop ends, then worker can safely evict the block from its memory,
 since in the next iteration, change of indices guarantees a different block.
 
 In SIA, blocks which are needed to be prefetched can be predicted with more accuracy
-than memory blocks. Further, the exact sequence in which blocks are needed is also known.
+than memory blocks. Further more, the exact sequence in which blocks are needed is also known.
 This makes prefetching in SIA free of few of the problems faced in general memory
 block prefetching discussed in above section. However, this cannot be used to
 prefetch a large of number of blocks at once, since it might cause network congestion.
 Similar to the problems faced in general
-memory prefetching, it is difficult to predict how many blocks to prefetch. But
+memory prefetching, it is difficult to predict how many blocks to prefetch. However,
 once the block is prefetched and computed on, the block can be safely evicted from
 memory.

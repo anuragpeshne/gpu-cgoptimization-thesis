@@ -28,7 +28,7 @@ way.
 
 Since these multi-dimensional arrays can be too
 large to hold in physical memory of a single processor, they are broken into
-blocks or super numbers. These super numbers are input to special instructions
+blocks or super numbers. These super numbers are used as input to special instructions
 written to operate on blocks instead of floating point numbers. These
 instructions are called as super instructions. Section~\ref{siaarch} describes how
 these blocks are managed among participating processors.
@@ -84,7 +84,7 @@ As mentioned above, domain experts can write their own domain-specific
 super instructions which take in single or multiple blocks and output a resulting block. These
 instructions can be written in C, C++ or Fortran. Since these languages are much
 closer to the hardware, these super instructions can be written in a very
-optimized way. Further, this facility can be exploited to port the super instructions to
+optimized way. Further more, this facility can be exploited to port the super instructions to
 other computing devices such as GPU by writing these super instructions using
 Nvidia CUDA.
 
@@ -93,7 +93,7 @@ SIA consists of SIAL compiler which translates human-readable SIAL text to
 machine friendly bytecode. This bytecode is interpreted by SIAL interpreter.
 Since this interpretation happens at runtime, the interpreter is able to optimize the
 execution based on resources available at runtime. If interpreter finds GPU
-accessible, then it may execute some part of the SIAL program on GPU and if it
+accessible, it may execute some part of the SIAL program on GPU and if it
 doesn't find it, then it can automatically fallback to CPU. Similarly, there are
 various optimizations implemented which depends on the amount of physical memory
 present on the processor.
@@ -134,18 +134,18 @@ The SIAL interpreter takes care of executing GPU or CPU implementation of an
 operation based upon availability of implementations and other factors such as
 the size of input and output.
 
-\section{Overview of the ACES}
+\section{Overview of ACES}
 ACES4 is an implementation of SIA for chemical computation. It has been executed
 on a variety of architectures but is specially optimized to enable
-calculations on leadership-class supercomputers. Using ACES4, computational scientists
-try to find approximate solutions to Schrödinger’s equation using Coupled cluster
+calculations on leadership-class supercomputers. Using ACES4, computational chemists
+try to find approximate solutions to the electronic Schrödinger equation using Coupled cluster
 methods. There exist other methods to calculate approximate solutions but Coupled
-cluster methods, although expensive computationally, are one of the most accurate methods.
+cluster methods, although computationally expensive, are one of the most accurate methods.
 The chemical computation done using ACES4 uses data of high dimensions. A typical calculation in this domain
 takes as input the geometry of a molecular system and a choice of single
 particle orbitals as the basis to expand the many-electron quantum-mechanical wave
 function. The complex algorithms, which produce properties of the molecular
-system, can easily require arrays of double precision floating point of size
+system, can easily require arrays of double precision floating point upto
 several hundred Gigabytes. Of these arrays, at least three need rapid access and
 are usually stored in RAM, the rest that are used less frequently can be stored
 on disk. SIA architecture is very suitable for these kinds of calculations since

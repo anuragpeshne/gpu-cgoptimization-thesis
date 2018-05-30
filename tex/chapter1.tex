@@ -18,10 +18,10 @@ the memory transfer between GPU and main memory, and marking regions that are we
 on a GPU. In ACES4, memory transfer is managed automatically by the runtime.
 This is implemented by tracking changes to blocks by every compute device.
 
-Still, there is a need for the SIAL programmer to decide which portion of the SIAL code
+Nonetheless, there is a need for the SIAL programmer to decide which portion of the SIAL code
 is suited for execution on GPU. Transferring data between GPU and main memory is
-expensive\cite{datatransferoptimization}, and can dominate the overall time spent in computation. Hence, marking
-which block of code is suitable for execution on GPU is not
+expensive\cite{datatransferoptimization}, and can dominate the overall time spent in computation. Therefore, marking
+correct block of code, that is suitable for execution on GPU, is not
 a trivial decision. Time taken for transfering data depends on various factors such as
 the size of the blocks involved and the super instructions in the code-block, marked
 for execution on GPU.
@@ -39,7 +39,7 @@ In SIAL, looping constructs are the only way to work with individual blocks.
 The typical workflow of working with large arrays in SIAL includes requesting a
 block of the larger array from a server,
 processing the block, computing resulting block and sending it back to a server. Though
-the operation of requesting block is nonblocking, subsequent operations
+the operation of requesting a block is nonblocking, subsequent operations
 which operate on the block, will wait until Message Passing Interface (MPI)
 transfer is completed. To reduce the overall cost of network
 transfer, prefetching of blocks has been implemented, which does the transfer concurrently
@@ -48,7 +48,7 @@ the next iteration of the loop, the wait~time for a block to be ready
 can be reduced and in some cases completely eliminated.
 
 \section{Organization of the Thesis}
-Chapter 2 presents literature study of the work done in use of GPU for general purpose
+Chapter 2 presents literature study of the previous work done in use of GPU for general purpose
 computing, efficient GPU memory transfer, and the technique of prefetching to hide
 latency in accessing the data. Then a background of this thesis, including architecture
 and implementation of SIA and ACES4, is presented in chapter~3.
