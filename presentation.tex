@@ -79,10 +79,10 @@
 \begin{frame}\frametitle{SIA}
   \begin{itemize}
     \pause
+  \item Can be deployed and scaled on multiple nodes in high performance computing cluster.
+    \pause
   \item SIMD: can execute instructions in parallel over multiple processors.
     \note[item]{Blocks of same array distributed on different workers}
-    \pause
-  \item Can be deployed and scaled on multiple nodes in high performance computing cluster.
     \pause
   \item Can support arrays larger than combined memory of all nodes in cluster by
     swapping chunks that are not \textit{hot} on hard drive.
@@ -154,7 +154,7 @@
 \State $GET\ A[i, j]$\Comment{Non Blocking}
 \State $GET\ B[j, k]$
 \State $t\_result[j, k] \gets A[i, j] \times B[j, k]$\Comment{Compute bound}
-\State $CALL\ compute\_fun(t\_result[j, k])$
+\State $CALL\ compute\_fun(t\_result[j, k], A[i, j])$
 \State $PUT\ AB[i, k] \gets t\_result[i, k]$\Comment{Blocking Network bound}
 \EndLoop
 %\hline
@@ -331,6 +331,8 @@
   \note[item]{The \texttt{hit\_ratio} represents the number of times prefetching
     was successful to hide network transfer cost.}
 \end{frame}
+
+\againframe{prefetchcode}
 
 \begin{frame}\frametitle{Prefetching Experiments: Index Length}
   \note[item]{Index length is the length of range of indices: when looping on
@@ -573,6 +575,18 @@ gpu_end
   \end{algorithmic}
 \end{frame}
 
+\begin{frame}[]
+  \frametitle{Memory Transfer}
+  \begin{itemize}
+    \pause
+  \item The peak bandwidth between the device memory and the GPU: 144 GB/s (on the NVIDIA Tesla C2050)
+    \pause
+  \item The peak bandwidth between host memory and device memory: 8 GB/s (on PCIe x16 Gen2)
+    \pause
+  \item Need to reduce the transfer costs.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Optimizing Block Copy}
   \pause
@@ -592,8 +606,6 @@ gpu_end
     \end{itemize}
   \end{itemize}
 \end{frame}
-
-%  The peak bandwidth between the device memory and the GPU is much higher (144 GB/s on the NVIDIA Tesla C2050, for example) than the peak bandwidth between host memory and device memory (8 GB/s on PCIe x16 Gen2). This disparity means that your implementation of data transfers between the host and GPU devices can make or break your overall application performance.
 
 \begin{frame}[fragile]
   \frametitle{Memory Pinning}
