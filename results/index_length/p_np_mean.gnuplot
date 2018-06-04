@@ -1,7 +1,7 @@
 set term epslatex color colortext dl 3 lw 3
 set output 'results/index_length/p_np_mean.eps'
 set datafile separator ","
-set xlabel 'Index Length'
+set xlabel 'Index Range'
 set ylabel 'Seconds'
 set key outside top center
 set grid

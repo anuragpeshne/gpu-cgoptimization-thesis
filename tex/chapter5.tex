@@ -72,7 +72,7 @@ this metadata and pointer to the memory location in GPU and main memory in form 
 an object of another class \texttt{Device\_Info}.
 
 Due to this additional layer, supporting multiple compute devices is now possible.
-The metadata includes flags for block data being \textit{dirty} and \textit{valid}.
+The metadata includes flags for block data being \textit{valid}.
 It also includes a field, \textbf{version number}, which is incremented each time the block is changed
 by the compute device. This helps in keeping memory of different compute devices
 synchronized.
@@ -83,7 +83,6 @@ synchronized.
 class DeviceInfo {
   double* data_ptr_;
   unsigned int data_version_;
-  bool isDirty;  // is block data modified/dirty
   bool isAsync;  // are there any pending operations on device
 }
 \end{lstlisting}
@@ -118,8 +117,6 @@ the class \texttt{Device\_Info} in C++ language.
     {
       |[title]|Device\_Info    &            \\
       {\texttt{data\_version}} & {$\dotsb$} \\
-      {\texttt{onDevice}}      & {$\dotsb$} \\
-      {\texttt{isDirty}}       & {$\dotsb$} \\
       {\texttt{isAsync}}       & {$\dotsb$} \\
       {\texttt{data}}          & {}         \\
     };
@@ -128,8 +125,6 @@ the class \texttt{Device\_Info} in C++ language.
     {
       |[title]|Device\_Info    &            \\
       {\texttt{data\_version}} & {$\dotsb$} \\
-      {\texttt{onDevice}}      & {$\dotsb$} \\
-      {\texttt{isDirty}}       & {$\dotsb$} \\
       {\texttt{isAsync}}       & {$\dotsb$} \\
       {\texttt{data}}          & {}         \\
     };
@@ -147,8 +142,8 @@ the class \texttt{Device\_Info} in C++ language.
     \draw[*->] let \p1 = (block-5-2.one), \p2 = (block-5-2.center) in (\x1,\y2)    -- (CPU_device);
     \draw[*->] let \p1 = (block-5-2.second), \p2 = (block-5-2.center) in (\x1,\y2) -- (GPU_device);
 
-    \draw[*->] (CPU_device-6-2.center) -- (cpu-mem);
-    \draw[*->] (GPU_device-6-2.center) -- (gpu-mem);
+    \draw[*->] (CPU_device-4-2.center) -- (cpu-mem);
+    \draw[*->] (GPU_device-4-2.center) -- (gpu-mem);
   \end{tikzpicture}
   \caption{\texttt{Block} and \texttt{Device\_Info} structure}\label{fig:Device_Info_Structure}
 \end{figure}
@@ -576,7 +571,7 @@ the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
     \node[typetag] (pinned1)        at (0, 1) {Pinned Memory};
     \node[typetag] (main-pageable1) at (2.5, 1) {Pageable Memory};
     \node[typetag] (fab-buff1)      at (5, 1) {Fabric Buffer}
-    edge[thickblue] (pinned1);
+      edge[thickblue] (pinned1);
 
     \node[title]   (gpu-title2)     at (13, 5) {DEST GPU};
     \node[typetag] (gpu-ram2)       at (13, 4) {DRAM}

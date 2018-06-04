@@ -5,13 +5,14 @@
 \setbeamertemplate{navigation symbols}{}%remove navigation symbols
 \setbeamertemplate{footline}[frame number]
 \mode<presentation>{}
-\setbeamercovered{dynamic}
+%\setbeamercovered{dynamic}
 
 \usepackage{tikz}
 \usetikzlibrary{calc,shapes.multipart,chains,arrows,matrix,fit}
 \usepackage{listings}
 \usepackage{algpseudocode}
 \usepackage{array}
+\usepackage{epstopdf}
 
 %% preamble
 \title{Enhancements to Looping Constructs Using Prefetching and Exploiting GPU}
@@ -23,14 +24,14 @@
 \begin{frame}
   \titlepage
 \end{frame}
-
+% center heading
 %% normal frame
 \begin{frame}\frametitle{Contents}
   \note[item]{Agenda for today.}
   \pause
   \begin{itemize}
     \note[item]{First some background, what is SIA, how it works.}
-  \item Super Instruction Architecture (SIA)
+  \item Overview% Super Instruction Architecture (SIA)
     \pause
     \note[item]{What we did.}
   \item 2 Enhancements
@@ -49,20 +50,20 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{SIA}
+\begin{frame}[fragile]\frametitle{Super Instruction Architecture (SIA)}
   \begin{itemize}
     \pause
   \item Parallel Programming Environment.
     \pause
   \item Engineered to solve very large computation problems expressed in terms of
-    operation on multidimensional arrays.
+    operations on multidimensional arrays.
     \pause
   \item Algorithms are expressed in terms of blocks or multidimensional arrays
     rather than individual floating point numbers:
     \begin{lstlisting}[]
       do i
         do j
-          x = A[i,j] * B[i,j]
+          x = A[i,j,k] * B[i,j,l]
         enddo j
       enddo i
     \end{lstlisting}
@@ -81,11 +82,8 @@
     \pause
   \item Can be deployed and scaled on multiple nodes in high performance computing cluster.
     \pause
-  \item SIMD: can execute instructions in parallel over multiple processors.
-    \note[item]{Blocks of same array distributed on different workers}
-    \pause
   \item Can support arrays larger than combined memory of all nodes in cluster by
-    swapping chunks that are not \textit{hot} on hard drive.
+    swapping blocks that are not \textit{hot} on hard drive.
     \pause
   \item Participating nodes in cluster are divided into Servers and Workers:
     \begin{itemize}
@@ -114,7 +112,7 @@
     \note[item]{Separation of concern: domain programmer deal with domain logic,
       runtime handles scheduling, executing in parallel, choosing optimization etc}
     \pause
-  \item Support for Blocks as first class citizen.
+  \item Support for Blocks as first class objects.
     \pause
   \item Intended to be used by domain programmer.
     \note[item]{High level, easy for domain programmer to code using it.}
@@ -408,6 +406,71 @@
 \end{frame}
 
 \begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size_lookahead/16}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size_lookahead/32}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size_lookahead/64}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size_lookahead/128}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size_lookahead/256}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size_lookahead/512}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size_lookahead/1024}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+\end{frame}
+
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
+  \note[item]{\texttt{wait\_time} for the \textbf{first} iteration}
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/block_size_lookahead/2048}}
+    \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for first request}
+  \end{figure}
+\end{frame}
+
+
+\begin{frame}\frametitle{Prefetching: Number of Blocks to Prefetch}
   \note[item]{This time to overall mean \texttt{wait\_time}}
   \begin{figure}[h]
     \resizebox{.9\linewidth}{!}{\input{results/look_ahead/avg_wait_time}}
@@ -434,7 +497,7 @@
   \frametitle{Overall Improvement: \texttt{rccsd\_rhf}}
   \fontsize{7pt}{7.2}\selectfont
   \begin{figure}[h]
-    \resizebox{.9\linewidth}{!}{\input{results/prefetch_real/rccsd_rhf}}
+    \resizebox{.9\linewidth}{!}{\input{results/prefetch_real/rccsd_rhf256}}
     \\
     \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (0.5cm,0.25cm);} w/o Prefetch Total \texttt{wait\_time}.
     \tikz{\path[draw,fill={rgb:red,254;green,56;blue,34}] (0,0) rectangle (0.5cm,0.25cm);} w/o Prefetch Barrier \texttt{wait\_time}
@@ -519,8 +582,6 @@ gpu_end
     {
       |[title]|Device\_Info    &            \\
       {\texttt{data\_version}} & {$\dotsb$} \\
-      {\texttt{onDevice}}      & {$\dotsb$} \\
-      {\texttt{isDirty}}       & {$\dotsb$} \\
       {\texttt{isAsync}}       & {$\dotsb$} \\
       {\texttt{data}}          & {}         \\
     };
@@ -531,8 +592,6 @@ gpu_end
     {
       |[title]|Device\_Info    &            \\
       {\texttt{data\_version}} & {$\dotsb$} \\
-      {\texttt{onDevice}}      & {$\dotsb$} \\
-      {\texttt{isDirty}}       & {$\dotsb$} \\
       {\texttt{isAsync}}       & {$\dotsb$} \\
       {\texttt{data}}          & {}         \\
     };
@@ -546,8 +605,8 @@ gpu_end
     \node[container, right=of cpu-mem] (gpu-mem)
     {GPU Memory}; %\includegraphics[width=.10\textwidth]{images/gpu-card.png}};
 
-    \draw[*->] (CPU_device-6-2.center) -- (cpu-mem);
-    \draw[*->] (GPU_device-6-2.center) -- (gpu-mem);
+    \draw[*->] (CPU_device-4-2.center) -- (cpu-mem);
+    \draw[*->] (GPU_device-4-2.center) -- (gpu-mem);
   \end{tikzpicture}
   \caption{\texttt{Block} and \texttt{Device\_Info} structure}
 \end{figure}
@@ -575,7 +634,7 @@ gpu_end
   \end{algorithmic}
 \end{frame}
 
-\begin{frame}[]
+\begin{frame}[fragile]
   \frametitle{Memory Transfer}
   \begin{itemize}
     \pause
@@ -594,7 +653,7 @@ gpu_end
   \item \texttt{A[i,j] = B[j,k]}
     \begin{itemize}
       \pause
-    \item A is going to be read - no need to be updated
+    \item A is going to be written - no need to be updated
       \pause
     \item B is going to be read - update
     \end{itemize}
@@ -938,20 +997,33 @@ gpu_end
   \end{table}
 \end{frame}
 
-\begin{frame}[]
-  \frametitle{Conclusion: Prefetching}
-  \begin{itemize}
-    \pause
-  \item Prefetching makes first iteration expensive
-    \pause
-  \item Larger indices range can make up for it
-    \pause
-  \item Hit Ratio can be used as a metric to measure effectiveness of Prefetching
-    \pause
-  \item Prefetching helpful only when \texttt{wait\_time} is made up of network wait
-    time
-  \end{itemize}
+%\begin{frame}[fragile]
+%  \frametitle{Conclusion: Prefetching}
+%  \begin{itemize}
+%    \pause
+%  \item Prefetching makes first iteration expensive
+%    \pause
+%  \item Larger indices range can make up for it
+%    \pause
+%  \item Hit Ratio can be used as a metric to measure effectiveness of Prefetching
+%    \pause
+%  \item Prefetching helpful only when \texttt{wait\_time} is made up of network wait
+%    time
+%  \end{itemize}
+%\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Overall Improvement: \texttt{rccsd\_rhf}}
+  \fontsize{7pt}{7.2}\selectfont
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/gpu_real/overall}}
+    \\
+    \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (0.5cm,0.25cm);} Total Time
+    \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (0.5cm,0.25cm);} Allocation Time
+    \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (0.5cm,0.25cm);}  Block Transfer Time
+  \end{figure}
 \end{frame}
+
 
 \begin{frame}[fragile]
   \frametitle{Conclusion: GPU}

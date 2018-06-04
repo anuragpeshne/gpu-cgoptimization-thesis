@@ -11,6 +11,15 @@ LOOK_AHEAD_EPS = results/look_ahead/hit_ratio.eps \
 								 results/look_ahead/avg_wait_time.eps \
 								 results/look_ahead/first_wait_time.eps
 
+BLOCK_SIZE_LOOKAHEAD = results/block_size_lookahead/16.eps \
+											 results/block_size_lookahead/32.eps \
+											 results/block_size_lookahead/64.eps \
+											 results/block_size_lookahead/128.eps \
+											 results/block_size_lookahead/256.eps \
+											 results/block_size_lookahead/512.eps \
+											 results/block_size_lookahead/1024.eps \
+											 results/block_size_lookahead/2048.eps
+
 INDEX_LENGTH_EPS = results/index_length/p_first_mean.eps \
 									 results/index_length/p_np_mean.eps \
 									 results/index_length/hitratio.eps
@@ -26,7 +35,9 @@ MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps \
 
 PREFETCH_REAL = results/prefetch_real/servers.eps \
 								results/prefetch_real/rccsd_rhf.eps \
+								results/prefetch_real/rccsd_rhf256.eps \
 								results/prefetch_real/barrier_wait_time.eps
+GPU_REAL = results/gpu_real/overall.eps
 
 all: main.pdf
 
@@ -40,6 +51,7 @@ $(MEM_PIN_EPS): results/mempin/block_copy/data.csv \
 								results/mempin/overhead/data.csv results/mempin/rdma/data.csv \
 								results/mempin/caching/data.csv
 $(PREFETCH_REAL): results/prefetch_real/data.csv
+$(GPU_REAL): results/gpu_real/data.csv
 
 %.eps: %.gnuplot
 	gnuplot $<
@@ -47,7 +59,7 @@ $(PREFETCH_REAL): results/prefetch_real/data.csv
 main.bbl: bib/References.bib
 	bibtex main
 
-main.pdf: $(TEX_FILES) $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS) $(PREFETCH_REAL)
+main.pdf: $(TEX_FILES) $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS) $(PREFETCH_REAL) $(GPU_REAL)
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
 	pdflatex --output-format=pdf main.tex
@@ -60,5 +72,5 @@ clean:
 	find ./results/ -name *.eps -exec rm {} \;
 	find ./retults/ -name *.tex -exec rm {} \;
 
-slides:
+slides: $(TEX_FILES) $(BLOCK_SIZE_EPS) $(LOOK_AHEAD_EPS) $(BLOCK_SIZE_LOOKAHEAD) $(INDEX_LENGTH_EPS) $(MEM_PIN_EPS) $(PREFETCH_REAL) $(GPU_REAL)
 	pdflatex --output-format=pdf presentation.tex
