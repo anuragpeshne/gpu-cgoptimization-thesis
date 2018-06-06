@@ -1,0 +1,4 @@
+Workers,Servers,Program  ,No Pref Time,Pref Time,No Pref HitRatio,Pref HitRatio,Pref wait_t     ,Pref barrier wait_t,No Pref wait_t  ,No Pref barrier wait_t
+16, 16, scf_rhf, 3986.04, 3981.55
+16, 16, tran_rhf, 1150.08, 1208.13
+16, 16, rccsd_rhf, 38959.4, 34706.3, 0.410207, 0.751678, 4065.74345549212, 514.85238250904, 7906.05259702362, 891.4605849009

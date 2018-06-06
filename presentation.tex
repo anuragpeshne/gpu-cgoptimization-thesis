@@ -508,6 +508,20 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Overall Improvement: \texttt{rccsd\_rhf}}
+  \fontsize{7pt}{7.2}\selectfont
+  \begin{figure}[h]
+    \resizebox{.9\linewidth}{!}{\input{results/prefetch_real/rccsd_rhf32}}
+    \\
+    \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (0.5cm,0.25cm);} w/o Prefetch Total \texttt{wait\_time}.
+    \tikz{\path[draw,fill={rgb:red,254;green,56;blue,34}] (0,0) rectangle (0.5cm,0.25cm);} w/o Prefetch Barrier \texttt{wait\_time}
+    \\
+    \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (0.5cm,0.25cm);} w/~~Prefetch Total \texttt{wait\_time}.
+    \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (0.5cm,0.25cm);}  w/~~Prefetch Barrier \texttt{wait\_time}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Prefetching: Conclusion}
   \begin{itemize}
   \item<2-4> Prefetching makes the first request expensive by creating network congestion.

@@ -35,6 +35,7 @@ MEM_PIN_EPS = results/mempin/block_copy/pin_vs_nopin.eps \
 
 PREFETCH_REAL = results/prefetch_real/servers.eps \
 								results/prefetch_real/rccsd_rhf.eps \
+								results/prefetch_real/rccsd_rhf32.eps \
 								results/prefetch_real/rccsd_rhf256.eps \
 								results/prefetch_real/barrier_wait_time.eps
 GPU_REAL = results/gpu_real/overall.eps
@@ -50,8 +51,10 @@ $(MEM_PIN_EPS): results/mempin/block_copy/data.csv \
 								results/optimized_block_transfer/data.csv \
 								results/mempin/overhead/data.csv results/mempin/rdma/data.csv \
 								results/mempin/caching/data.csv
-$(PREFETCH_REAL): results/prefetch_real/data.csv
-$(GPU_REAL): results/gpu_real/data.csv
+$(PREFETCH_REAL): results/prefetch_real/data.csv \
+									results/prefetch_real/data256.csv \
+									results/prefetch_real/data32.csv
+$(GPU_REAL): results/gpu_real/C12H10.csv
 
 %.eps: %.gnuplot
 	gnuplot $<
