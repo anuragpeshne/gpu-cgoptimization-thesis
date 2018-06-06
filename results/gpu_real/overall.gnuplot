@@ -13,15 +13,21 @@ set yrange [0:*]
 unset xtics
 
 set xlabel 'rccsd-rhf'
-plot newhistogram "CUDA un-aware Unpinned", 'results/gpu_real/data.csv' every ::0::1 using 2 linecolor rgb "#2F6005",\
-                                            'results/gpu_real/data.csv' every ::0::1 using 3 linecolor rgb "#FE4236",\
-                                            'results/gpu_real/data.csv' every ::0::1 using 4 linecolor rgb "#8BB911",\
-     newhistogram "CUDA un-aware Pinned",   'results/gpu_real/data.csv' every ::2::2 using 2 linecolor rgb "#2F6005",\
-                                            'results/gpu_real/data.csv' every ::2::2 using 3 linecolor rgb "#FE4236",\
-                                            'results/gpu_real/data.csv' every ::2::2 using 4 linecolor rgb "#8BB911",\
-     newhistogram "CUDA aware Pinned",      'results/gpu_real/data.csv' every ::3::3 using 2 linecolor rgb "#2F6005",\
-                                            'results/gpu_real/data.csv' every ::3::3 using 3 linecolor rgb "#FE4236",\
-                                            'results/gpu_real/data.csv' every ::3::3 using 4 linecolor rgb "#8BB911",\
-     newhistogram "CUDA aware Cached",      'results/gpu_real/data.csv' every ::4::4 using 2 linecolor rgb "#2F6005" fillstyle pattern 2,\
-                                            'results/gpu_real/data.csv' every ::4::4 using 3 linecolor rgb "#FE4236" fillstyle pattern 2,\
-                                            'results/gpu_real/data.csv' every ::4::4 using 4 linecolor rgb "#8BB911" fillstyle pattern 2
+plot newhistogram "un-aware Unpinned",'results/gpu_real/C12H10.csv' every ::0::1 using 2 linecolor rgb "#2F6005",\
+                                      'results/gpu_real/C12H10.csv' every ::0::1 using 3 linecolor rgb "#FE4236",\
+                                      'results/gpu_real/C12H10.csv' every ::0::1 using 4 linecolor rgb "#8BB911",\
+     newhistogram "un-aware Pinned",  'results/gpu_real/C12H10.csv' every ::2::2 using 2 linecolor rgb "#2F6005",\
+                                      'results/gpu_real/C12H10.csv' every ::2::2 using 3 linecolor rgb "#FE4236",\
+                                      'results/gpu_real/C12H10.csv' every ::2::2 using 4 linecolor rgb "#8BB911",\
+     newhistogram "aware Pinned",     'results/gpu_real/C12H10.csv' every ::4::4 using 2 linecolor rgb "#2F6005",\
+                                      'results/gpu_real/C12H10.csv' every ::4::4 using 3 linecolor rgb "#FE4236",\
+                                      'results/gpu_real/C12H10.csv' every ::4::4 using 4 linecolor rgb "#8BB911",\
+     newhistogram "aware Cached",     'results/gpu_real/C12H10.csv' every ::5::5 using 2 linecolor rgb "#2F6005",\
+                                      'results/gpu_real/C12H10.csv' every ::5::5 using 3 linecolor rgb "#FE4236",\
+                                      'results/gpu_real/C12H10.csv' every ::5::5 using 4 linecolor rgb "#8BB911"
+
+
+# cannot paste above
+#     newhistogram "aware Unpinned",   'results/gpu_real/C12H10.csv' every ::3::3 using 2 linecolor rgb "#2F6005",\
+#                                      'results/gpu_real/C12H10.csv' every ::3::3 using 3 linecolor rgb "#FE4236",\
+#                                      'results/gpu_real/C12H10.csv' every ::3::3 using 4 linecolor rgb "#8BB911",\

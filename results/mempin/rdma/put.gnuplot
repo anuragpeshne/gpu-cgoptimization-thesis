@@ -1,4 +1,4 @@
-set term epslatex color colortext dl 3 lw 3
+set term epslatex color colortext dl 3 lw 3 size 6.5,3.62
 set output 'results/mempin/rdma/put.eps'
 set datafile separator ","
 set xlabel 'Block Size'

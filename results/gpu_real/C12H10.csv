@@ -1,6 +1,6 @@
 State,                 Overall Time, Block Copy Timer, Block Allocation Timer
-CUDA unaware Unpinned, 670.729,      42.2184,          2.72976
-CUDA unaware Pinned,   736.452,      22.1717,          141.723
-CUDA aware Unpinned,   634.232,      1.45487,          0.272888
-CUDA aware Pinned,     711.241,      1.33393,          147.567
-CUDA aware Cached,     633.024,      1.85845,          0.380155
+CUDA unaware Unpinned, 670.729,      39.6146,          2.72976
+CUDA unaware Pinned,   736.452,      19.4223,          127.7
+CUDA aware Unpinned,   634.232,      1.27918,          0.297365
+CUDA aware Pinned,     711.241,      1.19675,          134.47
+CUDA aware Cached,     633.024,      1.64824,          0.562992

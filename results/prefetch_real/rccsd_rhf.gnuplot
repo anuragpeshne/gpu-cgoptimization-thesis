@@ -12,7 +12,7 @@ set boxwidth 0.95
 set yrange [0:*]
 unset xtics
 
-set xlabel 'rccsd-rhf'
+set xlabel ' '
 plot newhistogram "1 Server", 'results/prefetch_real/data3.csv' every ::0::1 using 12 linecolor rgb "#2F6005",\
                               'results/prefetch_real/data3.csv' every ::0::1 using 13 linecolor rgb "#FE4236",\
                               'results/prefetch_real/data3.csv' every ::0::1 using 10 linecolor rgb "#8BB911",\
