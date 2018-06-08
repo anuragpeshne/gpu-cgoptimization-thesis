@@ -1,26 +1,27 @@
 % Write in only the text of your abstract, all the extra heading jargon is automatically taken care of
 \begin{abstract}
   The Super Instruction Architecture (SIA) is a parallel programming environment
-  engineered to work on large blocks of floating point numbers. Looping constructs
-  \texttt{do} and \texttt{pardo} are one of the most important constructs in Super
-  Instruction Assembly Language (SIAL) since they allow the programmer to work
-  with an individual block. In order to improve the runtime performance of the looping constructs,
-  two techniques are used: improving GPU utilization and prefetching blocks to
-  hide network latency.\\
+  engineered to solve computation involving very large, possibly sparse, multidimentional arrays.
+  SIA consists of a domain specific programming language, SIAL, and its runtime.
+  A novel feature of the programming language is that SIAL programmers express
+  algorithms in terms of operations on blocks rather than individual floating point
+  numbers. Two enhancements, improvement in the GPU support and reduction of the network
+  wait time using data prefetching, are presented in this work.\\
 
   In the previous version of SIAL, the domain programmer was required to manually transfer blocks between main memory
   and GPU memory as well as to mark parts of SIAL code to be executed on GPU. Copying data
-  between GPU memory and main memory is costly and have a high impact on overall
+  between GPU memory and main memory is expensive and can have a high impact on overall
   performance of GPU execution. In this work, automatic memory management is developed
   and several techniques, that reduce and in some cases eliminate cost of memory transfer
   between GPU and main memory, are implemented.\\
 
-  In SIAL, there is a common code pattern, to request a block of data followed by
-  computation on that block. This pattern makes inefficient use of network
-  and compute resources, since one of them remains underutilized while the other is being used.
+  In SIAL, there is a common code pattern, to request a block of data from a server
+  followed by computation on that block and finally sending it back to a server,
+  in a loop. This pattern makes inefficient use of network
+  and computational resources, since one of them remains underutilized while the other is being used.
   In order to tackle this issue, deterministic request for blocks has been exploited
-  to implement prefetching to optimally utilize the network resources during the time
-  when computational resources have blocked the control flow.\\
+  to implement prefetching to optimally utilize the network resources and the
+  computational resources.\\
 
   Various experiments have been conducted to evaluate the effect of change of various
   parameters on GPU utilization, prefetching, \texttt{wait\_time} and overall

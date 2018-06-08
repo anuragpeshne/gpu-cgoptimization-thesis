@@ -27,7 +27,7 @@ of a super instruction, GPU-ready, by inserting suitable directives.
 \subsection{GPU in Computational Chemistry}
 Various implementations of coupled cluster methods, an important class of problems
 in computational chemistry,
-on GPUs have been reported~\cite{bhaskar2013}\cite{deprince2011}\cite{maw2011}. In these
+on GPUs have been reported~\cite{bhaskar2013, deprince2011, maw2011}. In these
 implementations, a specific algorithm was selected and then implemented on a
 GPU in a highly optimized form. These implementations have hardware specific
 optimizations, and are not generic enough to remain effective as new hardware
@@ -118,7 +118,7 @@ In this section we look at work done in general idea of prefetching such as
 nonblocking fetch operation, techniques used to determine optimal prefetching
 parameters such as the number of blocks to prefetch and prefetch cache size.
 
-Prefetching is an old technique~\cite{anacker68}\cite{Smith1982}\cite{Vanderwiel2000}
+Prefetching is an old technique~\cite{anacker68, Smith1982, Vanderwiel2000}
 used to get data up in memory hierarchy before it is actually needed by the processor.
 The main aim behind prefetching is to hide the data access latency due to the difference in speed to access
 data. A variety of approaches, including hardware prefetching, and caching, compiler

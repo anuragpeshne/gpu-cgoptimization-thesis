@@ -195,7 +195,7 @@ the latest version of data can be embedded into \texttt{get\_data(device)}:
 \end{algorithm}
 
 \section{Optimizing Block Copying}
-An enormous cost has to be paid~\cite{Bakkum2010}\cite{memorytransferoverhead}
+An enormous cost has to be paid~\cite{Bakkum2010, memorytransferoverhead}
 for transferring memory to GPU as compared to the time taken for actual computation
 on GPU. Hence, to have significant speed gains by executing on GPU over CPU,
 it is necessary to minimize the time spent on block transfers. This has been
@@ -243,8 +243,8 @@ about the intent of the request can reduce several unnecessary synchronizations.
 
 \subsection{Memory Pinning}\label{memory_pinning}
 The memory allocated on CPU or main memory is pageable by default. GPUs cannot
-access data on such pageable host memory~\cite{datatransferoptimization}
-\cite{programmingguidecuda} directly. For this reason, when a memory copy operation is requested
+access data on such pageable host memory~\cite{datatransferoptimization, programmingguidecuda}
+directly. For this reason, when a memory copy operation is requested
 from a host to a GPU, the CUDA driver first allocates a temporary \textbf{page locked},
 or \textit{pinned}, memory on the host (main memory), copies the host memory to the
 temporary pinned memory and then finally transfers the data from pinned memory
@@ -303,7 +303,7 @@ modified to flow presented in~\ref{fig:w_mem_pin}.
 Apart from saving a redundant copy operation, memory page locking also helps in
 reducing time to copy because when memory is page locked, the GPU can invoke Direct
 Memory Access (DMA)
-controller~\cite{dmatransfer}\cite{whypinnedfast}\cite{teslaspecs}\cite{teslakspecs}
+controller~\cite{dmatransfer, whypinnedfast, teslaspecs, teslakspecs}
 to transfer memory, bypassing the CPU. It is reported\cite{Kaldewey:2012:GJP:2236584.2236592}
 that, using this, GPU can read main memory at PCI-E speeds.
 
@@ -317,7 +317,7 @@ elaborated in section~\ref{nonblockdevicesync}.
 \subsection{Memory Pinning Overhead}
 It was observed that while pinned memory made memory transfer faster, it carried
 a large overhead as compared to the allocation of non-pinned memory. Similar observations
-by Boyer et al~\cite{Boyer2009}\cite{memory-management-overhead}\cite{pinned-tradeoff}
+by Boyer et al~\cite{Boyer2009, memory-management-overhead, pinned-tradeoff}
 have been reported. They reported memory allocation call \texttt{cudaMalloc} to
 be 30-40\% more expensive than \texttt{malloc} and \texttt{cudaHostMalloc} to be
 slower than \texttt{malloc} by a factor of 100. To overcome this, a caching scheme was
@@ -484,7 +484,7 @@ GPU streams were used to implement non blocking SIA block synchronization. Using
 multiple CUDA streams and page locked memory, DMA controllers can be invoked to
 transfer memory from host to GPU, and vice-versa, asynchronously to both CPU and GPU
 kernel execution engine. Current generation of GPUs have two DMA
-controllers~\cite{teslaspecs}\cite{teslakspecs} and one kernel execution engine.
+controllers~\cite{teslaspecs, teslakspecs} and one kernel execution engine.
 This means that the GPU can handle 2 asynchronous memory copying operation concurrently.
 These hardware features have been exploited by implementing asynchronous memory
 copying for block synchronization.
