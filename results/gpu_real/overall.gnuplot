@@ -1,4 +1,4 @@
-set term epslatex lw 3 dl 3
+set term epslatex lw 3 dl 3 size 6.5,3.62
 set output 'results/gpu_real/overall.eps'
 set datafile separator ","
 set ylabel 'Time (seconds)'
@@ -12,22 +12,19 @@ set boxwidth 0.95
 set yrange [0:*]
 unset xtics
 
-set xlabel 'rccsd-rhf'
-plot newhistogram "un-aware Unpinned",'results/gpu_real/C12H10.csv' every ::0::1 using 2 linecolor rgb "#2F6005",\
-                                      'results/gpu_real/C12H10.csv' every ::0::1 using 3 linecolor rgb "#FE4236",\
-                                      'results/gpu_real/C12H10.csv' every ::0::1 using 4 linecolor rgb "#8BB911",\
-     newhistogram "un-aware Pinned",  'results/gpu_real/C12H10.csv' every ::2::2 using 2 linecolor rgb "#2F6005",\
-                                      'results/gpu_real/C12H10.csv' every ::2::2 using 3 linecolor rgb "#FE4236",\
-                                      'results/gpu_real/C12H10.csv' every ::2::2 using 4 linecolor rgb "#8BB911",\
-     newhistogram "aware Pinned",     'results/gpu_real/C12H10.csv' every ::4::4 using 2 linecolor rgb "#2F6005",\
-                                      'results/gpu_real/C12H10.csv' every ::4::4 using 3 linecolor rgb "#FE4236",\
-                                      'results/gpu_real/C12H10.csv' every ::4::4 using 4 linecolor rgb "#8BB911",\
-     newhistogram "aware Cached",     'results/gpu_real/C12H10.csv' every ::5::5 using 2 linecolor rgb "#2F6005",\
-                                      'results/gpu_real/C12H10.csv' every ::5::5 using 3 linecolor rgb "#FE4236",\
-                                      'results/gpu_real/C12H10.csv' every ::5::5 using 4 linecolor rgb "#8BB911"
-
-
-# cannot paste above
-#     newhistogram "aware Unpinned",   'results/gpu_real/C12H10.csv' every ::3::3 using 2 linecolor rgb "#2F6005",\
-#                                      'results/gpu_real/C12H10.csv' every ::3::3 using 3 linecolor rgb "#FE4236",\
-#                                      'results/gpu_real/C12H10.csv' every ::3::3 using 4 linecolor rgb "#8BB911",\
+set xlabel ' '
+plot newhistogram "unaware Unpin",'results/gpu_real/C12H10.csv' every ::0::1 using 2 linecolor rgb "#2F6005",\
+                                  'results/gpu_real/C12H10.csv' every ::0::1 using 3 linecolor rgb "#FE4236",\
+                                  'results/gpu_real/C12H10.csv' every ::0::1 using 4 linecolor rgb "#8BB911",\
+     newhistogram "unaware Pin",  'results/gpu_real/C12H10.csv' every ::2::2 using 2 linecolor rgb "#2F6005",\
+                                  'results/gpu_real/C12H10.csv' every ::2::2 using 3 linecolor rgb "#FE4236",\
+                                  'results/gpu_real/C12H10.csv' every ::2::2 using 4 linecolor rgb "#8BB911",\
+     newhistogram "aware Unpin",  'results/gpu_real/C12H10.csv' every ::3::3 using 2 linecolor rgb "#2F6005",\
+                                  'results/gpu_real/C12H10.csv' every ::3::3 using 3 linecolor rgb "#FE4236",\
+                                  'results/gpu_real/C12H10.csv' every ::3::3 using 4 linecolor rgb "#8BB911",\
+     newhistogram "aware Pin",    'results/gpu_real/C12H10.csv' every ::4::4 using 2 linecolor rgb "#2F6005",\
+                                  'results/gpu_real/C12H10.csv' every ::4::4 using 3 linecolor rgb "#FE4236",\
+                                  'results/gpu_real/C12H10.csv' every ::4::4 using 4 linecolor rgb "#8BB911",\
+     newhistogram "aware Cached", 'results/gpu_real/C12H10.csv' every ::5::5 using 2 linecolor rgb "#2F6005",\
+                                  'results/gpu_real/C12H10.csv' every ::5::5 using 3 linecolor rgb "#FE4236",\
+                                  'results/gpu_real/C12H10.csv' every ::5::5 using 4 linecolor rgb "#8BB911"

@@ -6,5 +6,5 @@ set ylabel 'Seconds'
 #set yrange [0:0.04]
 set key outside top center
 
-plot 'results/index_length/index_length_p.csv' using 1:4 smooth csplines title "First Iteration" dashtype 1,\
-     'results/index_length/index_length_p.csv' using 1:3 smooth csplines title "Mean" dashtype 2
+plot 'results/index_length/index_length_p.csv' using 1:4 smooth csplines title "First Iteration" dashtype 1
+#     'results/index_length/index_length_p.csv' using 1:3 smooth csplines title "Mean" dashtype 2

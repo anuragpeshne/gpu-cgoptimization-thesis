@@ -242,9 +242,10 @@ of blocks to prefetch has no effect. This explains the rise in mean
 \texttt{wait\_time\_} as \texttt{wait\_time\_} for the first request grows and the
 number of blocks available without blocking stays constant.
 
-\subsection{$C_{12}H_{10}(BP)$ Molecule}\label{sec:bp_molecule}
+\subsection{Overall Improvement}
+\subsubsection{$C_{12}H_{10}(BP)$ Molecule}\label{sec:bp_molecule}
 To study the effect of prefetching on real-world application, a job from ACES4 on
-$C_{12}H_{10}$ molecule was executed. The total number of workers were 3 and number
+$C_{12}H_{10}$ molecule in a CC-PVDZ basis was executed. The total number of workers were 3 and number
 of servers were varied to study its effect on prefetching. This is plotted in
 figure~\ref{fig:prefetch_real}.
 
@@ -269,7 +270,8 @@ and rest two have considerably less \texttt{barrier wait\_time} as compared to
 overall \texttt{wait\_time}. This explains why only two of the 3 programs showed
 significant improvement by prefetching since prefetching helps in reducing \texttt{wait\_time}
 for the block to be transferred over the network. The program \texttt{sch\_rhf} did not
-have much \texttt{wait\_time} for network transfer.
+have much \texttt{wait\_time} for network transfer. The overall improvement in
+\texttt{wait\_time} for CCSD calculation is about 27\%.
 
 \begin{figure}[h]
   \input{results/prefetch_real/barrier_wait_time}
@@ -278,9 +280,55 @@ have much \texttt{wait\_time} for network transfer.
   \\
   \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (1cm,0.5cm);} w/~~Prefetch Total \texttt{wait\_time}.
   \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (1cm,0.5cm);}  w/~~Prefetch Barrier \texttt{wait\_time}
-  \caption{\texttt{wait\_time} and barrier \texttt{wait\_time} variation againsts number of servers.}
+  \caption{Overall \texttt{wait\_time} improvement in $C_{12}H_{10}$ molecule in a CC-PVDZ basis}
   \label{fig:prefetch_real_barrier}
 \end{figure}
+
+\subsubsection{$C_{20}$ Molecule}
+Another, much bigger, calculation was executed to test the effect of prefetching
+in presence of higher number of participating nodes. There were two runs of the
+calculation, first with 512 CPUs and second with 32 CPUs. In both of cases, the
+number of workers and servers were kept equal to maximize the effect of prefetching.
+
+Results of executing CCSD calculation on $C_{20}$ molecule in a CC-PVDZ basis is
+plotted in figure~\ref{fig:prefetch_real_256}.
+
+\begin{figure}[h]
+  \input{results/prefetch_real/rccsd_rhf256}
+  \\
+  \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,254;green,56;blue,34}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Barrier \texttt{wait\_time}
+  \\
+  \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (1cm,0.5cm);} w/~~Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (1cm,0.5cm);}  w/~~Prefetch Barrier \texttt{wait\_time}
+  \caption{Overall \texttt{wait\_time} improvement in CCSD calculation for $C_{20}$ molecule in a CC-PVDZ basis with 512 CPUs}
+  \label{fig:prefetch_real_256}
+\end{figure}
+
+The overall improvement in the case of 512 CPUs is not significant. It is 2\%. This
+can be attributed to the number of participating workers in the calculation. Since
+the number of workers was very high, the index range got distributed over a large
+number of workers and each worker got insufficient range for prefetching. To confirm
+this is the case, another experiment with same molecule and same basis function
+was conducted, with much lesser number of workers. The result for this calculation
+is presented in figure~\ref{fig:prefetch_real_32}.
+
+\begin{figure}[h]
+  \input{results/prefetch_real/rccsd_rhf32}
+  \\
+  \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,254;green,56;blue,34}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Barrier \texttt{wait\_time}
+  \\
+  \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (1cm,0.5cm);} w/~~Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (1cm,0.5cm);}  w/~~Prefetch Barrier \texttt{wait\_time}
+  \caption{Overall \texttt{wait\_time} improvement in CCSD calculation for $C_{20}$ molecule in a CC-PVDZ basis with 32 CPUs}
+  \label{fig:prefetch_real_32}
+\end{figure}
+
+The overall improvement, in \texttt{wait\_time} in the case of 32 CPUs, is 49\%.
+The range of index was divided over much smaller number of workers and hence
+each one of the 16 workers had enough index range to prefetch data blocks.
+
 \section{GPU}
 This section presents the experiments performed to benchmark the performance of
 using GPU.
@@ -562,3 +610,35 @@ values of allocation time are presented in table~\ref{tab:mempin_caching}.
 The caching improves the time spent in allocation by a factor of 10. However the time
 spent in non-page locked memory allocation is still less than caching by a factor
 of 10 and in some cases around 100.
+
+\subsection{Overall Improvement}
+To determine the overall improvement in the total runtime of the calculation, an
+experiment was conducted by executing CCSD calculation on $C_{12}H_{10}$ molecule
+in a CC-PVDZ basis. To study effect of each technique used, the same calculation
+was executed using different version of aces4, with some features turned off. Results
+are presented in figure~\ref{fig:gpu_real}.
+
+\begin{figure}[h]
+  \input{results/gpu_real/overall}
+  \\
+  \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (0.5cm,0.25cm);} Total Time
+  \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (0.5cm,0.25cm);} Allocation Time
+  \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (0.5cm,0.25cm);}  Block Transfer Time
+  \caption{Overall improvement in runtime in CCSD calculation on $C_{12}H_{10}$ molecule in a CC-PVDZ basis}
+  \label{fig:gpu_real}
+\end{figure}
+
+The version used was without page locking memory pages and without using CUDA aware
+MPI. In this case we see some time spent in memory copy operation. The next version,
+using page locked memory, reduces the time spend in block copy into half. But, the
+overall time increases due to time spend in expensive page locking operation. In
+the next version, the block copying time was eliminated using CUDA aware MPI. But
+this version doesn't page lock memory pages, so any optimizations which need page
+locked memory pages will not work. In the next version, time spent in memory
+copying is eliminated using CUDA aware MPI, as well as, the memory is page locked,
+hence optimization based on page locking can be used. In the final version, caching
+of the page locked memory is used along with CUDA aware MPI. Here, the time spent
+in copy operation is eliminated, as well as, the time spent in page locking is
+also minimized. The overall time is comparable to CUDA aware with pageable memory
+version, but in the last version all the optimizations based on page locking can
+be exploited.

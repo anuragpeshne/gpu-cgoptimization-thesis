@@ -5,12 +5,12 @@ programming, the design of workers and servers, SIAL, parallel looping construct
 and design of GPU implementation.
 
 \section{SIA}
-The SIA is a special purpose, domain agnostic,
-parallel programming framework which is engineered for solving very large
-computation. SIA expresses the computation in terms of multi-dimensional arrays and
-instructions, which operate on complete arrays. This way of expressing a computation
+The SIA is a special purpose, domain agnostic, parallel programming framework which
+is engineered for solving computation on very large, possibly sparse, multidimensional
+arrays. SIA expresses the computation in terms of blocks of multidimensional arrays
+and instructions, which operate on these blocks. This way of expressing a computation
 is different from conventional programming
-languages wherein computation is described in terms of individual floating point
+languages, wherein computation is described in terms of individual floating point
 number and operations which work on these individual numbers. Aggregating
 individual numbers into blocks results in better performance and higher utilization
 of resources. However, this adds considerable complexity to programs since now
@@ -26,7 +26,7 @@ There is an added advantage of expressing computation in terms of blocks in a pa
 framework, that the work can be distributed among participating nodes in a natural
 way.
 
-Since these multi-dimensional arrays can be too
+Since these multidimensional arrays can be too
 large to hold in physical memory of a single processor, they are broken into
 blocks or super numbers. These super numbers are used as input to special instructions
 written to operate on blocks instead of floating point numbers. These

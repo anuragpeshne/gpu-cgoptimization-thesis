@@ -11,7 +11,10 @@ Thus to make up for it, the length of the range of indices should be long enough
 ratio, as defined in section~\ref{sec:hit_ratio}, can be used as a metric to evaluate
 the performance of prefetching. As seen in section~\ref{sec:bp_molecule}, prefetching
 helps in reducing overall \texttt{wait\_time} when most of the \texttt{wait\_time}
-is due to blocking for data block transfer over the network.
+is due to blocking for data block transfer over the network. Also, the total number
+of workers participating in the computation should be taken in consideration.
+If the number of workers is very high then the index range will be divided among high number
+of workers and each individual worker will not get sufficient index range for prefetching.
 
 Future work includes exploiting the provision to dynamically vary the number of blocks
 to prefetch to strike a balance between high cost of the initial request and relatively

@@ -16,23 +16,24 @@ OpenMPC~\cite{openmpc} and hiCuda~\cite{hicuda}. The approach taken by these mod
 is to make an implementation GPU-ready by placing directives which make
 execution of loops parallel.
 
-This approach, however, is not suitable for SIAL, which works with blocks rather
-than individual floating point number. SIAL has its own parallel looping construct which
-distributes the loop iterations among participating nodes. Each participating node,
-having acess to GPU, can execute super instructions using GPU. These super instructions,
-can make use of above models to make an existing CPU implementation
-GPU-ready by inserting suitable directives or by having a completely rewritten low-level
-CUDA implementation.
+Whereas, directives used in SIAL, in the previous version of ACES, ACESIII, were to manage
+data transfer between GPU and main memory and to mark block of code suitable for
+execution on GPU. These directives are very different from the directives mentioned
+in the above models, which hide the complexities of working with GPU and allows
+developers to work at higher abstraction than CUDA.
+However, these models can be used to make an existing CPU implementation
+of a super instruction, GPU-ready, by inserting suitable directives.
 
 \subsection{GPU in Computational Chemistry}
-Various implementations of coupled cluster methods in computational chemistry
+Various implementations of coupled cluster methods, an important class of problems
+in computational chemistry,
 on GPUs have been reported~\cite{bhaskar2013}\cite{deprince2011}\cite{maw2011}. In these
 implementations, a specific algorithm was selected and then implemented on a
 GPU in a highly optimized form. These implementations have hardware specific
 optimizations, and are not generic enough to remain effective as new hardware
 development takes place.
 
-One of the implementations of contraction operators on a GPU by
+One of the implementations of tensor contraction operators on a GPU by
 Ma~et~al.~\cite{Ma2013} generates CUDA code to directly implement the contractions
 by optimizing for the particular order of indices in the contractions. This, as
 compared to using permutations and then two-dimensional matrix-matrix multiplication
@@ -130,7 +131,7 @@ available. Porterfield~\cite{Porterfield1989} introduced the idea of software pr
 using special instruction to preload values into the cache without blocking the
 computation. Using this instruction, the compiler can inform the cache over 100
 cycles before a load is required. Asynchronous MPI message can be used to request
-the server for the next block without blocking the control flow. The runtime can
+the server for the next block without waiting for the data transfer to complete. The runtime can
 request for blocks several iteration before the blocks are required.
 
 Prefetching is also exploited in the area of disk IO apart from feeding processor cache

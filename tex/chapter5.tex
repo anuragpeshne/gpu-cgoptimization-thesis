@@ -333,7 +333,7 @@ is similar to dynamic memory allocation, it needs to find suitable size of
 memory block such that least space in form of internal fragmentation is wasted.
 But the memory blocks cannot be split or coalesced, like in dynamic allocation.
 
-\subsubsection{Implementation of Caching Mechanism}
+\subsubsection{Implementation of Caching Mechanism}\label{sec:cachingmech}
 When a page locked block of memory is marked for deallocation, instead of un-pinning it and calling
 \texttt{delete[]} on it, it is saved in a list. Two maps are used for bookkeeping.
 One of it, \texttt{free\_list}, presented in figure~\ref{fig:free_list},
@@ -459,6 +459,18 @@ of the allocated block to populate \texttt{free\_list}.
     % \hline
   \end{algorithmic}
 \end{algorithm}
+
+\subsubsection{Reusing Page Locked Memory Pages Allocated to Temporary Blocks}
+Temporary blocks in SIAL are deleted at end of each iteration in a loop. Page
+locked memory allocated to temporary blocks can be reused very efficiently.
+Effective caching mechanism is implemented by allocating page locked memory
+for the largest possible block of all arrays involved in a loop. This
+way, it is guaranteed that page locked memory allocated for a block will
+be sufficient for any other block of the same array in the loop. This results
+in paying for page locking just once per array in a loop. Furthermore, this
+strategy can be effectively combined with the caching mechanism, described
+in section~\ref{sec:cachingmech}, to reuse page locked memory buffers across
+loops.
 
 \subsection{GPU Streams}
 A \textit{stream} in CUDA is a sequence of operations that execute on the device

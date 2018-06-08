@@ -11,26 +11,20 @@ it, the resulting block is sent back to a server. This common pattern can be
 summarized as single or multiple network bound operation surrounding one or more
 compute bound operations.
 
-%\hline
-\begin{algorithm}  {Processing large array}
-%\hline %
-\singlespacing
+\begin{lstlisting}[caption={Code Fragment from ACESIII for CCSD calculation},
+  label={alg:SIALWorkFLow}]
+PARDO i1, i, a, i2
+#
+  REQUEST VSpipi[a,i2,i,i1]
+  GET t1a_old[a,i2]
+#
+  Tii[i1,i]        = VSpipi[a,i2,i,i1]*t1a_old[a,i2]
+  PUT Fmi_a[i1,i] += Tii[i1,i]
+#
+ENDPARDO i1, i, a, i2
+\end{lstlisting}
 
-\begin{algorithmic}[1]\label{alg:SIALWorkFLow}
-%\caption{An example of typical workflow in SIAL}
-\Loop\Comment{SIAL do/pardo loop}
-\State $GET\ A[i, j]$\Comment{Request data from a server asynchronously}
-\State $GET\ B[j, k]$\Comment{Network bound}
-\State $t\_result[i, k] \gets A[i, j] \times B[j, k]$\Comment{Wait for A, B to be ready}
-\State $s\_result \gets A[i, j] \times A[i, j]$\Comment{No need to wait for A}
-\State $CALL\ compute\_fun(t\_result[j, k])$\Comment{Compute bound}
-\State $PUT\ AB[i, k] \gets t\_result[i, k]$\Comment{Network bound}
-\EndLoop
-%\hline
-\end{algorithmic}
-\end{algorithm}
-
-It is clear from the pseudocode that the computing resources are wasted while
+It is clear from the SIAL code fragment in Listing~\ref{alg:SIALWorkFLow} that the computing resources are wasted while
 waiting for the data to be ready. To improve the wait time of the compute
 operation, non-blocking MPI call \texttt{MPI\_Irecv} was exploited to prefetch
 the blocks from servers over the network.
@@ -189,9 +183,15 @@ into multiple procedures:
     \begin{tikzpicture}[list/.style={rectangle split, rectangle split parts=7,
         draw, rectangle split horizontal}, >=stealth, start chain]
 
-      \node[list,on chain] (A) {};
-      \node[list,on chain] (B) {};
-      \node[list,on chain] (C) {};
+      \node[list,on chain] (A) {\nodepart{one}   1 \nodepart{two}  1
+                                \nodepart{three} 1 \nodepart{four} 1
+                                \nodepart{five}  1 \nodepart{six}  1};
+      \node[list,on chain] (B) {\nodepart{one}   1 \nodepart{two}  1
+                                \nodepart{three} 1 \nodepart{four} 1
+                                \nodepart{five}  1 \nodepart{six}  4};
+      \node[list,on chain] (C) {\nodepart{one}   1 \nodepart{two}  1
+                                \nodepart{three} 1 \nodepart{four} 1
+                                \nodepart{five}  1 \nodepart{six}  7};
       \node[on chain,draw,inner sep=6pt] (D) {};
       \draw (D.north east) -- (D.south west);
       \draw (D.north west) -- (D.south east);
@@ -201,10 +201,10 @@ into multiple procedures:
 
       \matrix[table,below=of A] (map)
       {
-        {Line Number}  & {Reference}  \\
-        {101}          & {}           \\
-        {102}          & {}           \\
-        {\vdots}       & {\vdots}     \\
+        {GET Statement}& {Set of Indices} \\
+        {101}          & {}               \\
+        {102}          & {}               \\
+        {\vdots}       & {\vdots}         \\
       };
 
       \draw[*->] (map-2-2.center) to[out=0, in=270] (B.south);
@@ -249,9 +249,15 @@ indices is free to point at any set of indices on the list.
       function/.style={rectangle, draw,align=center},
       >=stealth, start chain]
 
-      \node[list,on chain] (A) {};
-      \node[list,on chain] (B) {};
-      \node[list,on chain] (C) {};
+      \node[list,on chain] (A) {\nodepart{one}   1 \nodepart{two}  1
+                                \nodepart{three} 1 \nodepart{four} 1
+                                \nodepart{five}  1 \nodepart{six}  1};
+      \node[list,on chain] (B) {\nodepart{one}   1 \nodepart{two}  1
+                                \nodepart{three} 1 \nodepart{four} 1
+                                \nodepart{five}  1 \nodepart{six}  4};
+      \node[list,on chain] (C) {\nodepart{one}   1 \nodepart{two}  1
+                                \nodepart{three} 1 \nodepart{four} 1
+                                \nodepart{five}  1 \nodepart{six}  7};
       \node[on chain,draw,inner sep=6pt] (D) {};
       \draw (D.north east) -- (D.south west);
       \draw (D.north west) -- (D.south east);
