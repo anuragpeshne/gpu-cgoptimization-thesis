@@ -1,27 +1,30 @@
 \chapter{INTRODUCTION}\label{intro}
-The Super Instruction Architecture (SIA)\cite{Sanders:2010:BLR:1884643.1884677} is a parallel programming environment
+Advanced Concepts in Electronic Structure (ACES)
+is a series of computational chemistry packages used to calculate electronic energies,
+emphasizing coupled cluster methods. ACESII~\cite{doi:10.1002/qua.560440876} a serial program, ACESIII~\cite{doi:10.1002/wcms.77} and ACES4 are
+both parallel programs built using SIA concepts. The Super Instruction Architecture (SIA)\cite{Sanders:2010:BLR:1884643.1884677} is a parallel programming environment
 originally designed for problems in computational chemistry involving complicated
 expressions defined in terms of tensors. Tensors are represented by
 multidimensional arrays which tend to be very large in a typical computation chemistry
-calculation. SIA consists of a
+calculation. The SIA consists of a
 domain-specific programming language, Super Instruction Assembly Language
-(SIAL), and its runtime system, Super Instruction Processor (SIP). An important
-feature of SIAL is that algorithms are expressed in terms of blocks or
-multidimensional arrays rather than individual floating point numbers. This thesis
-presents two ideas to enhance the looping constructs in SIAL.
+(SIAL), and its runtime system.
+A novel feature of the programming language is that SIAL provides intrinsic support
+for partitioning arrays into blocks and the domain programmers express
+algorithms in terms of operations on blocks rather than individual floating point
+numbers. Two enhancements for ACES4, improvement in the GPU support and hiding of the network
+latency using data prefetching, are presented in this work.\\
+
 
 \section{Issues of Working with GPUs}
-Advanced Concepts in Electronic Structure (ACES)\cite{doi:10.1002/qua.560440876, doi:10.1002/wcms.77} is an implementation of SIA for
-chemical computation.
-In ACESIII\cite{Jindal2016}, the previous version of ACES, the programmer had to deal with explicitly managing
+In ACESIII\cite{Jindal2016} the programmer had to deal with explicitly managing
 the memory transfer between GPU and main memory, and marking regions that are well suited for execution
 on a GPU. In ACES4, memory transfer is managed automatically by the runtime.
 This is implemented by keeping a version number associated with each device memory
-and tracking changes to blocks by every compute device, by incrementing this version
-number.
+and tracking changes to blocks by every compute device.
 
 Nonetheless, there is a need for the SIAL programmer to decide which portion of the SIAL code
-is suited for execution on GPU. Transferring data between GPU and main memory is
+is suited for execution on GPUs. Transferring data between GPU and main memory is
 expensive\cite{datatransferoptimization}, and can dominate the overall time spent in computation. Therefore, marking
 correct block of code, that is suitable for execution on GPU, is not
 a trivial decision. Time taken for transfering data depends on various factors such as
@@ -29,32 +32,31 @@ the size of the blocks involved and operations involved in the computation.
 Larger blocks need more time to transfer between GPU and main memory, but at the
 same time, the speed improvement obtained by execution on GPU grows
 with the size of the block. Lastly, the same SIAL programs are used to
-calculate different results by supplying different data files. It is possible that,
-for the same program, the overall time required for execution on GPU be greater
-than CPU for some size of data and less than CPU for another size of data.
-This may happen if the speed gains by executing on GPU cannot compensate for the
+calculate different results by supplying different input parameters. It is possible that,
+for the same program, the overall time required for execution utilizing GPUs be greater
+than CPU only for some size of data and less than CPU for another size of data.
+This may happen if the speed gains by executing on GPUs cannot compensate for the
 transfer time.
 
 \section{Issues in Transfer of Data from Servers}
 In SIAL, looping constructs are the only way to work with individual blocks.
 The typical workflow of working with large arrays in SIAL includes requesting a
-block of the larger array from a server,
+block of a large array from a server,
 processing the block, computing resulting block and sending it back to a server. Though
 the operation of requesting a block is nonblocking, subsequent operations
-which operate on the block, will wait until Message Passing Interface (MPI)
+which operate on the block will wait until Message Passing Interface (MPI)
 transfer is completed. To reduce the overall cost of network
-transfer, prefetching of blocks has been implemented, which does the transfer concurrently
-with the block processing. By prefetching the blocks that are anticipated in
+transfer, prefetching of blocks, which does the transfer concurrently
+with the block processing, has been implemented. By prefetching the blocks that are anticipated in
 the next iteration of the loop, the wait~time for a block to be ready
 can be reduced and in some cases completely eliminated.
 
 \section{Organization of the Thesis}
-Chapter 2 presents literature study of the previous work done in use of GPU for general purpose
+Chapter~2 presents more details about SIA and ACES. Chapter 3 presents previous work done in use of GPUs for general purpose
 computing, efficient GPU memory transfer, and the technique of prefetching to hide
-latency in accessing the data. Then a background of this thesis, including architecture
-and implementation of SIA and ACES4, is presented in chapter~3.
+latency in accessing the data.
 Chapter 4 describes the technique of block prefetching implemented in SIA. Chapter 5
 presents the optimizations done for efficient GPU memory transfer. Chapter 6 states the
 results of the benchmarks and experiments. And
-finally, chapter 7 concludes this thesis by presenting the conclusion and scope
-of future works.
+finally, chapter 7 concludes this thesis by presenting the conclusion and suggestion
+of future work.

@@ -1,179 +1,136 @@
-\chapter{RELATED WORK}\label{lit}
-In this chapter, prevous work done by others on General Purpose computing on Graphics Processing
-Units (GPGPU) as well as using GPU specifically for evaluating scientific calculations
-and using prefetching to hide latency in accessing data, is discussed.
+\chapter{BACKGROUND: SUPER INSTRUCTION ARCHITECTURE} \label{background}
 
-\section{GPGPU}
-This section discusses previous developments in porting existing
-code to GPU using directives, using CUDA directly to speed up scientific calculations and
-techniques to efficiently transfer data to GPU memory.
+This chapter introduces the SIA, ACES4, block-based
+programming, the design of workers and servers, SIAL, parallel looping constructs
+and design of GPU implementation.
 
-\subsection{Directive Based GPU programming}
-There have been several developments made in the area of directive-based programming models. These
-developments include OpenACC~\cite{openacc}, OpenMP for
-accelerator~\cite{openmpforaccelerators}, and less updated developments including
-OpenMPC~\cite{openmpc} and hiCuda~\cite{hicuda}. The approach taken by these models
-is to make an implementation GPU-ready by placing directives which make
-execution of loops parallel.
+\section{SIA}
+The SIA is a special purpose, domain agnostic, parallel programming framework which
+is engineered for solving computation on very large, possibly sparse, multidimensional
+arrays. Programmer using SIA expresses the computation in terms of blocks of multidimensional arrays
+and instructions which operate on these blocks.
 
-Whereas, directives used in SIAL, in the previous version of ACES, ACESIII, were to manage
-data transfer between GPU and main memory and to mark block of code suitable for
-execution on GPU. These directives are very different from the directives mentioned
-in the above models, which hide the complexities of working with GPU and allows
-developers to work at higher abstraction than CUDA.
-However, these models can be used to make an existing CPU implementation
-of a super instruction, GPU-ready, by inserting suitable directives.
+In contrast, in conventional programming languages a computation is described in terms of individual floating point
+number and operations which work on these individual numbers. Aggregating
+individual numbers into blocks results in better performance and higher utilization
+of resources. However, this adds considerable complexity to programs since now
+the programmer has to deal with tedious and error prone index arithmetic.
 
-\subsection{GPU in Computational Chemistry}
-Various implementations of coupled cluster methods, an important class of problems
-in computational chemistry,
-on GPUs have been reported~\cite{bhaskar2013, deprince2011, maw2011}. In these
-implementations, a specific algorithm was selected and then implemented on a
-GPU in a highly optimized form. These implementations have hardware specific
-optimizations, and are not generic enough to remain effective as new hardware
-development takes place.
+Algorithms in SIA can be directly expressed in terms of
+blocks. This gives the performance benefits of using blocks and at the same time relieves
+programmer from error-prone work of dealing with indices and looping. Expressing
+computations in terms of blocks has multiple performance advantages: moving data
+blocks is more efficient since it has less overhead per individual number
+and runtime can overlap computation and network operation since transferring these
+blocks will take significant time, resulting in better overall utilization of resources.
+There is an added advantage of expressing computation in terms of blocks in a parallel
+framework: the work can be distributed among participating nodes in a natural
+way. This is essential when multidimensional arrays are too large to hold in
+physical memory of a single processor.
 
-One of the implementations of tensor contraction operators on a GPU by
-Ma~et~al.~\cite{Ma2013} generates CUDA code to directly implement the contractions
-by optimizing for the particular order of indices in the contractions. This, as
-compared to using permutations and then two-dimensional matrix-matrix multiplication
-as implemented in SIA, should achieve better performance for a contraction. These
-specialized CUDA contraction implementations were added to NWChem, a computational
-chemistry package, and considerable speedups were reported for CCSD(T) calculation
-on CPU/GPU hybrid systems. Such optimized operators can be incorporated into SIA
-as built-in super instruction for contraction.
+\section{Overview of ACES}
+ACES4 is an implementation of the SIA for chemical computation. It has been executed
+on a variety of architectures but is specially optimized to enable
+calculations on leadership-class supercomputers. Using ACES4, computational chemists
+try to find approximate solutions to the electronic Schrödinger equation using Coupled cluster
+methods. There exist other methods to calculate approximate solutions but Coupled
+cluster methods, although computationally expensive, are one of the most accurate methods.
+The chemical computation done using ACES4 uses data of high dimensions. A typical calculation in this domain
+takes as input the geometry of a molecular system and a choice of single
+particle orbitals as the basis to expand the many-electron quantum-mechanical wave
+function. The complex algorithms, which produce properties of the molecular
+system, can easily require arrays of double precision floating point upto
+several hundred Gigabytes. Of these arrays, at least three need rapid access and
+are usually stored in RAM, the rest that are used less frequently can be stored
+on disk. The SIA architecture is very suitable for these kinds of calculations since
+the workers can work on parts of array concurrently and the servers can swap out
+less frequently used arrays to disk.
 
-\subsection{GPU Programming in Other High-Level Programming Languages}
-Several attempts have been made to support GPU in general purpose high-level programming
-languages. A few examples include PyCUDA~\cite{pycuda2011},
-jCUDA~\cite{jcuda2009} and Chapel~\cite{chapelgpu}. These toolkits provide an interface
-to GPU from high-level programming languages such as Python and Java, but the
-programmer still needs to deal with low-level GPU bookkeeping such as memory
-management and defining kernels. As described in section~\ref{relatedworkacesiiigpu},
-this is similar to ACESIII, where the programmer has to manually transfer memory
-between GPU and CPU. However, SIAL is a special purpose language and SIA runtime
-has information about block sizes and block operations. GPU implementation for
-some of the common block operations can be defined into the language itself. With
-such implementations and availability of the information about block, the runtime can jump between
-GPU and CPU implementation, transparently to the domain programmer, along with taking
-care of memory management.
+\section{Architecture of SIA}\label{siaarch}
+The SIA can execute instructions in parallel over multiple processors. It can be
+deployed and scaled on multiple nodes in a high performance computing cluster
+using MPI for internode communication.
 
-\subsection{GPU in Previous Versions of ACES}\label{relatedworkacesiiigpu}
-There have been work done to exploit GPU in previous version of ACES, ACESIII,
-by Jindal~et~al~\cite{Jindal2016}. This implementation
-required the programmer to mark a block of code to be executed on GPU using
-directives \texttt{gpu\_on} and \texttt{gpu\_off} and manually manage memory
-transfer to and from GPU. This puts a burden of managing memory and recognizing
-suitable suitable block of code for execution on GPU on the domain programmer.
-If a block of SIAL code that is not suitable for execution on GPU is marked, it can result
-in suboptimal use of resources. Executing operations using small blocks on GPU can
-be slower than executing on CPU due to time spent in memory transfer and
-insignificant gain in speed by execution. It can be a difficult decision for the
-SIAL programmer to determine if a block is large enough so that benefit of executing
-it on GPU becomes significant.
+The SIA supports arrays of size greater than the combined memory of all processors
+involved in computation by providing the facility of storing the chunks which are
+not \textit{hot}, that is the chunks which are not going to be used soon, on
+larger, although slower, memory on hard drives. This swapping of blocks is automatic
+and transparent to the programmer. To facilitate the movement of data among
+processing units and swapping out blocks to hard drives, SIA divides available
+processors into two groups: workers and servers --- the workers are responsible for
+actual execution of instructions on the blocks, while the servers make sure blocks
+are served to and from the workers.
 
-\subsection{Optimizing GPU Memory Transfer}
-\subsubsection{Host Memory Transfer}
-GPU cannot work directly with pageable host memory. One of the key condition for
-effectively exploiting GPU is to optimally manage data transfer between host memory
-and GPU memory. This is true for any computation running on GPU and not just High
-Performance Computing computations. The work done by Fatica~\cite{Fatica:2009:ALC:1513895.1513901},
-in accelerating LINPACK describes various ways for optimizing memory transfers. Their
-implementation intercepts calls to \texttt{DGEMM} and \texttt{DTRSM} and executes them simultaneously
-on both GPUs and CPU cores. To achieve faster memory transfer, the implementation uses fast
-\textit{PCI-E} transfers by page locking or \textit{pinning} the host memory. Using
-PCI-E transfer, they observed a speed improvement of 5 GB/s from 2 GB/s.
-Kaldewey~et~al~\cite{Kaldewey:2012:GJP:2236584.2236592} describes similar technique
-to optimize memory transfer using common address space for CPU and GPU, known as
-Unified Virtual Addressing (UVA). This helps memory transfers in two ways: it
-allows GPU to work with memory greater than available physical GPU memory and also relieves
-the programmer from the burden of managing two memory spaces. UVA requires that the
-host memory is page locked. Using UVA, sustained rate of 6.2 GB/s has been reported in their work.
-Host memory page locking is a common technique in both of the works, which enables GPU DMA controller
-to access main memory at PCI-E speeds. This technique can be used to speed up the
-SIA block transfers. This can be incorporated into an automatic memory synchronization module
-such that it becomes transparent to the domain programmer.
+\section{SIAL}
+SIAL is a programming language provided for expressing problems of the target
+domain. The idea behind SIAL is to keep the domain issues separate from
+the platform issues. SIAL programs are written by the domain experts
+whereas the intricacies involved in execution of SIAL programs, like distribution of
+data, parallel execution, memory management, runtime optimizations, are handled
+by computing experts.
 
-\subsubsection{Network Transfer}
-GPUs are often deployed in a cluster to accelerate computationally intensive
-general-purpose tasks. Still, for communication with other nodes, the GPUs need assistance from the CPUs.
-This requires intermediate copies from the GPU memory to the host memory. To have
-a way around this inefficiency, there has been work done to make GPUDirect Remote
-Direct Memory Access (RDMA) available for InfiniBand clusters. Shainer~et~al~\cite{Shainer2011} introduced
-GPUDirect that enables GPUs to transfer data via InfiniBand without involvement
-of the CPU or need of any buffer copies. Using GPUDirect RDMA, third-party devices such as
-network adapters can access the GPU memory buffer directly, over the PCI-E bus.
-Potluri~et~al~\cite{Potluri:2013:EIM:2570457.2571010} evaluated the GPUDirect RDMA for InfiniBand. They reported
-improvement in latency of MPI Send/MPI Recv by 69\% and 32\% for message size of
-4Byte and 128KByte and improvement in uni-directional bandwidth achieved using
-4KByte and 64KByte messages by 2x and 35\%, respectively.
-Although, GPUs are not allocated to the SIA servers, GPUDirect feature can still
-be exploited to bypass the worker CPUs and to push the GPU memory buffer directly to the network
-adapter. This can also be used to completely avoid host memory by collecting the
-SIA block in GPU memory, operating on it using GPU and sending it back, bypassing
-CPU. This can help in reducing host and GPU memory transfers.
+SIAL, in addition to providing programmers with conventional constructs such as
+conditional constructs, looping constructs, procedures, way to import other SIAL
+programs like general purpose programming language, also provides special parallel looping construct and a way
+to define domain-specific block operations or \textit{super instructions}. It
+has several common block operations built in. The
+parallel looping construct, \texttt{pardo}, loops over multiple indices and
+distributes loop iterations to different processors. This construct is of special
+interest to us since the optimizations done using GPUs are mostly done in the
+interpretation of this looping construct.
 
-\section{Prefetching}
-In this section we look at work done in general idea of prefetching such as
-nonblocking fetch operation, techniques used to determine optimal prefetching
-parameters such as the number of blocks to prefetch and prefetch cache size.
+As mentioned above, domain experts can write their own domain-specific
+super instructions which take in single or multiple blocks and output a resulting block. These
+instructions can be written in any general purpose programming language by following
+the SIAL calling interface. There are implementations of super instructions in
+C++ and Fortran in ACES4. Since these languages are much
+closer to the hardware, these super instructions can be written in a very
+optimized way. Further more, this facility can be exploited to port the super instructions to
+other computing devices such as GPU by writing these super instructions using
+Nvidia CUDA.
 
-Prefetching is an old technique~\cite{anacker68, Smith1982, Vanderwiel2000}
-used to get data up in memory hierarchy before it is actually needed by the processor.
-The main aim behind prefetching is to hide the data access latency due to the difference in speed to access
-data. A variety of approaches, including hardware prefetching, and caching, compiler
-techniques, pre-execution and runtime execution, have been implemented in field of
-high performance computing.
+\subsection{SIAL Interpreter}
+The SIA includes a SIAL compiler which translates human-readable SIAL text to
+machine friendly bytecode. This bytecode is interpreted by SIAL interpreter.
+Since this interpretation happens at runtime, the interpreter is able to optimize the
+execution based on resources available at runtime. If interpreter finds GPU
+accessible, it may execute some part of the SIAL program on GPU and if it
+doesn't find it, then it can automatically fallback to CPU. Similarly, there are
+various optimizations implemented which depend on the amount of physical memory
+present on the processor.
 
-Hardware prefetching techniques, which includes transferring separate
-cache blocks~\cite{Smith1978}, were implemented much before software techniques became
-available. Porterfield~\cite{Porterfield1989} introduced the idea of software prefetching
-using special instruction to preload values into the cache without blocking the
-computation. Using this instruction, the compiler can inform the cache over 100
-cycles before a load is required. Asynchronous MPI message can be used to request
-the server for the next block without waiting for the data transfer to complete. The runtime can
-request for blocks several iteration before the blocks are required.
+\section{Block Structure}
+As described above, instead of processing data as a single floating point
+number, the SIA processes blocks of floating point numbers. These blocks are chunks
+of even larger multidimensional arrays. Blocks are represented inside SIAL
+interpreter using the \texttt{Block} class. The SIA supports heterogeneous computing
+using other computing devices such as GPUs. Since GPUs have their own device memory
+which is separate from main processor memory, there is a facility in the
+\texttt{Block} class to represent the block memory in other
+computing devices. Along with member attributes which represent block metadata
+and member functions which act on the block, the Block class has pointers to
+the memory location on each computation unit: CPU, GPU and support for more
+computing device such as Intel Xeon Phi.
 
-Prefetching is also exploited in the area of disk IO apart from feeding processor cache
-from memory. Patterson et al~\cite{Patterson1994} implemented informed prefetching
-mechanism for IO intensive application to exploit highly parallel IO systems. The
-mechanism depends on disclosure of future access dynamically. In SIA, the runtime
-has information about how the array is going to be accessed by workers. Using this
-information it can predict accurately which blocks should be prefetched. It can
-also predict the order of blocks needed.
+The \texttt{Block} class, depending upon the active computing device, will return the
+appropriate device memory address. There is also logic build into the \texttt{Block}
+class to automatically synchronize memory for various devices, so that if one
+device modifies the block and then in next instruction, another device wants
+to read the block, the block memory will be automatically synchronized and the
+next device will read updated memory. This is done by maintaining version numbers
+for each memory and then updating the memory based upon the version numbers when
+it is accessed.
 
-Dahlgren and Stenström~\cite{Dahlgren1993} developed an algorithm to determine the
-number of memory blocks to prefetch. They proposed
-\textit{adaptive sequential prefetching} policy, which allows the number of blocks
-to prefetch, K, to vary during runtime of the program to reflect spatial locality
-shown by the program. K is varied by calculating \textit{prefetch efficiency} metric
-which is defined as the ratio of useful prefetched blocks to the total number of
-prefetched blocks. If the prefetch efficiency exceeds an upper threshold then K is
-incremented and decremented if it drops below a lower threshold. The value of K
-can reach 0, effectively disabling prefetching. Although, the SIA runtime can
-predict accurately the useful blocks, varying the number of blocks to prefetch, dynamically,
-can help control the network traffic. Due to several prefetching requests
-the network might get congested, resulting in delayed transfer of blocks. Workers
-can vary the number of blocks to prefetch by sensing delay in transfer of blocks.
+\section{Executing Super Instructions on GPU}
+There are two ways in which GPUs are exploited in the SIA to obtain high concurrency.
+First, the super instructions can be written in CUDA.
+Using CUDA, these instructions can make use of low-level hardware
+features and domain knowledge to fine-tune the implementation. Secondly, some of
+the general purpose block operations such as matrix multiplication, addition,
+scaling, tensor contraction for GPU are builtin the interpreter
+itself. These operations can be imported from highly optimized libraries such as
+Nvidia CuBLAS.
 
-There has been work done by Bhatia et al~\cite{Bhatia2010} to determine the size of
-the cache, to maximize hit rate in a sequential prefetching scheme. In this work, an
-online algorithm is devised which saves the blocks evicted from prefetch cache
-into another cache, \textit{evicted cache}. If the incoming request is satisfied
-by the evicted cache, according to the algorithm the size of prefetch cache is too
-small and it increases it. If the request hits prefetch cache or there is a miss
-on both of caches then the algorithm leaves the size unchanged. In order to determine if
-the cache size is too large, the eviction cache is observed and if it does not
-receives any hits then the size of the cache is decremented. In SIA, once a
-iteration of a loop ends, then worker can safely evict the block from its memory,
-since in the next iteration, change of indices guarantees a different block.
-
-In SIA, blocks which are needed to be prefetched can be predicted with more accuracy
-than memory blocks. Further more, the exact sequence in which blocks are needed is also known.
-This makes prefetching in SIA free of few of the problems faced in general memory
-block prefetching discussed in above section. However, this cannot be used to
-prefetch a large of number of blocks at once, since it might cause network congestion.
-Similar to the problems faced in general
-memory prefetching, it is difficult to predict how many blocks to prefetch. However,
-once the block is prefetched and computed on, the block can be safely evicted from
-memory.
+The SIAL interpreter takes care of executing GPU or CPU implementation of an
+operation based upon availability of implementations and other factors such as
+the size of input and output.

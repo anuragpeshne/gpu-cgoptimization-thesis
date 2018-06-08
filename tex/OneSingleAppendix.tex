@@ -11,16 +11,93 @@
 
 \appendix %
 
-\chapter*{APPENDIX \\ SIALX PROGRAM USED FOR BECHMARKING} %puts the chapter title at the beginning of the
+\chapter*{APPENDIX \\ INPUT FILES AND SIAL PROGRAMS USED FOR BECHMARKING} %puts the chapter title at the beginning of the
 % appendix without changing the chapter number
 
-\addcontentsline{toc}{chapter}{APPENDIX: SIALX PROGRAMS USED FOR BENCHMARKING} %puts the appendix title
+\addcontentsline{toc}{chapter}{APPENDIX: INPUT FILES AND SIAL PROGRAMS USED FOR BENCHMARKING} %puts the appendix title
 % in the TOC correctly
 
 \chaptermark{Appendix}
 \markboth{Appendix}{Appendix}
 \setcounter{chapter}{1} %These commands set the chapter counter properly and the appendix text
 % is ready to go.
+These experiments were carried on HiperGator Computer at UF. Table~\ref{tab:hpg2spec}
+describes the specification of HiperGator 2. Table~\ref{tab:hpgcomputespecs}
+explains the specifications of HiperGator 2 \textbf{compute} nodes and
+table~\ref{tab:hpggpuspecs} explains the specifications of HiperGator 2 \textbf{GPU}
+nodes. Table~\ref{tab:hpgconnectspecs} describes the specification for the
+node interconnect in HiperGator 2.
+
+\begin{table}[h]
+  \centering
+  \caption{HiperGator 2 Spec Sheet}
+  \begin{tabular}{l c}
+    \hline
+    Name        & Specifications  \\
+    \hline
+    Total Cores & 30,000          \\
+    Memory      & 120 Terabytes   \\
+    Storage     & 1 Petabytes     \\
+    Max Speed   & 1,100 Teraflops \\
+    \hline
+  \end{tabular}
+  \label{tab:hpg2spec}
+\end{table}
+
+\begin{table}[h]
+  \centering
+  \caption{HiperGator 2 \textbf{Compute} Node}
+  \begin{tabular}{l c}
+    \hline
+    Name                       & Specification     \\
+    \hline
+    Manufacturer               & Dell Technologies \\
+    Processor                  & Intel E5-2698v3   \\
+    Base Processor Frequency   & 2.3 GHz           \\
+    Sockets                    & 2                 \\
+    Cores per socket           & 16                \\
+    Thread(s) per core         & 1                 \\
+    Memory per node            & 128 Gigabytes     \\
+    Memory Frequency           & 2133 MHz DDR4     \\
+    \hline
+  \end{tabular}
+  \label{tab:hpgcomputespecs}
+\end{table}
+
+\begin{table}[h]
+  \centering
+  \caption{HiperGator 2 \textbf{GPU} Node}
+  \begin{tabular}{l c}
+    \hline
+    Name                       & Specification     \\
+    \hline
+    Manufacturer               & Dell Technologies \\
+    Processor                  & Intel E5-2683     \\
+    Base Processor Frequency   & 2.0 GHz           \\
+    Sockets                    & 2                 \\
+    Cores per socket           & 14                \\
+    Thread(s) per core         & 1                 \\
+    GPU                        & Tesla K80         \\
+    Memory per node            & 128 Gigabytes     \\
+    Memory Frequency           & 2133 MHz DDR4     \\
+    \hline
+  \end{tabular}
+  \label{tab:hpggpuspecs}
+\end{table}
+
+\begin{table}[h]
+  \centering
+  \caption{HiperGator 2 Node interconnect specification}
+  \begin{tabular}{l c}
+    \hline
+    Name             & Specification                                 \\
+    \hline
+    Node Connection  & Mellanox 56Gbit/s FDR InfiniBand interconnect \\
+    Core Switches    & 100 Gbit/s EDR InfiniBand standard            \\
+    \hline
+  \end{tabular}
+  \label{tab:hpgconnectspecs}
+\end{table}
 
 Listing~\ref{lst:put_test} presents the sialx program used for benchmark various
 parameters while evaluating block prefetch.
@@ -92,6 +169,90 @@ sial contraction_small
   gpu_off
 
 endsial contraction_small
+\end{lstlisting}
+
+Listing~\ref{lst:bpmolecule} presents the ZMAT file used to generate input data
+file for CCSD calculation on $C_{12}H_{10}$ molecule in CC-PVDZ basis.
+
+\begin{lstlisting}[caption={ZMAT file for CCSD calculation on $C_{12}H_{10}$ molecule in CC-PVDZ basis.},
+  label={lst:bpmolecule}]
+C12H10(BP)
+C        0.000000      0.000000      1.485300
+C        0.000000     -1.305500      0.831600
+H        0.000000     -2.201200      1.348700
+C        0.000000      1.305500      0.831600
+H        0.000000      2.201200      1.348700
+C        0.000000     -1.392100     -0.725900
+H        0.000000     -2.287800     -1.243000
+C        0.000000      1.392100     -0.725900
+H        0.000000      2.287800     -1.243000
+C        0.000000      0.000000     -1.524200
+H        0.000000      0.000000     -2.263900
+H        0.000000      0.000000      6.563900
+C        0.000000      0.000000      5.824200
+H        0.000000      2.287800      5.543000
+C        0.000000      1.392100      5.025900
+H        0.000000     -2.287800      5.543000
+C        0.000000     -1.392100      5.025900
+H        0.000000      2.201200      2.951300
+C        0.000000      1.305500      3.468400
+H        0.000000     -2.201200      2.951300
+C        0.000000     -1.305500      3.468400
+C        0.000000      0.000000      2.814700
+
+*ACES2(CALC=CCSD,BASIS=CC-PVDZ,
+#ref=uhf,mult=2,charge=-1
+cc_maxcyc=3
+sym=none,,guess=core,damp_type=davidson)
+
+*SIP
+MAXMEM=2500
+SIAL_PROGRAM=scf_rhf.siox
+SIAL_PROGRAM=tran_uhf_no4v.siox
+SIAL_PROGRAM=rccsd_rhf.siox
+\end{lstlisting}
+
+Listing~\ref{lst:C20molecule} presents the ZMAT file used to generate input data
+file for CCSD calculation on $C_{20}$ molecule in AUG-CC-PVDZ basis.
+
+\begin{lstlisting}[caption={ZMAT file for CCSD calculation on $C_{20}$ molecule in AUG-CC-PVDZ basis.},
+  label={lst:C20molecule}]
+C20
+C      -0.52468348    -1.08750645     0.41975795
+C      -1.19641536     0.16294590     0.41975742
+C      -0.21474209     1.18821243     0.41975906
+C       1.06369792     0.57140919     0.41975731
+C       0.87214374    -0.83506149     0.41975636
+C      -2.52396375     0.34375174     0.01480088
+C      -1.10687386    -2.29420637     0.01479373
+C       1.83987722    -1.76164863     0.01479410
+C       1.16971329    -2.98963502    -0.21728013
+C       3.03760663    -1.03879605    -0.21727732
+C      -2.48185146    -2.03631099    -0.21727647
+C      -0.04928196    -3.20994040    -0.21727976
+C      -2.70358159     1.73112574    -0.21727430
+C      -3.06806465    -0.94505601    -0.21727526
+C      -0.45302044     2.50665606     0.01479516
+C       2.24398142     1.20544799     0.01479749
+C       3.20477352     0.18861528    -0.21727658
+C       1.92662556     2.56792881    -0.21727743
+C      -1.84688649     2.62586429    -0.21727441
+C       0.81094572     3.10620594    -0.21727674
+
+*ACES2
+BASIS=AUG-CC-PVDZ
+#GUESS=ATOMIC
+GUESS=CORE
+calc=ccsd
+damp_type=davidson
+CALC=CCSD,SPHERICAL=on
+
+*SIP
+MAXMEM=2500
+SIAL_PROGRAM=scf_rhf.siox
+SIAL_PROGRAM=tran_rhf_no4v.siox
+SIAL_PROGRAM=rccsd_rhf.siox
+SIAL_PROGRAM=rlambda_rhf.siox
 \end{lstlisting}
 
 Git commit hashes for versions of source code used for conducting experiments:

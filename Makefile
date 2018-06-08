@@ -1,7 +1,7 @@
 TEXINPUTS := ./sty:./tex
 TEX_FILES = main.tex \
 						tex/chapter1.tex tex/chapter2.tex tex/chapter3.tex tex/chapter4.tex \
-						tex/chapter5.tex tex/chapter6.tex tex/chapter7.tex
+						tex/chapter5.tex tex/chapter6.tex
 
 BLOCK_SIZE_EPS = results/block_size/avg_all.eps \
 								 results/block_size/avg_wait_time.eps \

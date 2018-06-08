@@ -13,12 +13,18 @@ compute bound operations.
 
 \begin{lstlisting}[caption={Code Fragment from ACESIII for CCSD calculation},
   label={alg:SIALWorkFLow}]
-PARDO i1, i, a, i2
-#
-  REQUEST VSpipi[a,i2,i,i1]
+PARDO i1, i, a, i2  # parallel looping constructs
+
+  # sends a request for block of array VSpipi to the server
+  # Asynchronous operation, the runtime doesn't wait for the transfer to be completed
+  GET VSpipi[a,i2,i,i1]
   GET t1a_old[a,i2]
-#
+
+  # the runtime has to first wait for data to be ready before executing block operation
   Tii[i1,i]        = VSpipi[a,i2,i,i1]*t1a_old[a,i2]
+
+  # sends data back to the server
+  # synchronous operation, the runtime has to wait until the transfer is completed
   PUT Fmi_a[i1,i] += Tii[i1,i]
 #
 ENDPARDO i1, i, a, i2
@@ -34,8 +40,9 @@ the blocks from servers over the network.
 \subsection{pardo Loop Implementation}
 To determine which block should be prefetched, the runtime needs to predict
 the next block in the loop. This depends on what type of loop is being executed.
-While the \texttt{do} loop which iterates over the indices one by one in SIAL is
-simple, there are multiple implementations of \texttt{pardo} loop, which differ
+There are two types of looping construct in SIAL: the \texttt{do} loop iterates
+over the indices one by one and the \texttt{pardo} loop distributes the
+iterations among workers. There are multiple implementations of \texttt{pardo} loop, which differ
 in the distribution of indices and thus the distribution of blocks over workers:
 \begin{itemize}
 \item \texttt{SequentialPardoLoop}: it behaves similar to a simple do loop,
@@ -238,7 +245,7 @@ into multiple procedures:
 \end{itemize}
 
 In all, the functions \texttt{peek\_indices} and \texttt{update} can be modeled
-as producer and consumer problem on a bounded buffer. And function \texttt{prefetch}
+as producer and consumer problem on a bounded buffer. Function \texttt{prefetch}
 indices is free to point at any set of indices on the list.
 
   \begin{figure}[h] %place figure "here"
@@ -277,3 +284,247 @@ indices is free to point at any set of indices on the list.
     \end{tikzpicture}
     \caption{\texttt{update} consumes, \texttt{peek\_indices} produces if needed, \texttt{prefetch\_indices} is free to move along list} \label{fig:producer-consumer}
   \end{figure}
+
+\section{Experiments}
+This section presents several experiments conducted to investigate the optimal
+parameters and tradeoffs involved in the selection of parameters.
+
+\subsection{\texttt{hit\_ratio}}\label{sec:hit_ratio}
+To understand the performance of the prefetching mechanism, a new metric is introduced.
+Prefetch \texttt{hit\_ratio} is defined as the ratio of the number of times the
+SIA runtime did not have to block for a certain data block to be ready and the total
+number of times the data block was accessed:
+\[
+  \texttt{hit\_ratio} = \frac{number~of~times~no~blocking~required}{total~number~of~times~data~accessed}
+\]
+The \texttt{hit\_ratio} represents the number of times prefetching was successful
+to hide network transfer cost. In the following experiments \texttt{hit\_ratio}
+will be used to measure the effectiveness of parameters in prefetching.
+
+\subsection{Index Range}
+The range of indices is the range of values the indices can take in the loop.
+The range of indices are defined by the SIAL programmer at the start of the program.
+The range of indices can have a high impact on prefetching. To study the relation
+between index range and prefetching, \texttt{hit\_ratio} is observed by varying
+the range of indices. This is presented in figure~\ref{fig:hitratio}.
+\begin{figure}[h]
+  \input{results/index_length/hitratio}
+  \caption{Index Range v/s \texttt{hit\_ratio}}
+  \label{fig:hitratio}
+\end{figure}
+
+Note that the runtime has to block for data only the first time it accesses a block.
+Subsequent accesses do not need any blocking since the data is ready. Hence, the
+\texttt{hit\_ratio} with no prefetching is non zero.
+
+If an index spans only 1 then there is no scope for the runtime to do prefetching.
+This is evident from the plot when index range is 1, the \texttt{hit\_ratio} with
+prefetching is equal to with no prefetching. As the range of index is increased,
+prefetching got working. This can be easily observed from exponential growth in
+\texttt{hit\_ratio}. Eventually, the curve for \texttt{hit\_ratio} flattens out
+after 6, since no significant improvement is achieved by increasing the index range.
+
+It is observed that as the runtime prefetches multiple blocks,
+the first request to the server takes longer as the number of index range increases. This
+side effect can be explained using the preceding observation about \texttt{hit\_ratio}.
+Since the increase in index range activates prefetching, network congestion
+increases and the first request
+to the server becomes costlier. This is presented in figure~\ref{fig:p_first_mean}.
+\begin{figure}[h]
+  \input{results/index_length/p_first_mean}
+  \caption{Index Range v/s \texttt{wait\_time\_} for first iteration}
+  \label{fig:p_first_mean}
+\end{figure}
+
+It can be concluded from previous observation that prefetching increases the wait time
+for the first request to the server. Thus, to compensate for the high cost of the first
+iteration by offsetting it in subsequent iterations, the index range
+should be sufficient enough. The mean time taken per iteration is plotted against
+the index range in figure~\ref{fig:p_np_mean}.
+
+\begin{figure}[h]
+  \input{results/index_length/p_np_mean}
+  \caption{Index Range v/s \texttt{wait\_time\_} per iteration in Prefetched and no Prefetched Loop}
+  \label{fig:p_np_mean}
+\end{figure}
+
+The range of an index should be greater than five to decrease the \texttt{wait\_time\_}
+by a factor of two. The mean \texttt{wait\_time} per iteration with prefetching can
+reduce up to 3 times, as compared to with no prefetching, if the index
+range is greater than nine.
+
+\subsection{Block Size}
+Since the time to transfer block over the network is proportional to the size of the block, the
+block size affects the first request made during prefetching. Along with the first
+request, multiple requests for prefetching subsequent blocks are made. This makes
+the \texttt{wait\_time\_} for first call sensitive to block size. This is evident
+from the graph plotting Block Size against mean \texttt{wait\_time} for the first
+iteration in figure~\ref{fig:first_wait_time}.
+\begin{figure}[h]
+  \input{results/block_size/first_wait_time}
+  \caption{Block Size v/s \texttt{wait\_time\_} for first iteration}
+  \label{fig:first_wait_time}
+\end{figure}
+
+For the first iteration, \texttt{wait\_time\_} in the case of loops with prefetching
+grows faster than loops without prefetching. At size of block
+greater than 500 elements, \texttt{wait\_time\_} for the first iteration with prefetching
+is almost twice the corresponding \texttt{wait\_time\_} without prefetching.
+
+It seems that subsequent iterations are not affected by the block size in the loops
+with prefetching, since the runtime need not block for subsequent blocks. This results in reduction
+of overall mean \texttt{wait\_time\_}. This trend is presented in figure~\ref{fig:block_size_avg_wait_time}.
+
+\begin{figure}[h]
+  \input{results/block_size/avg_wait_time}
+  \caption{Block Size v/s Mean \texttt{wait\_time\_} for Prefetched and No Prefetch Loop}
+  \label{fig:block_size_avg_wait_time}
+\end{figure}
+
+The mean \texttt{wait\_time\_} grows much slower for loops with prefetching as compared
+to loops without prefetching.
+
+All of these trends of block size against first and mean \texttt{wait\_time\_} for
+loops with and without prefetching are summarized in figure~\ref{fig:block_size_avg_all}
+\begin{figure}[h]
+  \input{results/block_size/avg_all}
+  \caption{Block Size v/s Mean \texttt{wait\_time\_} for Prefetched and No Prefetched Loop}
+  \label{fig:block_size_avg_all}
+\end{figure}
+
+Although the \texttt{wait\_time\_} for the first iteration grows at the highest rate,
+prefetching compensates for it and keeps the mean \texttt{wait\_time\_} lower than
+loops without prefetching.
+
+\subsection{Number of Blocks to Prefetch}
+As stated in previous sections, prefetching affects the first request to the server
+and the size of the block also affects the first request. To observe the effect of
+the number of blocks to prefetch on the initial request, the number of blocks were
+varied and plotted against mean \texttt{wait\_time\_} for the first request. This is
+presented in figure~\ref{fig:look_ahead_first_wait_time}.
+\begin{figure}[h]
+  \input{results/look_ahead/first_wait_time}
+  \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for the first request}
+  \label{fig:look_ahead_first_wait_time}
+\end{figure}
+
+It is clear from the plot that the mean \texttt{wait\_time\_} for the first request
+grows linearly with the number of blocks to prefetch. Thus the number of blocks
+to prefetch cannot be set at very high number unless the index range is
+known to be large.
+
+To determine the effect of the number of blocks to prefetch to prefetching, the number
+of blocks to prefetch was varied and is plotted against the mean \texttt{wait\_time\_}.
+This plot is presented in figure~\ref{fig:look_ahead_avg_wait_time}.
+\begin{figure}[h]
+  \input{results/look_ahead/avg_wait_time}
+  \caption{Number of Block Prefetched v/s mean \texttt{wait\_time\_}}
+  \label{fig:look_ahead_avg_wait_time}
+\end{figure}
+
+For the case when the number of blocks prefetched is 0, which is in the case of no
+prefetching, the mean \texttt{wait\_time\_} is highest. It drops sharply as the
+number of blocks to prefetch increases. It grows again, since with an increase
+in the number of blocks to prefetch, the first request to the server gets expensive.
+
+As the number of blocks to prefetched is increased, more blocks are available for
+runtime without blocking. This is presented in figure~\ref{fig:look_ahead_hit_ratio}
+by plotting number of blocks to prefetch against \texttt{hit\_ratio}.
+
+\begin{figure}[h]
+  \input{results/look_ahead/hit_ratio}
+  \caption{Number of Block Prefetched v/s Hit Ratio for the first request}
+  \label{fig:look_ahead_hit_ratio}
+\end{figure}
+
+The hit ratio saturates after hitting a critical amount. After that increase, the number
+of blocks to prefetch has no effect. This explains the rise in mean
+\texttt{wait\_time\_} as \texttt{wait\_time\_} for the first request grows and the
+number of blocks available without blocking stays constant.
+
+\subsection{Overall Improvement}
+\subsubsection{$C_{12}H_{10}(BP)$ Molecule}\label{sec:bp_molecule}
+To study the effect of prefetching on real-world application, a job from ACES4 on
+$C_{12}H_{10}$ molecule in a CC-PVDZ basis was executed. The total number of workers were 3 and number
+of servers were varied to study its effect on prefetching. This is plotted in
+figure~\ref{fig:prefetch_real}.
+
+\begin{figure}[h]
+  \input{results/prefetch_real/servers}
+  \caption{Effects of varying number of servers on $C_{12}H_{10}$ molecule.}
+  \label{fig:prefetch_real}
+\end{figure}
+
+With the increase in the number of servers, the overall runtime for programs with
+prefetching decreases. This is clear from figure~\ref{fig:prefetch_real}, as the difference
+in the runtime of programs with and without prefetching increase. It is worth noticing
+that the only couple of programs show a significant increase in difference while one
+of the programs shows no difference in prefetching and no prefetching. To study
+why this is the case, the total \texttt{wait\_time} for the programs is plotted in
+figure~\ref{fig:prefetch_real_barrier}.
+
+In the figure~\ref{fig:prefetch_real_barrier}, along with \texttt{wait\_time},
+\texttt{barrier wait\_time} is also plotted for all the programs involved. The
+\texttt{wait\_time} of program \texttt{scf\_rhf} is mostly due to \texttt{barrier wait\_time}
+and rest two have considerably less \texttt{barrier wait\_time} as compared to
+overall \texttt{wait\_time}. This explains why only two of the 3 programs showed
+significant improvement by prefetching since prefetching helps in reducing \texttt{wait\_time}
+for the block to be transferred over the network. The program \texttt{sch\_rhf} did not
+have much \texttt{wait\_time} for network transfer. The overall improvement in
+\texttt{wait\_time} for CCSD calculation is about 27\%.
+
+\begin{figure}[h]
+  \input{results/prefetch_real/barrier_wait_time}
+  \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,254;green,56;blue,34}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Barrier \texttt{wait\_time}
+  \\
+  \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (1cm,0.5cm);} w/~~Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (1cm,0.5cm);}  w/~~Prefetch Barrier \texttt{wait\_time}
+  \caption{Overall \texttt{wait\_time} improvement in $C_{12}H_{10}$ molecule in a CC-PVDZ basis}
+  \label{fig:prefetch_real_barrier}
+\end{figure}
+
+\subsubsection{$C_{20}$ Molecule}
+Another, much bigger, calculation was executed to test the effect of prefetching
+in presence of higher number of participating nodes. There were two runs of the
+calculation, first with 512 CPUs and second with 32 CPUs. In both of cases, the
+number of workers and servers were kept equal to maximize the effect of prefetching.
+
+Results of executing CCSD calculation on $C_{20}$ molecule in a AUG-CC-PVDZ basis is
+plotted in figure~\ref{fig:prefetch_real_256}.
+
+\begin{figure}[h]
+  \input{results/prefetch_real/rccsd_rhf256}
+  \\
+  \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,254;green,56;blue,34}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Barrier \texttt{wait\_time}
+  \\
+  \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (1cm,0.5cm);} w/~~Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (1cm,0.5cm);}  w/~~Prefetch Barrier \texttt{wait\_time}
+  \caption{Overall \texttt{wait\_time} improvement in CCSD calculation for $C_{20}$ molecule in a AUG-CC-PVDZ basis with 512 CPUs}
+  \label{fig:prefetch_real_256}
+\end{figure}
+
+The overall improvement in the case of 512 CPUs is not significant. It is 2\%. This
+can be attributed to the number of participating workers in the calculation. Since
+the number of workers was very high, the index range got distributed over a large
+number of workers and each worker got insufficient range for prefetching. To confirm
+this is the case, another experiment with same molecule and same basis function
+was conducted, with much lesser number of workers. The result for this calculation
+is presented in figure~\ref{fig:prefetch_real_32}.
+
+\begin{figure}[h]
+  \input{results/prefetch_real/rccsd_rhf32}
+  \\
+  \tikz{\path[draw,fill={rgb:red,97;green,156;blue,45}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,254;green,56;blue,34}] (0,0) rectangle (1cm,0.5cm);} w/o Prefetch Barrier \texttt{wait\_time}
+  \\
+  \tikz{\path[draw,fill={rgb:red,30;green,185;blue,3}] (0,0) rectangle (1cm,0.5cm);} w/~~Prefetch Total \texttt{wait\_time}.
+  \tikz{\path[draw,fill={rgb:red,195;green,3;blue,3}] (0,0) rectangle (1cm,0.5cm);}  w/~~Prefetch Barrier \texttt{wait\_time}
+  \caption{Overall \texttt{wait\_time} improvement in CCSD calculation for $C_{20}$ molecule in a AUG-CC-PVDZ basis with 32 CPUs}
+  \label{fig:prefetch_real_32}
+\end{figure}
+
+The overall improvement, in \texttt{wait\_time} in the case of 32 CPUs, is 49\%.
+The range of index was divided over much smaller number of workers and hence
+each one of the 16 workers had enough index range to prefetch data blocks.
