@@ -11,9 +11,9 @@ it, the resulting block is sent back to a server. This common pattern can be
 summarized as single or multiple network bound operation surrounding one or more
 compute bound operations.
 
-\begin{lstlisting}[caption={Code Fragment from ACESIII for CCSD calculation},
+\begin{lstlisting}[caption={Code fragment from ACESIII for CCSD calculation},
   label={alg:SIALWorkFLow}]
-PARDO i1, i, a, i2  # parallel looping constructs
+PARDO i1, i, a, i2  # parallel looping construct
 
   # sends a request for block of array VSpipi to the server
   # Asynchronous operation, the runtime doesn't wait for the transfer to be completed
@@ -26,7 +26,7 @@ PARDO i1, i, a, i2  # parallel looping constructs
   # sends data back to the server
   # synchronous operation, the runtime has to wait until the transfer is completed
   PUT Fmi_a[i1,i] += Tii[i1,i]
-#
+
 ENDPARDO i1, i, a, i2
 \end{lstlisting}
 
@@ -40,8 +40,8 @@ the blocks from servers over the network.
 \subsection{pardo Loop Implementation}
 To determine which block should be prefetched, the runtime needs to predict
 the next block in the loop. This depends on what type of loop is being executed.
-There are two types of looping construct in SIAL: the \texttt{do} loop iterates
-over the indices one by one and the \texttt{pardo} loop distributes the
+There are two types of looping construct in SIAL: the \texttt{do} loop that iterates
+over the indices one by one and the \texttt{pardo} loop that distributes the
 iterations among workers. There are multiple implementations of \texttt{pardo} loop, which differ
 in the distribution of indices and thus the distribution of blocks over workers:
 \begin{itemize}
@@ -302,14 +302,14 @@ to hide network transfer cost. In the following experiments \texttt{hit\_ratio}
 will be used to measure the effectiveness of parameters in prefetching.
 
 \subsection{Index Range}
-The range of indices is the range of values the indices can take in the loop.
+The range of indices is the range of values the indices in the loop can take.
 The range of indices are defined by the SIAL programmer at the start of the program.
 The range of indices can have a high impact on prefetching. To study the relation
 between index range and prefetching, \texttt{hit\_ratio} is observed by varying
 the range of indices. This is presented in figure~\ref{fig:hitratio}.
 \begin{figure}[h]
   \input{results/index_length/hitratio}
-  \caption{Index Range v/s \texttt{hit\_ratio}}
+  \caption{Index range vs \texttt{hit\_ratio}}
   \label{fig:hitratio}
 \end{figure}
 
@@ -332,7 +332,7 @@ increases and the first request
 to the server becomes costlier. This is presented in figure~\ref{fig:p_first_mean}.
 \begin{figure}[h]
   \input{results/index_length/p_first_mean}
-  \caption{Index Range v/s \texttt{wait\_time\_} for first iteration}
+  \caption{Index range vs \texttt{wait\_time\_} for first iteration}
   \label{fig:p_first_mean}
 \end{figure}
 
@@ -344,7 +344,7 @@ the index range in figure~\ref{fig:p_np_mean}.
 
 \begin{figure}[h]
   \input{results/index_length/p_np_mean}
-  \caption{Index Range v/s \texttt{wait\_time\_} per iteration in Prefetched and no Prefetched Loop}
+  \caption{Index range vs \texttt{wait\_time\_} per iteration in prefetched and no prefetched loop}
   \label{fig:p_np_mean}
 \end{figure}
 
@@ -362,7 +362,7 @@ from the graph plotting Block Size against mean \texttt{wait\_time} for the firs
 iteration in figure~\ref{fig:first_wait_time}.
 \begin{figure}[h]
   \input{results/block_size/first_wait_time}
-  \caption{Block Size v/s \texttt{wait\_time\_} for first iteration}
+  \caption{Block size vs \texttt{wait\_time\_} for first iteration}
   \label{fig:first_wait_time}
 \end{figure}
 
@@ -377,7 +377,7 @@ of overall mean \texttt{wait\_time\_}. This trend is presented in figure~\ref{fi
 
 \begin{figure}[h]
   \input{results/block_size/avg_wait_time}
-  \caption{Block Size v/s Mean \texttt{wait\_time\_} for Prefetched and No Prefetch Loop}
+  \caption{Block size vs mean \texttt{wait\_time\_} for prefetched and no prefetch loop}
   \label{fig:block_size_avg_wait_time}
 \end{figure}
 
@@ -388,7 +388,7 @@ All of these trends of block size against first and mean \texttt{wait\_time\_} f
 loops with and without prefetching are summarized in figure~\ref{fig:block_size_avg_all}
 \begin{figure}[h]
   \input{results/block_size/avg_all}
-  \caption{Block Size v/s Mean \texttt{wait\_time\_} for Prefetched and No Prefetched Loop}
+  \caption{Block size vs mean \texttt{wait\_time\_} for prefetched and no prefetched loop}
   \label{fig:block_size_avg_all}
 \end{figure}
 
@@ -404,7 +404,7 @@ varied and plotted against mean \texttt{wait\_time\_} for the first request. Thi
 presented in figure~\ref{fig:look_ahead_first_wait_time}.
 \begin{figure}[h]
   \input{results/look_ahead/first_wait_time}
-  \caption{Number of Block Prefetched v/s \texttt{wait\_time\_} for the first request}
+  \caption{Number of block prefetched vs \texttt{wait\_time\_} for the first request}
   \label{fig:look_ahead_first_wait_time}
 \end{figure}
 
@@ -418,11 +418,11 @@ of blocks to prefetch was varied and is plotted against the mean \texttt{wait\_t
 This plot is presented in figure~\ref{fig:look_ahead_avg_wait_time}.
 \begin{figure}[h]
   \input{results/look_ahead/avg_wait_time}
-  \caption{Number of Block Prefetched v/s mean \texttt{wait\_time\_}}
+  \caption{Number of block prefetched vs mean \texttt{wait\_time\_}}
   \label{fig:look_ahead_avg_wait_time}
 \end{figure}
 
-For the case when the number of blocks prefetched is 0, which is in the case of no
+For the case when the number of blocks prefetched is zero, which is in the case of no
 prefetching, the mean \texttt{wait\_time\_} is highest. It drops sharply as the
 number of blocks to prefetch increases. It grows again, since with an increase
 in the number of blocks to prefetch, the first request to the server gets expensive.
@@ -433,7 +433,7 @@ by plotting number of blocks to prefetch against \texttt{hit\_ratio}.
 
 \begin{figure}[h]
   \input{results/look_ahead/hit_ratio}
-  \caption{Number of Block Prefetched v/s Hit Ratio for the first request}
+  \caption{Number of block prefetched vs the hit ratio for the first request}
   \label{fig:look_ahead_hit_ratio}
 \end{figure}
 

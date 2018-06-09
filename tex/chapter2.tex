@@ -46,7 +46,7 @@ on disk. The SIA architecture is very suitable for these kinds of calculations s
 the workers can work on parts of array concurrently and the servers can swap out
 less frequently used arrays to disk.
 
-\section{Architecture of SIA}\label{siaarch}
+\section{Architecture of the SIA}\label{siaarch}
 The SIA can execute instructions in parallel over multiple processors. It can be
 deployed and scaled on multiple nodes in a high performance computing cluster
 using MPI for internode communication.
@@ -73,7 +73,7 @@ SIAL, in addition to providing programmers with conventional constructs such as
 conditional constructs, looping constructs, procedures, way to import other SIAL
 programs like general purpose programming language, also provides special parallel looping construct and a way
 to define domain-specific block operations or \textit{super instructions}. It
-has several common block operations built in. The
+has several common block operations builtin. The
 parallel looping construct, \texttt{pardo}, loops over multiple indices and
 distributes loop iterations to different processors. This construct is of special
 interest to us since the optimizations done using GPUs are mostly done in the

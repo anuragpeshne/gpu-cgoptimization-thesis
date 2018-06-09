@@ -16,22 +16,22 @@ of workers participating in the computation should be taken in consideration.
 If the number of workers is very high then the index range will be divided among high number
 of workers and each individual worker will not get sufficient index range for prefetching.
 
-It was found that the optimal number of blocks to prefetch in most cases if one.
+It was found that the optimal number of blocks to prefetch in most cases is one.
 This result is not sensitive to the block size.
 
-Executing Super Instructions on GPU can speed up the computation when block sizes
-are large enough. Transferring blocks between GPU and host memory is expensive but it can be
-avoided or reduced by directly transferring blocks from GPU memory.
+Executing super instructions on GPU can speed up the computation when block sizes
+are large enough. Transferring blocks between a GPU and host memory is expensive but it can be
+avoided or reduced by directly transferring blocks from the GPU memory.
 Page locked memory
-can improve memory transfer speed by invoking DMA and bypassing CPU. But page locked
+can improve memory transfer speed by invoking DMA and bypassing CPU. But allocating page locked
 memory is expensive as compared to dynamically allocated memory. Page locked
 memory blocks can be cached and served with high cache hit ratio.
 
 Several further improvements to GPU utilization in ACES4 can be envisioned. First,
 more super instructions on GPUs should be implemented along with finding a way to
 easily port user defined super instructions to GPUs. Another optimization would be
-to exploit the asynchronous memory synchronization between GPU memory
-and host memory by looking ahead for instruction which needs the memory
+to exploit the asynchronous memory synchronization between the GPU memory
+and the host memory by looking ahead for instructions which need the memory
 to be transferred and initiating the asynchronous transfer as soon as data is ready.
 Feasibility of having access to GPUs on servers and implementing
 RDMA to transfer memory blocks between workers and servers can also be explored. Lastly, implementing

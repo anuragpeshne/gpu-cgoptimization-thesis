@@ -115,7 +115,7 @@ the CPU. This can help in reducing host and GPU memory transfers.
 
 \section{Prefetching}
 In this section we look at work done using the general idea of prefetching such as
-nonblocking fetch operations, techniques used to determine optimal prefetching
+nonblocking fetch operations, techniques to determine optimal prefetching
 parameters such as the number of blocks to prefetch and the prefetch cache size.
 
 Prefetching is an old technique~\cite{anacker68, Smith1982, Vanderwiel2000}
@@ -164,11 +164,11 @@ by the evicted cache, according to the algorithm the size of prefetch cache is t
 small and it increases it. If the request hits prefetch cache or there is a miss
 on both of caches then the algorithm leaves the size unchanged. In order to determine if
 the cache size is too large, the eviction cache is observed and if it does not
-receives any hits then the size of the cache is decremented. In SIA, scope rules
+receives any hits then the size of the cache is decremented. In SIA, SIAL scope rules
 indicate when blocks can be evicted.
 
 In SIA, blocks which are needed to be prefetched can be predicted with more accuracy
 than memory blocks. Further more, the exact sequence in which blocks are needed is also known.
-This makes prefetching in SIA free of few of the problems faced in general memory
+This makes prefetching in SIA free of some of the problems faced in general memory
 block prefetching discussed in above section. However, a large of number of blocks
 should not be prefetched at once, since it might cause network congestion.

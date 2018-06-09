@@ -1,13 +1,13 @@
 \chapter{EXPLOITING GPU}\label{exploitinggpu}
 \section{Background}
 \subsection{Prior Work}
-ACESIII supported exploitation of GPUs. However, the SIAL programmer had to deal
+ACESIII supported exploitation of GPUs. However, the SIAL programmer has to deal
 with a lot of low-level GPU memory operations such as allocating memory on GPU,
 copying blocks to and from GPU and deallocating memory on GPU. Since not all
 calculations are suitable to be executed on GPU, the SIAL programmer has to explicitly mark
 regions of SIAL code suitable for execution on GPU.
 
-\begin{lstlisting}[caption={Code Fragment from ACESIII for CCSD calculation},
+\begin{lstlisting}[caption={Code fragment from ACESIII for CCSD calculation},
   label={lst:ACESIII_gpucode}]
 #start of GPU region
 gpu_begin
@@ -59,7 +59,7 @@ GPU and host memory. The actual calculations are done by lines 13-27.
 \section{GPU Support in ACES4}
 The rest of this chapter describes how the support for GPUs in ACES4 was improved
 by providing automatic memory management and techniques devised to optimally transfer
-data between GPU memory and the host memory.
+the data between the GPU memory and the host memory.
 
 \section{Unoptimized Runtime Memory Management}
 To manage the block memory and to automate the memory transfer between GPU and CPU,
@@ -74,7 +74,7 @@ It also includes a field, \textbf{version number}, which is incremented each tim
 by the compute device. This helps in keeping memory of different compute devices
 synchronized.
 
-\begin{lstlisting}[caption={\texttt{Device\_Info} Class structure},
+\begin{lstlisting}[caption={\texttt{Device\_Info} class structure},
   language=C++,
   label={lst:deviceinfostructure}]
 class DeviceInfo {
@@ -200,16 +200,16 @@ achieved by deploying multiple optimizations that are explained in this section.
 
 \subsection{Reducing Block Transfers}
 The first optimization includes saving unnecessary block synchronizations by
-exploiting the semantics of SIAL. The runtime has information about whether each
-the parameter passed to builtin super instruction is going to be read, written or updated.
+exploiting the semantics of SIAL. The runtime has information about whether each of
+the parameter passed to builtin super instructions is going to be read, written or updated.
 When each element of a block is modified, it is defined as block writing. Whereas,
-if some of the elements of a block is modified, then it is defined as block updating.
-It also has this information for the user defined super instructions, since user
-defined super instructions have attributes describing the intent for each parameter.
+if only some of the elements of a block are modified, then it is defined as block updating.
+The runtime also has this information for the user defined super instructions, through
+the user provided attributes, describing the intent for each parameter.
 In listing~\ref{lst:userdefinedsuperinstructionattr}, we can see for the user
-defined super instruction \texttt{fill\_block\_sequential}, the attributes are \texttt{wr}.
-This denotes that the first parameter is going to be written and the second is going
-to be read.
+defined super instruction \texttt{fill\_block\_sequential} and the attributes \texttt{wr}.
+This denotes that the first parameter passed to \texttt{fill\_block\_sequential}
+is going to be written and the second is going to be read.
 
 \begin{lstlisting}[caption={SIAL fragment showing user defined super instruction attributes},
   language=Fortran,
@@ -343,7 +343,7 @@ by Boyer et al~\cite{Boyer2009, memory-management-overhead, pinned-tradeoff}
 have been reported. They reported memory allocation call \texttt{cudaMalloc} to
 be 30-40\% more expensive than \texttt{malloc} and \texttt{cudaHostMalloc} to be
 slower than \texttt{malloc} by a factor of 100. To overcome this, a caching scheme was
-developed for SIA to reuse the pinned memory pages.
+developed in the SIA to reuse the pinned memory pages.
 
 \subsubsection{Reusing Pinned Memory Pages}
 The problem of caching page locked memory pages is similar to the problem of dynamic
@@ -366,7 +366,7 @@ is created, pinned and returned. It is possible that there is not enough free
 memory in the system to allocate a new block, in that case, few blocks of smaller
 sizes are unpinned and returned to the OS. Once there is enough free memory, a new,
 bigger, block is created. If there
-are no blocks in \texttt{free\_list} and requested block size is greater than free memory,
+are no blocks in \texttt{free\_list} and the requested block size is greater than free memory,
 then the system is out of memory and exception is thrown.
 
 The other map serves as a reverse lookup, presented in figure~\ref{fig:reverse_lookup},
@@ -582,7 +582,7 @@ of the CPU memory bandwidth and the memory bus traffic congestion.
 This is conceptually represented in Figure~\ref{fig:gpu_buff_transfer} using orange
 arrows which denotes one transfer from source GPU memory to destination GPU memory.
 
-However, server processes in SIA are not allocated GPU since servers are not responsible
+However, server processes in the SIA are not allocated GPU since servers are not responsible
 for any heavy calculation on blocks. They manage transfer of blocks from workers and
 swap \textit{inactive} blocks to disk. Hence, a more accurate representation of
 the use of RDMA in SIA is presented in Figure~\ref{fig:gpu_buff_SIA}.
@@ -719,7 +719,7 @@ operations which exploit page locked memory.
 GPU can access only page-locked memory. Without explicit page-locked memory, the
 GPU driver first copies the memory to a temporary page locked memory and then copies
 to GPU buffer. By explicitly page locking memory, saving one copy operation is expected.
-Figure~\ref{fig:mempin_block_copy} presents varying block size against time to
+Figure~\ref{fig:mempin_block_copy} presents varying block size vs time to
 copy block.
 
 \begin{figure}[h]
@@ -730,7 +730,7 @@ copy block.
 
 \begin{table}[h]
   \centering
-  \caption{Block size against time taken to copy data in page locked and non-page locked memory}
+  \caption{Block size vs time taken to copy data in page locked and non-page locked memory}
   \begin{tabular}{l l l}
     \hline
     Block Size & Pinned      & Not Pinned  \\
@@ -774,23 +774,23 @@ figure~\ref{fig:optimized_block_transfer}.
 
 \begin{figure}[h]
   \input{results/optimized_block_transfer/rccsd_rhf}
-  \caption{Optimized v/s Unoptimized Block Transfers for \texttt{rccsd\_rhf.sialx}}
+  \caption{Optimized vs unoptimized block transfers for \texttt{rccsd\_rhf.sialx}}
   \label{fig:optimized_block_transfer}
 \end{figure}
 
 \subsection{Memory Pinning Overhead}
-To benchmark the page lock memory allocation against non-page locked memory allocation
+To benchmark the page lock memory allocation vs non-page locked memory allocation
 such as allocated using \texttt{malloc} function call, two tests were done. The
 first test benchmarks allocation and second benchmarks deallocation. These two
 operations are presented in figure~\ref{fig:mempin_alloc} and figure~\ref{fig:mempin_free}
-by plotting time taken by page locked operations against non-page locked operations.
+by plotting time taken by page locked operations vs non-page locked operations.
 
 \subsubsection{\texttt{alloc}}
 Table~\ref{tab:mempin_alloc} describes the time taken for page locked memory allocation
 and non-page locked memory allocation.
 \begin{table}[h]
   \centering
-  \caption{Block Size against Page locked and non-page locked memory allocation}
+  \caption{Block size vs page locked and non-page locked memory allocation}
   \begin{tabular}{l l l}
     \hline
     Block Size & Pinned Memory Alloc & Non Pinned Memory Alloc \\
@@ -811,7 +811,7 @@ and non-page locked memory allocation.
 
 \begin{figure}[h]
   \input{results/mempin/overhead/alloc}
-  \caption{Time taken for Pinned and non Pinned memory allocation}
+  \caption{Time taken for pinned and non pinned memory allocation}
   \label{fig:mempin_alloc}
 \end{figure}
 
@@ -823,11 +823,11 @@ memory can be around 10 to 100 times costlier than non-page locked memory.
 \subsubsection{\texttt{free}}
 A similar test was performed to benchmark page locked and non-page locked memory
 deallocation. Table~\ref{tab:mempin_free} describes the time taken by the deallocation
-operation against the varying size of the block.
+operation vs the varying size of the block.
 
 \begin{table}[h]
   \centering
-  \caption{Block size against Page locked and non-page locked memory deallocation}
+  \caption{Block size vs page locked and non-page locked memory deallocation}
   \begin{tabular}{l l l}
     \hline
     Block Size & Pinned Memory Free & Non Pinned Memory Free \\
@@ -848,7 +848,7 @@ operation against the varying size of the block.
 
 \begin{figure}[h]
   \input{results/mempin/overhead/free}
-  \caption{Time taken for Pinned and non Pinned memory de-allocation}
+  \caption{Time taken for pinned and non pinned memory de-allocation}
   \label{fig:mempin_free}
 \end{figure}
 
@@ -859,13 +859,13 @@ than non-page locked memory deallocation.
 
 \subsection{RDMA}
 To benchmark RDMA, CUDA aware implementation of MPI was used. The size of the block
-was varied against time taken to complete the MPI transfer functions. The results
+was varied vs time taken to complete the MPI transfer functions. The results
 for \texttt{GET} operation are presented in figure~\ref{fig:mempin_rdma_get}.
 
 \subsubsection{\texttt{GET}}
 \begin{figure}[h]
   \input{results/mempin/rdma/get}
-  \caption{Time taken to pass GPU and CPU buffer in \texttt{GET} operation}
+  \caption{Time taken to transfer GPU and CPU buffer in \texttt{GET} operation}
   \label{fig:mempin_rdma_get}
 \end{figure}
 
@@ -890,7 +890,7 @@ as the size of block increases.
 
 \begin{figure}[h]
   \input{results/mempin/rdma/put}
-  \caption{Time taken to pass GPU and CPU buffer in \texttt{PUT} operation}
+  \caption{Time taken to transfer GPU and CPU buffer in \texttt{PUT} operation}
   \label{fig:mempin_rdma_put}
 \end{figure}
 
@@ -932,7 +932,7 @@ presents the hit ratio for given calculation programs.
 
 \begin{table}[h]
   \centering
-  \caption{Page Locked Memory Blocks hit rate}
+  \caption{Page locked memory blocks hit rate}
   \begin{tabular}{l r r r}
     \hline
     File            & Hit   & Miss & Ratio      \\
@@ -958,7 +958,7 @@ The results are plotted in figure~\ref{fig:mempin_caching}.
 
 \begin{figure}[h]
   \input{results/mempin/caching/caching}
-  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non-Page Locked allocation
+  \caption{Page locked cached vs page locked uncached vs non-page locked allocation
   and deallocation times}
   \label{fig:mempin_caching}
 \end{figure}
@@ -970,7 +970,7 @@ values of allocation time are presented in table~\ref{tab:mempin_caching}.
 
 \begin{table}[h]
   \centering
-  \caption{Page Locked Cached v/s Page Locked Uncached v/s Non-Page Locked allocation
+  \caption{Page locked cached vs page locked uncached vs non-page locked allocation
   and deallocation times}
   \begin{tabular}{l r r r}
     \hline
