@@ -321,7 +321,7 @@ modified to flow presented in~\ref{fig:w_mem_pin}.
   \caption{\texttt{memcpy} with memory pinning}\label{fig:w_mem_pin}
 \end{figure}
 
-\subsubsection{Page Locked Memory Bandwidth}
+\subsubsection{Page locked memory bandwidth}
 Apart from saving a redundant copy operation, memory page locking also helps in
 reducing time to copy because when memory is page locked, the GPU can invoke Direct
 Memory Access (DMA)
@@ -345,7 +345,7 @@ be 30-40\% more expensive than \texttt{malloc} and \texttt{cudaHostMalloc} to be
 slower than \texttt{malloc} by a factor of 100. To overcome this, a caching scheme was
 developed in the SIA to reuse the pinned memory pages.
 
-\subsubsection{Reusing Pinned Memory Pages}
+\subsubsection{Reusing pinned memory pages}
 The problem of caching page locked memory pages is similar to the problem of dynamic
 allocation of memory, which is handled by an operating system. Extensive work~\cite{Wilson1995}
 is done in solving the problems involved in efficiently allocating memory dynamically.
@@ -355,7 +355,7 @@ is similar to dynamic memory allocation, it needs to find suitable size of
 memory block such that least space in form of internal fragmentation is wasted.
 But the memory blocks cannot be split or coalesced, like in dynamic allocation.
 
-\subsubsection{Implementation of Caching Mechanism in the SIA}\label{sec:cachingmech}
+\subsubsection{Implementation of caching mechanism in the SIA}\label{sec:cachingmech}
 When a page locked block of memory is marked for deallocation, instead of un-pinning it and calling
 \texttt{delete[]} on it, it is saved in a list. Two maps are used for bookkeeping.
 One of it, \texttt{free\_list}, presented in figure~\ref{fig:free_list},
@@ -482,7 +482,7 @@ of the allocated block to populate \texttt{free\_list}.
   \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Reusing Page Locked Memory Pages Allocated to Temporary Blocks}
+\subsubsection{Reusing page locked memory pages allocated to temporary blocks}
 Temporary blocks in SIAL go out of scope at end of each iteration in a loop. Thus page
 locked memory allocated to temporary blocks can be reused very efficiently.
 An effective caching mechanism is implemented by allocating page locked memory
@@ -501,7 +501,7 @@ Streams can be considered as pipes of operations in which the operations get eva
 First In First Out (FIFO) fashion. Operations in different streams can be interleaved
 and CUDA driver might execute them concurrently.
 
-\subsubsection{Non-Blocking Device Synchronization}\label{nonblockdevicesync}
+\subsubsection{Non-blocking device synchronization}\label{nonblockdevicesync}
 GPU streams were used to implement non-blocking SIA block synchronization. Using
 multiple CUDA streams and page locked memory, DMA controllers can be invoked to
 transfer memory from host to GPU, and vice-versa, asynchronously to both CPU and GPU
@@ -715,7 +715,7 @@ using GPU.
 Many of the optimization of involves page locking the host memory so that GPU can
 bypass processor and access the memory directly. This section presents various
 operations which exploit page locked memory.
-\subsubsection{Copy Speed}
+\subsubsection{Copy speed}
 GPU can access only page-locked memory. Without explicit page-locked memory, the
 GPU driver first copies the memory to a temporary page locked memory and then copies
 to GPU buffer. By explicitly page locking memory, saving one copy operation is expected.
@@ -894,7 +894,7 @@ as the size of block increases.
   \label{fig:mempin_rdma_put}
 \end{figure}
 
-\subsubsection{Total Transfer}
+\subsubsection{Total transfer}
 Even though there is not much improvement in speed if the address of GPU memory is
 passed to MPI function, by passing GPU address directly, the complete operation
 can be executed on GPU without requiring the data to be copied to host memory. This

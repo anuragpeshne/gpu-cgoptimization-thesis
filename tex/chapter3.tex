@@ -73,7 +73,7 @@ SIAL programmer to determine if a block is large enough so that benefit of execu
 it on GPUs becomes significant.
 
 \subsection{Optimizing GPU Memory Transfer}
-\subsubsection{Host Memory Transfer}
+\subsubsection{Host memory transfer}
 GPUs cannot work directly with pageable host memory. One of the key condition for
 effectively exploiting GPUs is to optimally manage data transfer between host memory
 and GPU memory. This is true for any computation running on GPUs and not just High
@@ -94,7 +94,7 @@ to access host memory at PCI-E speeds. This technique can be used to speed up th
 SIA block transfers. This can be incorporated into an automatic memory synchronization module
 such that it becomes transparent to the domain programmer.
 
-\subsubsection{Network Transfer}
+\subsubsection{Network transfer}
 GPUs are often deployed in a cluster to accelerate computationally intensive
 general-purpose tasks. Still, for communication with other nodes, the GPUs need assistance from the CPUs.
 This requires intermediate copies from the GPU memory to the host memory. To have
